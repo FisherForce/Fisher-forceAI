@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FisherForce AI —</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const audio = new Audio('sounds/Part1per 2025-10-22_10-54-30.mp3');
+    audio.volume = 0.6; // volume modéré
+
+    // Essaye de jouer le son au chargement
+    const playSound = () => {
+      audio.play().catch(() => {
+        console.log("Lecture bloquée, attend une interaction...");
+      });
+    };
+
+    playSound();
+
+    // Si le navigateur bloque, relancer à la première interaction
+    document.addEventListener('click', () => {
+      if (audio.paused) {
+        audio.play();
+      }
+    }, { once: true });
+  });
+</script>
+
+  <header class="site-header">
+    <div class="container">
+      <h1>FisherForce AI </h1>
+      <p class="tagline">Règles + IA optionnelle pour enrichir les conseils</p>
+    </div>
+  </header>
+
+  <main class="container main-grid">
+    <section class="card input-card">
+      <h2>Décris ton spot</h2>
+      <label>Nom du spot
+        <input id="spotName" placeholder="Ex: Étang du Moulin"></input>
+      </label>
+
+      <label>Type d'eau
+        <select id="waterType">
+          <option>Étang</option>
+          <option>Rivière</option>
+          <option>Lac</option>
+          <option>Canal</option>
+        </select>
+      </label>
+
+      <label>Fond / Structure
+        <input id="structure" placeholder="Ex: herbiers, rochers, faible profondeur"></input>
+      </label>
+
+      <label>Fréquentation
+        <select id="pressure">
+          <option value="low">Faible</option>
+          <option value="medium" selected>Moyenne</option>
+          <option value="high">Élevée</option>
+        </select>
+      </label>
+
+      <label>Espèce ciblée
+        <input id="targetSpecies" placeholder="Ex: brochet, perche, carpe"></input>
+      </label>
+
+      <label>Heure / Date prévue
+        <input id="dateTime" type="datetime-local"></input>
+      </label>
+
+      <label>Conditions (brève)
+        <input id="conditions" placeholder="Ex: clair, pluie légère, vent NE"></input>
+      </label>
+
+      <div class="row">
+        <button id="getAdvice">Obtenir des conseils</button>
+        <button id="clearBtn" class="secondary">Réinitialiser</button>
+      </div>
+      <p class="muted">Admin: <a href="/admin">Gérer sponsors</a></p>
+    </section>
+
+    <section class="card output-card">
+      <h2>Conseils de l'IA</h2>
+      <div id="advice">
+        <p class="muted">Aucun conseil demandé pour le moment — remplis le formulaire puis clique sur "Obtenir des conseils".</p>
+      </div>
+
+      <a href="resultat.html">
+        <button>Enregistrer un résultat</button>
+      </a>
+<div id="resultat-section">
+  <h3>📝 Résultat de ta session</h3>
+
+  <label>Espèce attrapée :</label>
+  <input type="text" id="species" placeholder="ex: perche, brochet..." />
+
+  <label>Leurre utilisé :</label>
+  <input type="text" id="lure" placeholder="ex: leurre souple, crankbait..." />
+
+  <label>Spot :</label>
+  <input type="text" id="spotType" placeholder="ex: étang, rivière..." />
+
+  <label>Conditions météo (séparées par des virgules) :</label>
+  <input type="text" id="conditions" placeholder="ex: soleil, vent..." />
+
+  <label>Température :</label>
+  <input type="number" id="temperature" placeholder="en °C" />
+
+  <p>Résultat :</p>
+  <label><input type="radio" name="result" value="succès" /> Poisson pris</label>
+  <label><input type="radio" name="result" value="bredouille" /> Bredouille</label>
+
+  <br /><br />
+  <button onclick="envoyerResultat()">📤 Envoyer mes données</button>
+</div>
+
+
+
+      <details class="settings">
+        <summary>Paramètres avancés</summary>
+        <label>
+          Autoriser références sponsorisées
+          <input type="checkbox" id="allowSponsors">
+        </label>
+        <p class="muted">Si tu as une clé OpenAI dans le backend, les conseils seront enrichis par l'IA.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>Prototype hybride — lis le README pour configurer la clé OpenAI.</small>
+
+      <!-- Barre réseaux sociaux -->
+      <div style="margin-top:15px; text-align:center;">
+        <p>Suivez-moi sur mes réseaux :</p>
+        <div style="display:flex; justify-content:center; gap:15px; font-size:24px;">
+          <a href="https://www.instagram.com/fisherforce/" target="_blank" title="Instagram">
+            <img src="icons/insta.jpg" alt="Instagram" style="width:32px;height:32px;">
+          </a>
+          <a href="https://www.youtube.com/channel/UC_gRRbnmfVhiBVgLzQ7xLAw" target="_blank" title="YouTube">
+            <img src="icons/yt.png" alt="YouTube" style="width:32px;height:32px;">
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="script.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Résultat de pêche</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f0f8ff; padding: 20px; }
+  h1 { color: #2c3e50; }
+  .container { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+  label { display: block; margin-top: 10px; }
+  input, select, textarea { width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #ccc; }
+  button { margin-top: 15px; padding: 10px 20px; border: none; background: #3498db; color: white; border-radius: 6px; cursor: pointer; }
+  button:hover { background: #2980b9; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Résultat de pêche</h1>
+  
+  <label for="spot">Spot de pêche :</label>
+  <input type="text" id="spot" placeholder="Nom du spot">
+
+  <label for="species">Espèce pêchée :</label>
+  <select id="species">
+    <option value="">--Aucune--</option>
+    <option value="perche">Perche</option>
+    <option value="brochet">Brochet</option>
+    <option value="sandre">Sandre</option>
+    <option value="bass">Bass</option>
+    <option value="chevesne">Chevesne</option>
+    <option value="bredouille">Bredouille</option>
+  </select>
+
+  <label for="lure">Leurre utilisé :</label>
+  <input type="text" id="lure" placeholder="Nom du leurre">
+
+  <label for="conditions">Conditions :</label>
+  <textarea id="conditions" placeholder="Ex: soleil, nuages, vent"></textarea>
+
+  <button onclick="sendResult()">Envoyer le résultat</button>
+
+  <p id="status" style="margin-top:10px;"></p>
+</div>
+
+<script>
+  async function sendResult() {
+    const spot = document.getElementById('spot').value.trim();
+    const species = document.getElementById('species').value;
+    const lure = document.getElementById('lure').value.trim();
+    const conditions = document.getElementById('conditions').value.trim();
+
+    if(!spot || !species) {
+      document.getElementById('status').textContent = "Veuillez remplir au minimum le spot et l'espèce.";
+      return;
+    }
+
+    const payload = { spot, species, lure, conditions };
+
+    try {
+      const response = await fetch('/api/learn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await response.json();
+      document.getElementById('status').textContent = data.message || "Résultat envoyé !";
+    } catch(err) {
+      console.error(err);
+      document.getElementById('status').textContent = "Erreur lors de l'envoi.";
+    }
+  }
+</script>
+
+</body>
+</html>

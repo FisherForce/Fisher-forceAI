@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tableau d'apprentissage - Fishing IA</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #111;
+      color: #eee;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #4ade80;
+    }
+    .section {
+      margin: 30px 0;
+      background: #1c1c1c;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    h2 {
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background: #333;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: #222;
+    }
+    tr:hover {
+      background: #333;
+    }
+    .reload {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 8px 14px;
+      background: #38bdf8;
+      border-radius: 6px;
+      cursor: pointer;
+      color: black;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    .reload:hover {
+      background: #4ade80;
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 Tableau d'apprentissage de l'IA</h1>
+
+  <div class="section">
+    <h2>🧠 Cas ultra-ciblés appris</h2>
+    <table id="patternsTable">
+      <thead>
+        <tr>
+          <th>Espèce</th>
+          <th>Conditions</th>
+          <th>Leurre</th>
+          <th>Résultat</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>🎣 Sessions récentes</h2>
+    <table id="sessionsTable">
+      <thead>
+        <tr>
+          <th>Spot</th>
+          <th>Espèce</th>
+          <th>Conditions</th>
+          <th>Leurre</th>
+          <th>Résultat</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>📍 Spots connus</h2>
+    <table id="spotsTable">
+      <thead>
+        <tr>
+          <th>Nom du Spot</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <center><button class="reload" onclick="loadData()">🔄 Actualiser</button></center>
+
+  <script>
+    async function loadData() {
+      const [patterns, sessions, spots] = await Promise.all([
+        fetch('/data/learnedPatterns').then(res => res.json()).catch(() => []),
+        fetch('/data/sessions').then(res => res.json()).catch(() => []),
+        fetch('/data/spots').then(res => res.json()).catch(() => [])
+      ]);
+
+      const patternsTable = document.querySelector("#patternsTable tbody");
+      const sessionsTable = document.querySelector("#sessionsTable tbody");
+      const spotsTable = document.querySelector("#spotsTable tbody");
+
+      patternsTable.innerHTML = "";
+      sessionsTable.innerHTML = "";
+      spotsTable.innerHTML = "";
+
+      // Cas ultra-ciblés appris
+      patterns.forEach(p => {
+        const row = `<tr>
+          <td>${p.species || '-'}</td>
+          <td>${Array.isArray(p.conditions) ? p.conditions.join(', ') : '-'}</td>
+          <td>${p.lure || '-'}</td>
+          <td>${p.result || '-'}</td>
+        </tr>`;
+        patternsTable.innerHTML += row;
+      });
+
+      // Sessions
+      sessions.forEach(s => {
+        const row = `<tr>
+          <td>${s.spot || '-'}</td>
+          <td>${s.species || '-'}</td>
+          <td>${Array.isArray(s.conditions) ? s.conditions.join(', ') : '-'}</td>
+          <td>${s.lure || '-'}</td>
+          <td>${s.result || '-'}</td>
+        </tr>`;
+        sessionsTable.innerHTML += row;
+      });
+
+      // Spots connus
+      spots.forEach(spot => {
+        spotsTable.innerHTML += `<tr><td>${spot}</td></tr>`;
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

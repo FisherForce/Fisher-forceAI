@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin — Sponsors</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <h1>Admin — Gestion des sponsors</h1>
+      <p class="tagline">Ajoute / supprime des sponsors (clé admin requise)</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Ajouter un sponsor</h2>
+      <label>Clé admin (x-admin-key)
+        <input id="adminKey" placeholder="Entrez la clé admin"></input>
+      </label>
+      <label>Marque
+        <input id="brand" placeholder="Ex: ExempleLures"></input>
+      </label>
+      <label>Modèles (séparés par des virgules)
+        <input id="models" placeholder="EX-123, EX-456"></input>
+      </label>
+      <label>Espèces (séparées par des virgules)
+        <input id="species" placeholder="brochet, perche"></input>
+      </label>
+      <div class="row">
+        <button id="addSponsor">Ajouter</button>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <h2>Liste des sponsors</h2>
+      <div id="sponsorList" class="muted">Chargement…</div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <small>Ne partage pas la clé admin. Protège ton .env.</small>
+    </div>
+  </footer>
+
+  <script src="admin.js"></script>
+</body>
+</html>
