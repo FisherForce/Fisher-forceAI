@@ -29,6 +29,12 @@ function saveSpot(spotName) {
 
 // --- Fonction principale de suggestion de leurres ---
 function suggestLures(species, structure, conditions, spotType, temperature = null) {
+    // Sécurisation des entrées
+  species = (species || "").toLowerCase();
+  structure = (structure || "").toLowerCase();
+  conditions = (conditions || "").toLowerCase();
+  spotType = (spotType || "").toLowerCase();
+  
   saveSpot(spotType);
 
   const list = [];
