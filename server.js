@@ -186,10 +186,16 @@ app.get('/', (req, res) => {
 
 // --- Route de compatibilité avec /api/advice ---
 app.post('/api/advice', (req, res) => {
-  const { species, structure, conditions, spotType, temperature } = req.body;
-  const result = suggestLures(species, structure, conditions, spotType, temperature);
-  res.json(result);
+  try {
+    const { species, structure, conditions, spotType, temperature } = req.body;
+    const result = suggestLures(species, structure, conditions, spotType, temperature);
+    res.json(result);
+  } catch (err) {
+    console.error("❌ Erreur dans /api/advice :", err);
+    res.status(500).json({ error: err.message });
+  }
 });
+
 
 
 
