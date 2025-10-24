@@ -184,6 +184,14 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// --- Route de compatibilité avec /api/advice ---
+app.post('/api/advice', (req, res) => {
+  const { species, structure, conditions, spotType, temperature } = req.body;
+  const result = suggestLures(species, structure, conditions, spotType, temperature);
+  res.json(result);
+});
+
+
 
 // === Serveur ===
 const PORT = process.env.PORT || 3000;
