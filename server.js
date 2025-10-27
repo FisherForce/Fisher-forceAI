@@ -191,16 +191,23 @@ app.get('/', (req, res) => {
 });
 
 // --- Route de compatibilité avec /api/advice ---
+// === Route pour obtenir des conseils ===
 app.post('/api/advice', (req, res) => {
   try {
     const { species, structure, conditions, spotType, temperature } = req.body;
+
+    if (!species || !structure || !conditions || !spotType) {
+      return res.status(400).json({ error: 'Champs requis manquants.' });
+    }
+
     const result = suggestLures(species, structure, conditions, spotType, temperature);
     res.json(result);
   } catch (err) {
-    console.error("❌ Erreur dans /api/advice :", err);
-    res.status(500).json({ error: err.message });
+    console.error('❌ Erreur dans /api/advice :', err);
+    res.status(500).json({ error: 'Erreur interne du serveur.' });
   }
 });
+
 
 
 
