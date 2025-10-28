@@ -25,23 +25,33 @@ function renderAdvice(data) {
     container.appendChild(p);
   }
 
-  const blocks = [
-    { title: 'Heures conseillées', items: data.times },
-    { title: 'Catégories de leurres', items: data.lureCategories },
-    { title: 'Animations recommandées', items: data.animations },
-    { title: 'Couleurs conseillées', items: data.colors }
-  ];
-
-  blocks.forEach(b => {
+// --- Leurres principaux ---
+  if (data.lures && data.lures.length > 0) {
     const div = document.createElement('div');
-    div.innerHTML = `<h3>${b.title}</h3><ul>${b.items.map(i => `<li>${i}</li>`).join('')}</ul>`;
+    div.innerHTML = `
+      <h3>Leurres & Techniques conseillés</h3>
+      <ul>
+        ${data.lures.map(item => `<li><strong>${item.split(', ')[0]}</strong> — ${item.split(', ').slice(1).join(', ')}</li>`).join('')}
+      </ul>
+    `;
     container.appendChild(div);
-  });
+  }
 
-  if (data.sponsorMatches?.length) {
-    const s = document.createElement('div');
-    s.innerHTML = `<h3>Références sponsorisées (autorisées)</h3><ul>${data.sponsorMatches.map(sp => `<li>${sp.brand}: ${sp.models.join(', ')}</li>`).join('')}</ul>`;
-    container.appendChild(s);
+  // --- Profondeur selon température ---
+  if (data.depthAdvice && data.depthAdvice.length > 0) {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <h3>Profondeur recommandée</h3>
+      <ul>
+        ${data.depthAdvice.map(d => `<li>${d}</li>`).join('')}
+      </ul>
+    `;
+    container.appendChild(div);
+  }
+
+  // --- Message par défaut si rien ---
+  if (!data.lures?.length && !data.depthAdvice?.length && !data.adviceText) {
+    container.innerHTML = '<p class="muted">Aucun conseil spécifique trouvé. Varie les techniques !</p>';
   }
 }
 
