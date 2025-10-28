@@ -92,6 +92,10 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Shad de 16cm', 'Récupération lente');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Lipless ou spintail ou lame vibrante', 'Récupération lente ou dandine en verticale');
+    if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages'))
+      list.push('Spinnerbait, spintail ou lame vibrante', 'Récupération lente ou dandine en verticale proche du fond');  
+    if (saison === "automne" && spotType === "étang" && conditions.includes('nuages'))
+      list.push('Leurre souple de 10cm non plombé ', 'Récupération lente avec de pauses en laissant couler le leurre proche de la surface ');        
   }
 
   if (species.includes('bass')) {
@@ -109,6 +113,15 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Lame vibrante ou cuillère ou micro-leurre', 'Récupération rapide pour déclencher des attaques de réaction');
   }
+    if (species.includes('sandre')) {
+          if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
+      list.push('Leurre souple rose ou jaune de 6cm', 'Récupération très lente sur le fond avec de longues pauses ');
+                if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages'))
+      list.push('Leurre souple jaune de 6cm', 'Récupération très lente sur le fond avec de longues pauses ');
+                      if (saison === "automne" && spotType === "rivière" && conditions.includes('vent'))
+      list.push('Leurre souple transaprent pailleté de 6cm', 'Récupération très lente sur le fond avec de longues pauses ');
+
+
 
   // --- Conseils généraux ---
   if (list.length === 0) {
