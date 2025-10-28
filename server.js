@@ -105,6 +105,8 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Spinner-bait', 'Récupération lente sous la surface');
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Worm en wacky ou Tube texan ou Frog ou finesse', 'Récupération par à-coups ou en dandine');
+    if (saison === "été" && spotType === "étang" && conditions.includes('chaleur'))
+      list.push('Worm en wacky ou Tube texan ou Frog ou finesse', 'Récupération par à-coups ou en dandine');    
     if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
       list.push('Écrevisses en punching', 'Dans les herbiers');
   }
