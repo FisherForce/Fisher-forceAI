@@ -73,14 +73,14 @@ el('getAdvice').addEventListener('click', async () => {
   const input = readForm();
 
   // ✅ Vérification et conversion des champs pour le backend
-  const formattedInput = {
-    species: input.species || input.espece || "",        // corrige nom clé
-    structure: input.structure || "",
-    conditions: input.conditions || "",
-    spotType: input.spotType || input.spot || "",
-    temperature: parseFloat(input.temperature) || null
-  };
-
+// NOUVEAU CODE CORRIGÉ
+const formattedInput = {
+  species: input.targetSpecies || "",
+  structure: input.structure || "",
+  conditions: input.conditions || "",
+  spotType: input.waterType || "",
+  temperature: null
+};
   el('advice').innerHTML = '<p class="muted">Génération des conseils…</p>';
 
   try {
