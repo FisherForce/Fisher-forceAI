@@ -48,7 +48,6 @@ function renderAdvice(data) {
 
 async function fetchAdvice(input) {
   try {
-    console.log("Envoi des données vers /api/advice :", { species, structure, conditions, spotType, temperature });
 
     const res = await fetch('/api/advice', {
       method: 'POST',
