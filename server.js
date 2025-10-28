@@ -127,8 +127,12 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
 
   // --- Conseils généraux ---
   if (list.length === 0) {
-    list.push('Varie : leurres souples, poissons-nageurs, cuillères selon profondeur et saison.');
-  }
+    list.push('Rien ne semble sortir du lot,commence a la cuillère argentée N°2 en linéaire');
+    list.push('Si ca ne fonctionne pas, tente avec un leurre souple blanc de 8cm très polyvalent');
+    list.push('Commence en linéaire rapide, puis si ca ne marche pas ralentis le ryhtme et fais des pauses, plus il fais froid plus tu dois animer lentement');
+    list.push('Commence sous la surface , puis descend au fur et a mesure, plus il fais froid plus tu dois aller profond ');    
+
+  },
 
   // --- Profondeur selon température ---
   const depthAdvice = [];
