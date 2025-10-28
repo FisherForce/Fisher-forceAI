@@ -48,20 +48,26 @@ function renderAdvice(data) {
 
 async function fetchAdvice(input) {
   try {
-const res = await fetch('/api/advice', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(input)
-});
-
-      
+    const res = await fetch('/api/advice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input)
     });
-    if (!res.ok) throw new Error('Erreur réseau');
-    return await res.json();
-  } catch (e) {
-    return { error: e.message || 'Erreur' };
+
+    if (!res.ok) {
+      throw new Error('Erreur réseau : ' + res.status);
+    }
+
+    const data = await res.json();
+    return data;
+
+  } catch (err) {
+    console.error("❌ Erreur dans fetchAdvice :", err);
+    alert("Erreur réseau ou serveur. Vérifie la connexion ou le backend.");
+    return null;
   }
 }
+
 
 el('getAdvice').addEventListener('click', async () => {
   const input = readForm();
