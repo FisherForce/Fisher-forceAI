@@ -48,11 +48,19 @@ function renderAdvice(data) {
 
 async function fetchAdvice(input) {
   try {
+const res = await fetch('/api/advice', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    species,
+    structure,
+    conditions,
+    spotType,
+    temperature
+  })
+});
 
-    const res = await fetch('/api/advice', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input)
+      
     });
     if (!res.ok) throw new Error('Erreur réseau');
     return await res.json();
