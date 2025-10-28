@@ -51,13 +51,7 @@ async function fetchAdvice(input) {
 const res = await fetch('/api/advice', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    species,
-    structure,
-    conditions,
-    spotType,
-    temperature
-  })
+  body: JSON.stringify(input)
 });
 
       
