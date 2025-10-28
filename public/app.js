@@ -48,7 +48,8 @@ function renderAdvice(data) {
 
 async function fetchAdvice(input) {
   try {
-    const res = await fetch('/api/advice', {
+const API_BASE = window.location.origin; // fonctionne en local ET sur Render
+const res = await fetch(`${API_BASE}/api/advice`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input)
