@@ -200,14 +200,15 @@ app.post('/api/advice', (req, res) => {
       return res.status(400).json({ error: 'Champs requis manquants.' });
     }
 
+
     const result = suggestLures(species, structure, conditions, spotType, temperature);
+    console.log("✅ Conseils générés :", result);
     res.json(result);
   } catch (err) {
-    console.error('❌ Erreur dans /api/advice :', err);
-    res.status(500).json({ error: 'Erreur interne du serveur.' });
+    console.error("❌ Erreur dans /api/advice :", err);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
-
 
 
 
