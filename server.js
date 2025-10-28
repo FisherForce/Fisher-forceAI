@@ -196,9 +196,9 @@ app.post('/api/advice', (req, res) => {
   try {
     const { species, structure, conditions, spotType, temperature } = req.body;
 
-    if (!species || !structure || !conditions || !spotType) {
-      return res.status(400).json({ error: 'Champs requis manquants.' });
-    }
+   if (!structure || !conditions) {
+  return res.status(400).json({ error: 'Champs requis manquants : structure et conditions.' });
+}
 
 
     const result = suggestLures(species, structure, conditions, spotType, temperature);
