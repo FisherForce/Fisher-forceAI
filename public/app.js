@@ -71,13 +71,32 @@ async function fetchAdvice(input) {
 
 el('getAdvice').addEventListener('click', async () => {
   const input = readForm();
+
+  // ✅ Vérification et conversion des champs pour le backend
+  const formattedInput = {
+    species: input.species || input.espece || "",        // corrige nom clé
+    structure: input.structure || "",
+    conditions: input.conditions || "",
+    spotType: input.spotType || input.spot || "",
+    temperature: parseFloat(input.temperature) || null
+  };
+
   el('advice').innerHTML = '<p class="muted">Génération des conseils…</p>';
-  const result = await fetchAdvice(input);
-  if (result.error) {
-    el('advice').innerHTML = `<p class="muted">Erreur: ${result.error}</p>`;
-    return;
+
+  try {
+    const result = await fetchAdvice(formattedInput);
+
+    if (!result || result.error) {
+      el('advice').innerHTML = `<p class="muted">Erreur: ${result?.error || "Impossible d'obtenir les conseils."}</p>`;
+      return;
+    }
+
+    renderAdvice(result);
+
+  } catch (err) {
+    console.error("❌ Erreur pendant fetchAdvice :", err);
+    el('advice').innerHTML = `<p class="muted">Erreur réseau ou serveur.</p>`;
   }
-  renderAdvice(result);
 });
 
 el('clearBtn').addEventListener('click', () => {
