@@ -132,7 +132,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     list.push('Commence en linéaire rapide, puis si ca ne marche pas ralentis le ryhtme et fais des pauses, plus il fais froid plus tu dois animer lentement');
     list.push('Commence sous la surface , puis descend au fur et a mesure, plus il fais froid plus tu dois aller profond ');    
 
-  },
+  }
 
   // --- Profondeur selon température ---
   const depthAdvice = [];
