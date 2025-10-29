@@ -130,8 +130,8 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   // --- Conseils généraux ---
   if (list.length === 0) {
     const defaults = [
-      'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère N°2. Enregistre ta session pour faire progresser l’IA !',
-      'Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer ! Dit moi ensuite si tu a eu un poisson pour faire progresser l’IA !,
+      'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère N°2. Enregistre ta session pour faire progresser l’IA !'
+      'Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer ! Dit moi ensuite si tu a eu un poisson pour faire progresser l’IA !'s
       'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l’attend pas. Enregistre ta session pour faire progresser l’IA !'
     ];
     list.push(defaults[Math.floor(Math.random() * defaults.length)]);
