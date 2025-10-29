@@ -56,7 +56,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   else if ([6, 7, 8].includes(mois)) saison = "été";
   else saison = "automne";
 
-  // 🔥 Cas ultra-ciblés
+  // Cas ultra-ciblés
   if (species.includes('perche')) {
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Dropshot — Animation lente proche des structures');
@@ -106,7 +106,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages'))
       list.push('Swimbait de 15cm — Récupération lente en surface');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
-      list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d'eau');
+      list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d\'eau');
     if (saison === "automne" && spotType === "étang" && conditions.includes('vent'))
       list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d\'eau au fur et à mesure du temps');
   }
@@ -132,7 +132,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     const defaults = [
       'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère N°2. Enregistre ta session pour faire progresser l\'IA !',
       'Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer ! Dis-moi ensuite si tu as eu un poisson pour faire progresser l\'IA !',
-      'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l\'attends pas. Enregistre ta session pour faire progresser l\'IA !'
+      'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l\'attend pas. Enregistre ta session pour faire progresser l\'IA !'
     ];
     list.push(defaults[Math.floor(Math.random() * defaults.length)]);
   }
@@ -162,7 +162,6 @@ app.post('/api/suggest', (req, res) => {
   res.json(result);
 });
 
-// === Routes d'apprentissage ===
 app.post('/api/learn', (req, res) => {
   try {
     const session = req.body || {};
@@ -202,15 +201,12 @@ app.get('/api/spots', (req, res) => {
   }
 });
 
-// === Sert les fichiers statiques du dossier "public" ===
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Route principale
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// === Route /api/advice ===
 app.post('/api/advice', (req, res) => {
   try {
     const { species, structure, conditions, spotType, temperature } = req.body;
@@ -226,7 +222,6 @@ app.post('/api/advice', (req, res) => {
   }
 });
 
-// === Démarrage du serveur ===
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
