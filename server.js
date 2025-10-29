@@ -103,6 +103,12 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Shad de 16cm — Récupération lente');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Lipless ou spintail ou lame vibrante — Récupération lente ou dandine en verticale');
+    if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages'))
+      list.push('Swimbait de 15cm — Récupération lente en surface');
+    if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
+      list.push('Shad de 20CM — Récupération lente en surface, puis decsends dans la couche d’eau ');    
+    if (saison === "automne" && spotType === "étang" && conditions.includes('vent'))
+      list.push('Crankbait de 8cm — Récupération lente en surface, puis decsends dans la couche d’eau au fur et a mesure du temps ');        
   }
 
   if (species.includes('bass')) {
@@ -125,8 +131,8 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   if (list.length === 0) {
     const defaults = [
       'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère N°2. Enregistre ta session pour faire progresser l’IA !',
-      'Varie les animations : linéaire, twitching, dandine. Le poisson finira par craquer !',
-      'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l’attend pas.'
+      'Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer ! Dit moi ensuite si tu a eu un poisson pour faire progresser l’IA !,
+      'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l’attend pas. Enregistre ta session pour faire progresser l’IA !'
     ];
     list.push(defaults[Math.floor(Math.random() * defaults.length)]);
   }
