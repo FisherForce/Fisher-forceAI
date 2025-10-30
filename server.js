@@ -162,6 +162,13 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Lame vibrante ou cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
   }
 
+    if (species.includes('sandre')) {
+    if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
+      list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses '); 
+      if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages') && structure.includes('pont'))
+      list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');     
+  }
+
   // --- Conseils généraux ---
   if (list.length === 0) {
     const defaults = [
