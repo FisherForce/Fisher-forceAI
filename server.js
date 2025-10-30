@@ -51,6 +51,17 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   const list = [];
   const mois = new Date().getMonth() + 1;
   let saison;
+  // === CHARGER LES PATTERNS APPRENTIS ===
+const learnedPatterns = learn.loadLearnedPatterns();
+
+// Appliquer les patterns appris en priorité
+const learnedKey = `${species}|${saison}|${conditions}|${spotType}`;
+const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
+if (learnedLures && learnedLures.length > 0) {
+  learnedLures.forEach(lure => {
+    list.push(`${lure} (appris des sessions)`);
+  });
+}
   if ([12, 1, 2].includes(mois)) saison = "hiver";
   else if ([3, 4, 5].includes(mois)) saison = "printemps";
   else if ([6, 7, 8].includes(mois)) saison = "été";
