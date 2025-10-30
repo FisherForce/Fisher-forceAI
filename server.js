@@ -177,14 +177,25 @@ app.post('/api/learn', (req, res) => {
   try {
     const session = req.body || {};
     if (!session.species || !session.spotType || session.resultFish === undefined) {
-      return res.status(400).json({ error: 'fields required: species, spotType, resultFish' });
+      return res.status(400).json({ error: 'Champs requis manquants : species, spotType, resultFish' });
     }
+
+    // 1. Sauvegarde la session
     const saved = learn.saveSession(session);
-    const newPatterns = learn.analyzeAndUpdatePatterns(2);
-    return res.json({ success: true, saved, newPatterns });
+
+    // 2. Analyse et met à jour les patterns (apprentissage !)
+    const newPatterns = learn.analyzeAndUpdatePatterns(2); // 2 succès minimum
+
+    // 3. Réponse
+    return res.json({ 
+      success: true, 
+      saved, 
+      newPatterns 
+    });
+
   } catch (e) {
     console.error('/api/learn error', e);
-    return res.status(500).json({ error: 'server error' });
+    return res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
