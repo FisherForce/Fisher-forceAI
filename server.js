@@ -39,6 +39,15 @@ function saveSpot(spotName) {
   }
 }
 
+// === CHARGER LES PATTERNS UNE SEULE FOIS ===
+let learnedPatterns = {};
+try {
+  learnedPatterns = learn.loadLearnedPatterns();
+  console.log("Patterns appris chargés :", Object.keys(learnedPatterns).length ? Object.keys(learnedPatterns) : "aucun");
+} catch (err) {
+  console.warn("Pas de patterns appris (fichier manquant ou corrompu)");
+}
+
 // --- Fonction principale de suggestion de leurres ---
 function suggestLures(species, structure, conditions, spotType, temperature = null) {
   species = (species || "").toLowerCase();
@@ -55,6 +64,14 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   else if ([3, 4, 5].includes(mois)) saison = "printemps";
   else if ([6, 7, 8].includes(mois)) saison = "été";
   else saison = "automne";
+
+  // === UTILISER LES PATTERNS APPRENTIS (déjà chargés) ===
+  const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
+  if (learnedLures && learnedLures.length > 0) {
+    learnedLures.forEach(lure => {
+      list.push(`${lure} (appris des sessions)`);
+    });
+  }
 
   // Cas ultra-ciblés
   if (species.includes('perche')) {
@@ -166,14 +183,25 @@ app.post('/api/learn', (req, res) => {
   try {
     const session = req.body || {};
     if (!session.species || !session.spotType || session.resultFish === undefined) {
-      return res.status(400).json({ error: 'fields required: species, spotType, resultFish' });
+      return res.status(400).json({ error: 'Champs requis manquants : species, spotType, resultFish' });
     }
+
+    // 1. Sauvegarde la session
     const saved = learn.saveSession(session);
+
+    // 2. Analyse et met à jour les patterns (apprentissage !)
     const newPatterns = learn.analyzeAndUpdatePatterns(2);
-    return res.json({ success: true, saved, newPatterns });
+
+    // 3. Réponse
+    return res.json({ 
+      success: true, 
+      saved, 
+      newPatterns 
+    });
+
   } catch (e) {
     console.error('/api/learn error', e);
-    return res.status(500).json({ error: 'server error' });
+    return res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
