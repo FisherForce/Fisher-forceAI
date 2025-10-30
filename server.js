@@ -85,6 +85,12 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Leurre souple 5cm Brun — Récupération lente juste sous la surface');
     if (saison === "printemps" && spotType === "étang" && conditions.includes('clair'))
       list.push('Cuillère N°2, coloris Or — Pêche en linéaire lent');
+    if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('branch'))
+      list.push('Leurre souple de 5cm— Dandine dans les branches ');
+    if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
+      list.push('Leurre souple de 5cm— Dandine dans les bois morts ');
+    if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('arbre'))
+      list.push('Leurre souple de 5cm— Dandine dans les bois morts ');    
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Cuillère N°2 argentée puis Leurre souple de 5cm puis crank puis micro-leurre — Animation juste sous la surface');
     if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
@@ -93,6 +99,8 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Leurre souple de 4 à 6cm — Récupération rapide avec pauses');
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Leurre souple de 4 à 6cm en dropshot — Récupération lente et dandine proche des obstacles');
+    if (saison === "automne" && spotType === "étang" && conditions.includes('nuages') && structure.includes('branch'))
+      list.push('Leurre souple pailleté de 5cm en Ned Rig— Ramène très lentement sur le fond');    
     if (saison === "automne" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Leurre souple de 4 à 6cm ou Crankbait — Récupération rapide avec des pauses proche des obstacles');
     if (saison === "automne" && spotType === "étang" && conditions.includes('soleil'))
@@ -116,6 +124,10 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Jerk-Minnow de 12 à 15cm — Twitchs courts avec des pauses en surface');
     if (saison === "printemps" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Cuillère N°4 — Récupération lente en surface');
+    if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('nénuphar'))
+      list.push('Frog — Récupération par a coups avec pauses dans les trouées');    
+    if (saison === "été" && spotType === "rivière" && conditions.includes('soleil') && structure.includes('nénuphar'))
+      list.push('Frog — Récupération par a coups avec pauses dans les trouées');        
     if (saison === "hiver" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Shad de 16cm — Récupération lente');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
@@ -135,6 +147,12 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Spinner-bait — Récupération lente sous la surface');
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Worm en wacky ou Tube texan ou Frog ou finesse Rb — Récupération par à-coups ou en dandine');
+    if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('herbiers'))
+      list.push('Worm marron — Dandine dans les branches et les herbiers ');
+    if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
+      list.push('Worm marron — Dandine dans les branches et les herbiers ');
+    if (saison === "été" && spotType === "canal" && conditions.includes('soleil') && structure.includes('bois'))
+      list.push('Worm marron — Dandine dans les branches et les herbiers ');        
     if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
       list.push('Écrevisses en punching — Dans les herbiers');
   }
