@@ -66,6 +66,15 @@ if (learnedLures && learnedLures.length > 0) {
   else if ([3, 4, 5].includes(mois)) saison = "printemps";
   else if ([6, 7, 8].includes(mois)) saison = "été";
   else saison = "automne";
+    // === CHARGER ET APPLIQUER LES PATTERNS APPRENTIS ===
+  const learnedPatterns = learn.loadLearnedPatterns();
+  const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
+
+  if (learnedLures && learnedLures.length > 0) {
+    learnedLures.forEach(lure => {
+      list.push(`${lure} (appris des sessions)`);
+    });
+  }
 
   // Cas ultra-ciblés
   if (species.includes('perche')) {
