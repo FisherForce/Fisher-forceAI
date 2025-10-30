@@ -39,6 +39,15 @@ function saveSpot(spotName) {
   }
 }
 
+// === CHARGER LES PATTERNS UNE SEULE FOIS ===
+let learnedPatterns = {};
+try {
+  learnedPatterns = learn.loadLearnedPatterns();
+  console.log("Patterns appris chargés :", Object.keys(learnedPatterns).length ? Object.keys(learnedPatterns) : "aucun");
+} catch (err) {
+  console.warn("Pas de patterns appris (fichier manquant ou corrompu)");
+}
+
 // --- Fonction principale de suggestion de leurres ---
 function suggestLures(species, structure, conditions, spotType, temperature = null) {
   species = (species || "").toLowerCase();
@@ -51,25 +60,13 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   const list = [];
   const mois = new Date().getMonth() + 1;
   let saison;
-  // === CHARGER LES PATTERNS APPRENTIS ===
-const learnedPatterns = learn.loadLearnedPatterns();
-
-// Appliquer les patterns appris en priorité
-const learnedKey = `${species}|${saison}|${conditions}|${spotType}`;
-const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
-if (learnedLures && learnedLures.length > 0) {
-  learnedLures.forEach(lure => {
-    list.push(`${lure} (appris des sessions)`);
-  });
-}
   if ([12, 1, 2].includes(mois)) saison = "hiver";
   else if ([3, 4, 5].includes(mois)) saison = "printemps";
   else if ([6, 7, 8].includes(mois)) saison = "été";
   else saison = "automne";
-    // === CHARGER ET APPLIQUER LES PATTERNS APPRENTIS ===
-  const learnedPatterns = learn.loadLearnedPatterns();
-  const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
 
+  // === UTILISER LES PATTERNS APPRENTIS (déjà chargés) ===
+  const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
   if (learnedLures && learnedLures.length > 0) {
     learnedLures.forEach(lure => {
       list.push(`${lure} (appris des sessions)`);
@@ -193,7 +190,7 @@ app.post('/api/learn', (req, res) => {
     const saved = learn.saveSession(session);
 
     // 2. Analyse et met à jour les patterns (apprentissage !)
-    const newPatterns = learn.analyzeAndUpdatePatterns(2); // 2 succès minimum
+    const newPatterns = learn.analyzeAndUpdatePatterns(2);
 
     // 3. Réponse
     return res.json({ 
