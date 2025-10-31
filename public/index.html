@@ -85,6 +85,29 @@
     </section>
 
     <section class="card output-card">
+
+  <button onclick="showStats()" style="margin: 10px; padding: 10px;">Voir mes stats d'IA</button>
+<div id="stats"></div>
+
+<script>
+async function showStats() {
+  try {
+    const res = await fetch('/api/learnedPatterns');
+    const data = await res.json();
+    const count = Object.keys(data).reduce((acc, species) => 
+      acc + Object.keys(data[species] || {}).length, 0);
+    document.getElementById('stats').innerHTML = `
+      <h3>IA en action !</h3>
+      <p><strong>Patterns appris :</strong> ${count}</p>
+      <pre style="background:#f4f4f4; padding:10px; max-height:300px; overflow:auto;">
+${JSON.stringify(data, null, 2)}
+      </pre>
+    `;
+  } catch (e) {
+    document.getElementById('stats').innerHTML = '<p>Erreur de chargement</p>';
+  }
+}
+</script>    
       <h2>Conseils de l'IA</h2>
       <div id="advice">
         <p class="muted">Aucun conseil demandé pour le moment — remplis le formulaire puis clique sur "Obtenir des conseils".</p>
