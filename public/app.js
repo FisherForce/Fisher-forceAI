@@ -1,5 +1,3 @@
-
-
 const el = id => document.getElementById(id);
 
 function readForm() {
@@ -25,7 +23,7 @@ function renderAdvice(data) {
     container.appendChild(p);
   }
 
-// --- Leurres principaux ---
+  // --- Leurres principaux ---
   if (data.lures && data.lures.length > 0) {
     const div = document.createElement('div');
     div.innerHTML = `
@@ -55,11 +53,10 @@ function renderAdvice(data) {
   }
 }
 
-
 async function fetchAdvice(input) {
   try {
-const API_BASE = window.location.origin; // fonctionne en local ET sur Render
-const res = await fetch(`${API_BASE}/api/advice`, {
+    const API_BASE = window.location.origin;
+    const res = await fetch(`${API_BASE}/api/advice`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input)
@@ -73,25 +70,24 @@ const res = await fetch(`${API_BASE}/api/advice`, {
     return data;
 
   } catch (err) {
-    console.error("❌ Erreur dans fetchAdvice :", err);
+    console.error("Erreur dans fetchAdvice :", err);
     alert("Erreur réseau ou serveur. Vérifie la connexion ou le backend.");
     return null;
   }
 }
 
-
 el('getAdvice').addEventListener('click', async () => {
   const input = readForm();
 
-  // ✅ Vérification et conversion des champs pour le backend
-// NOUVEAU CODE CORRIGÉ
-const formattedInput = {
-  species: input.targetSpecies || "",
-  structure: input.structure || "",
-  conditions: input.conditions || "",
-  spotType: input.waterType || "",
-  temperature: null
-};
+  // Conversion des champs pour le backend
+  const formattedInput = {
+    species: input.targetSpecies || "",
+    structure: input.structure || "",
+    conditions: input.conditions || "",
+    spotType: input.waterType || "",
+    temperature: null
+  };
+
   el('advice').innerHTML = '<p class="muted">Génération des conseils…</p>';
 
   try {
@@ -104,8 +100,16 @@ const formattedInput = {
 
     renderAdvice(result);
 
+    // SAUVEGARDE DU CONSEIL POUR L’APPRENTISSAGE
+    saveLastAdvice(
+      formattedInput.species,
+      formattedInput.spotType,
+      formattedInput.conditions,
+      formattedInput.structure
+    );
+
   } catch (err) {
-    console.error("❌ Erreur pendant fetchAdvice :", err);
+    console.error("Erreur pendant fetchAdvice :", err);
     el('advice').innerHTML = `<p class="muted">Erreur réseau ou serveur.</p>`;
   }
 });
