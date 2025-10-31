@@ -2,7 +2,6 @@ const express = require('express');
 const app = express();
 const fs = require('fs');
 const path = require('path');
-
 app.use(express.json());
 
 // === Import du module d'apprentissage ===
@@ -11,7 +10,13 @@ try {
   learn = require('./learn');
 } catch (err) {
   console.warn("learn.js non trouvé, apprentissage désactivé.");
-  learn = { saveSession: () => {}, analyzeAndUpdatePatterns: () => {}, loadSessions: () => [], loadLearnedPatterns: () => ({}), loadSpots: () => [] };
+  learn = { 
+    saveSession: () => {}, 
+    analyzeAndUpdatePatterns: () => {}, 
+    loadSessions: () => [], 
+    loadLearnedPatterns: () => ({}), 
+    loadSpots: () => [] 
+  };
 }
 
 // --- Base de données persistante des spots ---
@@ -65,7 +70,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   else if ([6, 7, 8].includes(mois)) saison = "été";
   else saison = "automne";
 
-  // === UTILISER LES PATTERNS APPRENTIS (déjà chargés) ===
+  // === UTILISER LES PATTERNS APPRENTIS (déjà chargés en haut) ===
   const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
   if (learnedLures && learnedLures.length > 0) {
     learnedLures.forEach(lure => {
@@ -90,7 +95,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
       list.push('Leurre souple de 5cm— Dandine dans les bois morts ');
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('arbre'))
-      list.push('Leurre souple de 5cm— Dandine dans les bois morts ');    
+      list.push('Leurre souple de 5cm— Dandine dans les bois morts ');
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Cuillère N°2 argentée puis Leurre souple de 5cm puis crank puis micro-leurre — Animation juste sous la surface');
     if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
@@ -100,7 +105,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Leurre souple de 4 à 6cm en dropshot — Récupération lente et dandine proche des obstacles');
     if (saison === "automne" && spotType === "étang" && conditions.includes('nuages') && structure.includes('branch'))
-      list.push('Leurre souple pailleté de 5cm en Ned Rig— Ramène très lentement sur le fond');    
+      list.push('Leurre souple pailleté de 5cm en Ned Rig— Ramène très lentement sur le fond');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Leurre souple de 4 à 6cm ou Crankbait — Récupération rapide avec des pauses proche des obstacles');
     if (saison === "automne" && spotType === "étang" && conditions.includes('soleil'))
@@ -125,9 +130,9 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "printemps" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Cuillère N°4 — Récupération lente en surface');
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('nénuphar'))
-      list.push('Frog — Récupération par a coups avec pauses dans les trouées');    
+      list.push('Frog — Récupération par a coups avec pauses dans les trouées');
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil') && structure.includes('nénuphar'))
-      list.push('Frog — Récupération par a coups avec pauses dans les trouées');        
+      list.push('Frog — Récupération par a coups avec pauses dans les trouées');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Shad de 16cm — Récupération lente');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
@@ -152,7 +157,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
       list.push('Worm marron — Dandine dans les branches et les herbiers ');
     if (saison === "été" && spotType === "canal" && conditions.includes('soleil') && structure.includes('bois'))
-      list.push('Worm marron — Dandine dans les branches et les herbiers ');        
+      list.push('Worm marron — Dandine dans les branches et les herbiers ');
     if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
       list.push('Écrevisses en punching — Dans les herbiers');
   }
@@ -162,11 +167,11 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Lame vibrante ou cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
   }
 
-    if (species.includes('sandre')) {
+  if (species.includes('sandre')) {
     if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
-      list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses '); 
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages') && structure.includes('pont'))
-      list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');     
+      list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
+    if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages') && structure.includes('pont'))
+      list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
   }
 
   // --- Conseils généraux ---
@@ -210,20 +215,9 @@ app.post('/api/learn', (req, res) => {
     if (!session.species || !session.spotType || session.resultFish === undefined) {
       return res.status(400).json({ error: 'Champs requis manquants : species, spotType, resultFish' });
     }
-
-    // 1. Sauvegarde la session
     const saved = learn.saveSession(session);
-
-    // 2. Analyse et met à jour les patterns (apprentissage !)
     const newPatterns = learn.analyzeAndUpdatePatterns(2);
-
-    // 3. Réponse
-    return res.json({ 
-      success: true, 
-      saved, 
-      newPatterns 
-    });
-
+    return res.json({ success: true, saved, newPatterns });
   } catch (e) {
     console.error('/api/learn error', e);
     return res.status(500).json({ error: 'Erreur serveur' });
@@ -255,7 +249,6 @@ app.get('/api/spots', (req, res) => {
 });
 
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
