@@ -107,6 +107,52 @@ ${JSON.stringify(data, null, 2)}
     document.getElementById('stats').innerHTML = '<p>Erreur de chargement</p>';
   }
 }
+  <div style="margin: 20px 0; text-align: center;">
+  <button id="statsBtn" onclick="showStats()" 
+    style="padding: 12px 24px; font-size: 16px; background: #00d4aa; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+    Voir mes stats d'IA
+  </button>
+  <div id="stats" style="margin-top: 15px; text-align: left; font-family: monospace;"></div>
+</div>
+
+<script>
+async function showStats() {
+  const btn = document.getElementById('statsBtn');
+  btn.disabled = true;
+  btn.innerHTML = "Chargement...";
+
+  try {
+    const res = await fetch('/api/learnedPatterns');
+    const data = await res.json();
+
+    let total = 0;
+    for (const species in data) {
+      for (const saison in data[species]) {
+        for (const cond in data[species][saison]) {
+          for (const spot in data[species][saison][cond]) {
+            total += data[species][saison][cond][spot].length;
+          }
+        }
+      }
+    }
+
+    document.getElementById('stats').innerHTML = `
+      <div style="background: #f0fff9; padding: 15px; border-radius: 10px; border: 2px solid #00d4aa;">
+        <h3 style="margin:0; color:#00a085;">IA FisherForce en action !</h3>
+        <p style="margin:5px 0;"><strong>Patterns appris :</strong> <span style="color:#00d4aa; font-size:1.2em;">${total}</span></p>
+        <pre style="background:#fff; padding:10px; border:1px solid #ddd; border-radius:5px; max-height:300px; overflow:auto; font-size:12px;">
+${JSON.stringify(data, null, 2)}
+        </pre>
+      </div>
+    `;
+  } catch (e) {
+    document.getElementById('stats').innerHTML = '<p style="color:red;">Erreur de connexion</p>';
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = "Voir mes stats d'IA";
+}
+</script>
 </script>    
       <h2>Conseils de l'IA</h2>
       <div id="advice">
