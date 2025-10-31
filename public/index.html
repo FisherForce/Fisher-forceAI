@@ -5,45 +5,57 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Fisher-Force AI —</title>
   <link rel="stylesheet" href="styles.css">
+  <style>
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .badge-ia {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      background: #00d4aa;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 13px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+      z-index: 9999;
+      animation: pulse 2s infinite;
+    }
+  </style>
 </head>
 <body>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const audio = new Audio('sounds/Part1per 2025-10-22_10-54-30.mp3');
-    audio.volume = 0.6; // volume modéré
 
-    // Essaye de jouer le son au chargement
-    const playSound = () => {
-      audio.play().catch(() => {
-        console.log("Lecture bloquée, attend une interaction...");
-      });
-    };
+  <!-- === BADGE ANIMÉ : IA APPRENANTE === -->
+  <div class="badge-ia">IA Apprenante</div>
 
-    playSound();
-
-    // Si le navigateur bloque, relancer à la première interaction
-    document.addEventListener('click', () => {
-      if (audio.paused) {
-        audio.play();
-      }
-    }, { once: true });
-  });
-</script>
+  <!-- === SON AU CHARGEMENT === -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const audio = new Audio('sounds/Part1per 2025-10-22_10-54-30.mp3');
+      audio.volume = 0.6;
+      const playSound = () => audio.play().catch(() => {});
+      playSound();
+      document.addEventListener('click', () => { if (audio.paused) audio.play(); }, { once: true });
+    });
+  </script>
 
   <header class="site-header">
     <div class="container">
-      <h1>Fisher-Force AI </h1>
-      <p class="tagline">La 1ère IA de pêche 100% Francaise </p>
+      <h1>Fisher-Force AI</h1>
+      <p class="tagline">La 1ère IA de pêche 100% Française</p>
     </div>
   </header>
 
   <main class="container main-grid">
+
+    <!-- === FORMULAIRE === -->
     <section class="card input-card">
       <h2>Décris ton spot</h2>
-      <label>Nom du spot
-        <input id="spotName" placeholder="Ex: Étang du Moulin"></input>
-      </label>
-
+      <label>Nom du spot <input id="spotName" placeholder="Ex: Étang du Moulin"></label>
       <label>Type d'eau
         <select id="waterType">
           <option>Étang</option>
@@ -52,11 +64,7 @@
           <option>Canal</option>
         </select>
       </label>
-
-      <label>Fond / Structure
-        <input id="structure" placeholder="Ex: herbiers, rochers, faible profondeur"></input>
-      </label>
-
+      <label>Fond / Structure <input id="structure" placeholder="Ex: herbiers, rochers"></label>
       <label>Fréquentation
         <select id="pressure">
           <option value="low">Faible</option>
@@ -64,18 +72,9 @@
           <option value="high">Élevée</option>
         </select>
       </label>
-
-      <label>Espèce ciblée
-        <input id="targetSpecies" placeholder="Ex: brochet, perche, carpe"></input>
-      </label>
-
-      <label>Heure / Date prévue
-        <input id="dateTime" type="datetime-local"></input>
-      </label>
-
-      <label>Conditions (brève)
-        <input id="conditions" placeholder="Ex: clair, pluie légère, vent NE"></input>
-      </label>
+      <label>Espèce ciblée <input id="targetSpecies" placeholder="Ex: brochet, perche"></label>
+      <label>Heure / Date prévue <input id="dateTime" type="datetime-local"></label>
+      <label>Conditions (brève) <input id="conditions" placeholder="Ex: clair, pluie, vent NE"></label>
 
       <div class="row">
         <button id="getAdvice">Obtenir des conseils</button>
@@ -84,135 +83,60 @@
       <p class="muted">Admin: <a href="/admin">Gérer sponsors</a></p>
     </section>
 
+    <!-- === CONSEILS + RÉSULTAT + STATS === -->
     <section class="card output-card">
-
-  <button onclick="showStats()" style="margin: 10px; padding: 10px;">Voir mes stats d'IA</button>
-<div id="stats"></div>
-
-<script>
-async function showStats() {
-  try {
-    const res = await fetch('/api/learnedPatterns');
-    const data = await res.json();
-    const count = Object.keys(data).reduce((acc, species) => 
-      acc + Object.keys(data[species] || {}).length, 0);
-    document.getElementById('stats').innerHTML = `
-      <h3>IA en action !</h3>
-      <p><strong>Patterns appris :</strong> ${count}</p>
-      <pre style="background:#f4f4f4; padding:10px; max-height:300px; overflow:auto;">
-${JSON.stringify(data, null, 2)}
-      </pre>
-    `;
-  } catch (e) {
-    document.getElementById('stats').innerHTML = '<p>Erreur de chargement</p>';
-  }
-}
-  <div style="margin: 20px 0; text-align: center;">
-  <button id="statsBtn" onclick="showStats()" 
-    style="padding: 12px 24px; font-size: 16px; background: #00d4aa; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-    Voir mes stats d'IA
-  </button>
-  <div id="stats" style="margin-top: 15px; text-align: left; font-family: monospace;"></div>
-</div>
-
-<script>
-async function showStats() {
-  const btn = document.getElementById('statsBtn');
-  btn.disabled = true;
-  btn.innerHTML = "Chargement...";
-
-  try {
-    const res = await fetch('/api/learnedPatterns');
-    const data = await res.json();
-
-    let total = 0;
-    for (const species in data) {
-      for (const saison in data[species]) {
-        for (const cond in data[species][saison]) {
-          for (const spot in data[species][saison][cond]) {
-            total += data[species][saison][cond][spot].length;
-          }
-        }
-      }
-    }
-
-    document.getElementById('stats').innerHTML = `
-      <div style="background: #f0fff9; padding: 15px; border-radius: 10px; border: 2px solid #00d4aa;">
-        <h3 style="margin:0; color:#00a085;">IA FisherForce en action !</h3>
-        <p style="margin:5px 0;"><strong>Patterns appris :</strong> <span style="color:#00d4aa; font-size:1.2em;">${total}</span></p>
-        <pre style="background:#fff; padding:10px; border:1px solid #ddd; border-radius:5px; max-height:300px; overflow:auto; font-size:12px;">
-${JSON.stringify(data, null, 2)}
-        </pre>
-      </div>
-    `;
-  } catch (e) {
-    document.getElementById('stats').innerHTML = '<p style="color:red;">Erreur de connexion</p>';
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = "Voir mes stats d'IA";
-}
-</script>
-</script>    
       <h2>Conseils de l'IA</h2>
       <div id="advice">
-        <p class="muted">Aucun conseil demandé pour le moment — remplis le formulaire puis clique sur "Obtenir des conseils".</p>
+        <p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>
       </div>
 
-      <a href="resultat.html">
-        <button>Enregistrer un résultat</button>
-      </a>
-<div id="resultat-section">
-  <h3>📝 Résultat de ta session</h3>
+      <!-- === BOUTON STATS (1 SEUL, PROPRE) === -->
+      <div style="margin: 20px 0; text-align: center;">
+        <button id="statsBtn" onclick="showStats()"
+          style="padding: 12px 24px; font-size: 16px; background: #00d4aa; color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.2); transition: 0.2s;">
+          Voir mes stats d'IA
+        </button>
+        <div id="stats" style="margin-top: 15px; text-align: left; font-family: monospace;"></div>
+      </div>
 
-  <label>Espèce attrapée :</label>
-  <input type="text" id="species" placeholder="ex: perche, brochet..." />
+      <!-- === ENREGISTRER RÉSULTAT === -->
+      <a href="resultat.html"><button>Enregistrer un résultat</button></a>
 
-  <label>Leurre utilisé :</label>
-  <input type="text" id="lure" placeholder="ex: leurre souple, crankbait..." />
-
-  <label>Spot :</label>
-  <input type="text" id="spotType" placeholder="ex: étang, rivière..." />
-
-  <label>Conditions météo (séparées par des virgules) :</label>
-  <input type="text" id="conditions" placeholder="ex: soleil, vent..." />
-
-  <label>Température :</label>
-  <input type="number" id="temperature" placeholder="en °C" />
-
-  <p>Résultat :</p>
-  <label><input type="radio" name="result" value="succès" /> Poisson pris</label>
-  <label><input type="radio" name="result" value="bredouille" /> Bredouille</label>
-
-  <br /><br />
-  <button onclick="envoyerResultat()">📤 Envoyer mes données</button>
-</div>
-
-
+      <div id="resultat-section">
+        <h3>📝 Résultat de ta session</h3>
+        <label>Espèce attrapée : <input type="text" id="species" placeholder="ex: perche" /></label>
+        <label>Leurre utilisé : <input type="text" id="lure" placeholder="ex: leurre souple" /></label>
+        <label>Spot : <input type="text" id="spotType" placeholder="ex: rivière" /></label>
+        <label>Conditions météo : <input type="text" id="conditions" placeholder="ex: soleil, vent" /></label>
+        <label>Température : <input type="number" id="temperature" placeholder="en °C" /></label>
+        <p>Résultat :</p>
+        <label><input type="radio" name="result" value="succès" /> Poisson pris</label>
+        <label><input type="radio" name="result" value="bredouille" /> Bredouille</label>
+        <br /><br />
+        <button onclick="envoyerResultat()">📤 Envoyer mes données</button>
+      </div>
 
       <details class="settings">
         <summary>Paramètres avancés</summary>
         <label>
-          Autoriser références sponsorisées
-          <input type="checkbox" id="allowSponsors">
+          <input type="checkbox" id="allowSponsors"> Autoriser références sponsorisées
         </label>
-        <p class="muted">Si tu as une clé OpenAI dans le backend, les conseils seront enrichis par l'IA.</p>
+        <p class="muted">Si tu as une clé OpenAI, les conseils seront enrichis.</p>
       </details>
     </section>
   </main>
 
+  <!-- === FOOTER === -->
   <footer class="site-footer">
     <div class="container">
-      <small> 2025 Fisher-ForceAI . Tout droits réservés .</small>
-
-      <!-- Barre réseaux sociaux -->
+      <small>2025 Fisher-ForceAI. Tous droits réservés.</small>
       <div style="margin-top:15px; text-align:center;">
         <p>Suivez-moi sur mes réseaux :</p>
         <div style="display:flex; justify-content:center; gap:15px; font-size:24px;">
-          <a href="https://www.instagram.com/fisherforce/" target="_blank" title="Instagram">
+          <a href="https://www.instagram.com/fisherforce/" target="_blank">
             <img src="icons/insta.jpg" alt="Instagram" style="width:32px;height:32px;">
           </a>
-          <a href="https://www.youtube.com/channel/UC_gRRbnmfVhiBVgLzQ7xLAw" target="_blank" title="YouTube">
+          <a href="https://www.youtube.com/channel/UC_gRRbnmfVhiBVgLzQ7xLAw" target="_blank">
             <img src="icons/yt.png" alt="YouTube" style="width:32px;height:32px;">
           </a>
         </div>
@@ -220,8 +144,83 @@ ${JSON.stringify(data, null, 2)}
     </div>
   </footer>
 
+  <!-- === SCRIPTS === -->
   <script src="app.js"></script>
   <script src="script.js"></script>
 
+  <!-- === FONCTION STATS === -->
+  <script>
+    async function showStats() {
+      const btn = document.getElementById('statsBtn');
+      btn.disabled = true;
+      btn.innerHTML = "Chargement...";
+
+      try {
+        const res = await fetch('/api/learnedPatterns');
+        const data = await res.json();
+
+        let total = 0;
+        for (const species in data) {
+          for (const saison in data[species]) {
+            for (const cond in data[species][saison]) {
+              for (const spot in data[species][saison][cond]) {
+                total += data[species][saison][cond][spot].length;
+              }
+            }
+          }
+        }
+
+        document.getElementById('stats').innerHTML = `
+          <div style="background:#f0fff9; padding:15px; border-radius:10px; border:2px solid #00d4aa;">
+            <h3 style="margin:0; color:#00a085;">IA FisherForce en action !</h3>
+            <p style="margin:5px 0;"><strong>Patterns appris :</strong> 
+              <span style="color:#00d4aa; font-size:1.2em;">${total}</span>
+            </p>
+            <pre style="background:#fff; padding:10px; border:1px solid #ddd; border-radius:5px; max-height:300px; overflow:auto; font-size:12px;">
+${JSON.stringify(data, null, 2)}
+            </pre>
+          </div>
+        `;
+      } catch (e) {
+        document.getElementById('stats').innerHTML = '<p style="color:red;">Erreur de connexion</p>';
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = "Voir mes stats d'IA";
+    }
+
+    // === FONCTION ENVOYER RÉSULTAT (manquante avant) ===
+    async function envoyerResultat() {
+      const species = document.getElementById('species').value.trim();
+      const lureUsed = document.getElementById('lure').value.trim();
+      const spotType = document.getElementById('spotType').value.trim();
+      const conditions = document.getElementById('conditions').value.trim();
+      const resultFish = document.querySelector('input[name="result"]:checked')?.value === 'succès';
+
+      if (!species || !spotType || resultFish === undefined) {
+        alert("Remplis tous les champs !");
+        return;
+      }
+
+      const session = { species, spotType, conditions, lureUsed, resultFish };
+
+      try {
+        const res = await fetch('/api/learn', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(session)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert("Session enregistrée ! L'IA apprend...");
+          document.getElementById('resultat-section').reset();
+        } else {
+          alert("Erreur : " + (data.error || "inconnue"));
+        }
+      } catch (e) {
+        alert("Erreur de connexion");
+      }
+    }
+  </script>
 </body>
 </html>
