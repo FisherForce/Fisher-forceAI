@@ -1,78 +1,87 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Résultat de pêche</title>
-<style>
-  body { font-family: Arial, sans-serif; background: #f0f8ff; padding: 20px; }
-  h1 { color: #2c3e50; }
-  .container { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-  label { display: block; margin-top: 10px; }
-  input, select, textarea { width: 100%; padding: 8px; margin-top: 4px; border-radius: 6px; border: 1px solid #ccc; }
-  button { margin-top: 15px; padding: 10px 20px; border: none; background: #3498db; color: white; border-radius: 6px; cursor: pointer; }
-  button:hover { background: #2980b9; }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Résultat de session — Fisher-Force AI</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    h1 { color: #00a085; text-align: center; }
+    input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; }
+    button { background: #00d4aa; color: white; border: none; font-weight: bold; cursor: pointer; }
+    .back { text-align: center; margin-top: 20px; }
+    .back a { color: #00d4aa; text-decoration: none; }
+  </style>
 </head>
 <body>
 
-<div class="container">
-  <h1>Résultat de pêche</h1>
-  
-  <label for="spot">Spot de pêche :</label>
-  <input type="text" id="spot" placeholder="Nom du spot">
+  <div class="container">
+    <h1>Enregistre ton résultat</h1>
+    <p><strong>Dernier conseil :</strong> <span id="lastAdvice">Chargement...</span></p>
 
-  <label for="species">Espèce pêchée :</label>
-  <select id="species">
-    <option value="">--Aucune--</option>
-    <option value="perche">Perche</option>
-    <option value="brochet">Brochet</option>
-    <option value="sandre">Sandre</option>
-    <option value="bass">Bass</option>
-    <option value="chevesne">Chevesne</option>
-    <option value="bredouille">Bredouille</option>
-  </select>
+    <label><strong>Leurre utilisé :</strong></label>
+    <input type="text" id="lureUsed" placeholder="ex: leurre souple 5cm">
 
-  <label for="lure">Leurre utilisé :</label>
-  <input type="text" id="lure" placeholder="Nom du leurre">
+    <label><strong>Résultat :</strong></label>
+    <label><input type="checkbox" id="resultFish"> Oui, j'ai pris du poisson !</label>
 
-  <label for="conditions">Conditions :</label>
-  <textarea id="conditions" placeholder="Ex: soleil, nuages, vent"></textarea>
+    <button onclick="saveResult()">Enregistrer → L'IA apprend</button>
+    <p id="msg" style="text-align:center; font-weight:bold; margin-top:15px;"></p>
 
-  <button onclick="sendResult()">Envoyer le résultat</button>
+    <div class="back">
+      <a href="index.html">← Retour aux conseils</a>
+    </div>
+  </div>
 
-  <p id="status" style="margin-top:10px;"></p>
-</div>
+  <script>
+    // Afficher le dernier conseil
+    const last = JSON.parse(sessionStorage.getItem('lastAdvice') || '{}');
+    document.getElementById('lastAdvice').innerText = 
+      `${last.species || "?"} • ${last.spotType || "?"} • ${last.conditions || "?"}`;
 
-<script>
-  async function sendResult() {
-    const spot = document.getElementById('spot').value.trim();
-    const species = document.getElementById('species').value;
-    const lure = document.getElementById('lure').value.trim();
-    const conditions = document.getElementById('conditions').value.trim();
+    async function saveResult() {
+      const lureUsed = document.getElementById('lureUsed').value.trim();
+      const resultFish = document.getElementById('resultFish').checked;
 
-    if(!spot || !species) {
-      document.getElementById('status').textContent = "Veuillez remplir au minimum le spot et l'espèce.";
-      return;
+      if (!lureUsed) {
+        alert("Entre le leurre utilisé !");
+        return;
+      }
+
+      const session = {
+        species: last.species || "inconnu",
+        spotType: last.spotType || "inconnu",
+        conditions: last.conditions || "inconnu",
+        structure: last.structure || "",
+        lureUsed,
+        resultFish
+      };
+
+      try {
+        const res = await fetch('/api/learn', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(session)
+        });
+        const data = await res.json();
+
+        document.getElementById('msg').innerHTML = 
+          data.success 
+            ? "Session enregistrée ! L'IA apprend... Merci !" 
+            : "Erreur";
+
+        if (data.success) {
+          document.getElementById('lureUsed').value = "";
+          document.getElementById('resultFish').checked = false;
+        }
+
+      } catch (e) {
+        document.getElementById('msg').innerHTML = "Erreur de connexion";
+      }
     }
-
-    const payload = { spot, species, lure, conditions };
-
-    try {
-      const response = await fetch('/api/learn', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await response.json();
-      document.getElementById('status').textContent = data.message || "Résultat envoyé !";
-    } catch(err) {
-      console.error(err);
-      document.getElementById('status').textContent = "Erreur lors de l'envoi.";
-    }
-  }
-</script>
+  </script>
 
 </body>
 </html>
