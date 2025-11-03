@@ -37,14 +37,18 @@ function loadSpots() {
   return loadFile(spotsFile);
 }
 
-// === Sauvegarde d'une session ===
+// === SAUVEGARDE D'UNE SESSION (MODIFIÉE POUR LE PSEUDO) ===
 function saveSession(session) {
   const sessions = loadSessions();
-  session.date = new Date().toISOString();
-  sessions.push(session);
+  const newSession = {
+    ...session,
+    date: new Date().toISOString(),
+    anglerName: session.anglerName?.trim() || "Anonyme"  // ← PSEUDO AJOUTÉ
+  };
+  sessions.push(newSession);
   saveFile(sessionsFile, sessions);
-  console.log(`Nouvelle session : ${session.species} → ${session.lureUsed || 'inconnu'} sur ${session.spotType}`);
-  return session;
+  console.log(`Nouvelle session : ${newSession.species} → ${newSession.lureUsed || 'inconnu'} sur ${newSession.spotType} (par ${newSession.anglerName})`);
+  return newSession;
 }
 
 // === Obtenir la saison à partir d'une date ISO ===
@@ -66,7 +70,7 @@ function analyzeAndUpdatePatterns(minSuccess = 2) {
   // Compter les succès par combinaison
   sessions.forEach(s => {
     if (!s.resultFish) return; // Ignorer les bredouilles
-    if (!s.lureUsed) return;  // Ignorer les leurres manquants
+    if (!s.lureUsed) return; // Ignorer les leurres manquants
 
     const species = (s.species || '').toLowerCase();
     const saison = getSaison(s.date);
