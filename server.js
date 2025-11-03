@@ -177,7 +177,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   // --- Conseils généraux ---
   if (list.length === 0) {
     const defaults = [
-      'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère N°2. Enregistre ta session pour faire progresser l\'IA !',
+      'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère Saigon N°2. Enregistre ta session pour faire progresser l\'IA !',
       'Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer ! Dis-moi ensuite si tu as eu un poisson pour faire progresser l\'IA !',
       'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l\'attend pas. Enregistre ta session pour faire progresser l\'IA !'
     ];
@@ -244,6 +244,30 @@ app.get('/api/spots', (req, res) => {
   try {
     res.json(learn.loadSpots());
   } catch (e) {
+    res.status(500).json([]);
+  }
+});
+
+// === CLASSEMENT DES PÊCHEURS (NOUVEAU) ===
+app.get('/api/leaderboard', (req, res) => {
+  try {
+    const sessions = learn.loadSessions();
+    const leaderboard = {};
+
+    sessions.forEach(s => {
+      if (s.resultFish && s.anglerName && s.anglerName !== "Anonyme") {
+        leaderboard[s.anglerName] = (leaderboard[s.anglerName] || 0) + 1;
+      }
+    });
+
+    const ranked = Object.entries(leaderboard)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    res.json(ranked);
+  } catch (e) {
+    console.error("Erreur leaderboard:", e);
     res.status(500).json([]);
   }
 });
