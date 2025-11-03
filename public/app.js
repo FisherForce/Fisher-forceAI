@@ -1,20 +1,22 @@
 const el = id => document.getElementById(id);
 
+// === LECTURE SÉCURISÉE DU FORMULAIRE ===
 function readForm() {
   return {
-    spotName: el('spotName').value,
-    waterType: el('waterType').value,
-    structure: el('structure').value,
-    pressure: el('pressure').value,
-    targetSpecies: el('targetSpecies').value,
-    dateTime: el('dateTime').value,
-    conditions: el('conditions').value,
-    temperature: parseFloat(el('temperature').value) || null,
-    fishingTime: el('fishingTime').value,
-    allowSponsors: el('allowSponsors').checked
+    spotName: el('spotName')?.value || "",
+    waterType: el('waterType')?.value || "Étang",
+    structure: el('structure')?.value || "",
+    pressure: el('pressure')?.value || "medium",
+    targetSpecies: el('targetSpecies')?.value || "",
+    dateTime: el('dateTime')?.value || "",
+    conditions: el('conditions')?.value || "",
+    temperature: parseFloat(el('temperature')?.value) || null,
+    fishingTime: el('fishingTime')?.value || "08:00",
+    allowSponsors: el('allowSponsors')?.checked || false
   };
 }
 
+// === AFFICHAGE DES CONSEILS ===
 function renderAdvice(data) {
   const container = el('advice');
   container.innerHTML = '';
@@ -52,6 +54,7 @@ function renderAdvice(data) {
   }
 }
 
+// === APPEL API ===
 async function fetchAdvice(input) {
   try {
     const API_BASE = window.location.origin;
@@ -71,13 +74,13 @@ async function fetchAdvice(input) {
 }
 
 // === BOUTON CONSEILS ===
-el('getAdvice').addEventListener('click', async () => {
+el('getAdvice')?.addEventListener('click', async () => {
   const input = readForm();
   const formattedInput = {
-    species: input.targetSpecies || "",
-    structure: input.structure || "",
-    conditions: input.conditions || "",
-    spotType: input.waterType || "",
+    species: input.targetSpecies,
+    structure: input.structure,
+    conditions: input.conditions,
+    spotType: input.waterType,
     temperature: input.temperature
   };
 
@@ -94,11 +97,14 @@ el('getAdvice').addEventListener('click', async () => {
 });
 
 // === RÉINITIALISER ===
-el('clearBtn').addEventListener('click', () => {
-  ['spotName', 'structure', 'targetSpecies', 'dateTime', 'conditions', 'temperature'].forEach(id => el(id).value = '');
-  el('pressure').value = 'medium';
-  el('waterType').value = 'Étang';
-  el('fishingTime').value = '08:00';
+el('clearBtn')?.addEventListener('click', () => {
+  ['spotName', 'structure', 'targetSpecies', 'dateTime', 'conditions', 'temperature'].forEach(id => {
+    const elem = el(id);
+    if (elem) elem.value = '';
+  });
+  el('pressure') && (el('pressure').value = 'medium');
+  el('waterType') && (el('waterType').value = 'Étang');
+  el('fishingTime') && (el('fishingTime').value = '08:00');
   el('advice').innerHTML = '<p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>';
 });
 
@@ -113,32 +119,35 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const voiceBtn = el('voiceBtn');
   const micIcon = el('micIcon');
 
-  voiceBtn.addEventListener('click', () => {
-    micIcon.textContent = 'Microphone On';
-    micIcon.style.animation = 'pulse 1.5s infinite';
-    recognition.start();
-  });
+  if (voiceBtn && micIcon) {
+    voiceBtn.addEventListener('click', () => {
+      micIcon.textContent = 'Microphone On';
+      micIcon.style.animation = 'pulse 1.5s infinite';
+      recognition.start();
+    });
 
-  recognition.onresult = (event) => {
-    const transcript = event.results[0][0].transcript.toLowerCase().trim();
-    micIcon.textContent = 'Microphone';
-    micIcon.style.animation = '';
-    console.log('Voix détectée :', transcript);
-    parseVoiceCommand(transcript);
-  };
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.toLowerCase().trim();
+      micIcon.textContent = 'Microphone';
+      micIcon.style.animation = '';
+      console.log('Voix détectée :', transcript);
+      parseVoiceCommand(transcript);
+    };
 
-  recognition.onerror = () => {
-    micIcon.textContent = 'Microphone';
-    micIcon.style.animation = '';
-    alert('Erreur micro. Vérifie les permissions.');
-  };
+    recognition.onerror = () => {
+      micIcon.textContent = 'Microphone';
+      micIcon.style.animation = '';
+      alert('Erreur micro. Vérifie les permissions.');
+    };
 
-  recognition.onend = () => {
-    micIcon.textContent = 'Microphone';
-    micIcon.style.animation = '';
-  };
+    recognition.onend = () => {
+      micIcon.textContent = 'Microphone';
+      micIcon.style.animation = '';
+    };
+  }
 } else {
-  el('voiceBtn').style.display = 'none';
+  const voiceBtn = el('voiceBtn');
+  if (voiceBtn) voiceBtn.style.display = 'none';
 }
 
 // === ANALYSE COMMANDE VOCALE ===
@@ -146,9 +155,10 @@ function parseVoiceCommand(text) {
   text = text.replace(/[^a-z0-9° ]/g, ' ').replace(/\s+/g, ' ');
 
   const speciesMap = { 'perche': 'perche', 'brochet': 'brochet', 'sandre': 'sandre', 'carpe': 'carpe', 'truite': 'truite', 'black bass': 'bass', 'bass': 'bass' };
-  for (const [key, value] of Object.entries(speciesMap)) {
+  for (const [key, value] of Object.entries(socialMap)) {
     if (text.includes(key)) {
-      el('targetSpecies').value = value;
+      const elem = el('targetSpecies');
+      if (elem) elem.value = value;
       break;
     }
   }
@@ -156,7 +166,8 @@ function parseVoiceCommand(text) {
   const spotMap = { 'rivière': 'Rivière', 'étang': 'Étang', 'lac': 'Lac', 'canal': 'Canal' };
   for (const [key, value] of Object.entries(spotMap)) {
     if (text.includes(key)) {
-      el('waterType').value = value;
+      const elem = el('waterType');
+      if (elem) elem.value = value;
       break;
     }
   }
@@ -164,36 +175,44 @@ function parseVoiceCommand(text) {
   const condMap = { 'nuages': 'nuages', 'soleil': 'soleil', 'pluie': 'pluie', 'vent': 'vent', 'clair': 'clair', 'brouillard': 'brouillard' };
   for (const [key, value] of Object.entries(condMap)) {
     if (text.includes(key)) {
-      el('conditions').value = value;
+      const elem = el('conditions');
+      if (elem) elem.value = value;
       break;
     }
   }
 
   const tempMatch = text.match(/(\d+) ?°?c?/);
-  if (tempMatch) el('temperature').value = tempMatch[1];
+  if (tempMatch) {
+    const elem = el('temperature');
+    if (elem) elem.value = tempMatch[1];
+  }
 
   const timeMatch = text.match(/(\d+) ?h(heure)?s?/);
   if (timeMatch) {
     const h = timeMatch[1].padStart(2, '0');
-    el('fishingTime').value = `${h}:00`;
+    const elem = el('fishingTime');
+    if (elem) elem.value = `${h}:00`;
   }
 
   const structureWords = ['herbier', 'rocher', 'bois', 'nénuphar', 'branchage', 'pont', 'arbre'];
   for (const word of structureWords) {
     if (text.includes(word)) {
-      el('structure').value = word + 's';
+      const elem = el('structure');
+      if (elem) elem.value = word + 's';
       break;
     }
   }
 
-  if (el('targetSpecies').value || el('conditions').value) {
-    el('getAdvice').click();
+  const speciesElem = el('targetSpecies');
+  const condElem = el('conditions');
+  if ((speciesElem && speciesElem.value) || (condElem && condElem.value)) {
+    el('getAdvice')?.click();
   } else {
     alert('Dis-moi au moins l’espèce et les conditions ! Ex: "Perche, rivière, nuages"');
   }
 }
 
-// Animation micro
+// === ANIMATION MICRO ===
 const style = document.createElement('style');
 style.textContent = `
 @keyframes pulse {
@@ -204,4 +223,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 // === INIT ===
-el('advice').innerHTML = '<p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>';
+const adviceElem = el('advice');
+if (adviceElem) {
+  adviceElem.innerHTML = '<p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>';
+}
