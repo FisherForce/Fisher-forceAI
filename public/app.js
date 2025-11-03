@@ -19,12 +19,13 @@ function readForm() {
 // === AFFICHAGE DES CONSEILS ===
 function renderAdvice(data) {
   const container = el('advice');
+  if (!container) return;
   container.innerHTML = '';
 
   if (data.adviceText) {
-    const p = document.createElement('div');
-    p.innerHTML = `<h3>Résumé (IA)</h3><div class="advice-text">${data.adviceText}</div>`;
-    container.appendChild(p);
+    const div = document.createElement('div');
+    div.innerHTML = `<h3>Résumé (IA)</h3><div class="advice-text">${data.adviceText}</div>`;
+    container.appendChild(div);
   }
 
   if (data.lures && data.lures.length > 0) {
@@ -52,6 +53,13 @@ function renderAdvice(data) {
   if (!data.lures?.length && !data.depthAdvice?.length && !data.adviceText) {
     container.innerHTML = '<p class="muted">Aucun conseil spécifique trouvé. Varie les techniques !</p>';
   }
+
+  // Affiche les contrôles vocaux
+  const voiceControls = el('voiceControls');
+  if (voiceControls) voiceControls.style.display = 'block';
+
+  // Auto-lire les conseils
+  setTimeout(() => speakAdvice(container.innerHTML), 800);
 }
 
 // === APPEL API ===
@@ -74,39 +82,56 @@ async function fetchAdvice(input) {
 }
 
 // === BOUTON CONSEILS ===
-el('getAdvice')?.addEventListener('click', async () => {
-  const input = readForm();
-  const formattedInput = {
-    species: input.targetSpecies,
-    structure: input.structure,
-    conditions: input.conditions,
-    spotType: input.waterType,
-    temperature: input.temperature
-  };
+const getAdviceBtn = el('getAdvice');
+if (getAdviceBtn) {
+  getAdviceBtn.addEventListener('click', async () => {
+    const input = readForm();
+    const formattedInput = {
+      species: input.targetSpecies,
+      structure: input.structure,
+      conditions: input.conditions,
+      spotType: input.waterType,
+      temperature: input.temperature
+    };
 
-  el('advice').innerHTML = '<p class="muted">Génération des conseils…</p>';
+    const adviceEl = el('advice');
+    if (adviceEl) adviceEl.innerHTML = '<p class="muted">Génération des conseils…</p>';
 
-  const result = await fetchAdvice(formattedInput);
-  if (!result || result.error) {
-    el('advice').innerHTML = `<p class="muted">Erreur: ${result?.error || "Impossible d'obtenir les conseils."}</p>`;
-    return;
-  }
+    const result = await fetchAdvice(formattedInput);
+    if (!result || result.error) {
+      if (adviceEl) {
+        adviceEl.innerHTML = `<p class="muted">Erreur: ${result?.error || "Impossible d'obtenir les conseils."}</p>`;
+      }
+      return;
+    }
 
-  renderAdvice(result);
-  saveLastAdvice(formattedInput.species, formattedInput.spotType, formattedInput.conditions, formattedInput.structure);
-});
+    renderAdvice(result);
+    saveLastAdvice(formattedInput.species, formattedInput.spotType, formattedInput.conditions, formattedInput.structure);
+  });
+}
 
 // === RÉINITIALISER ===
-el('clearBtn')?.addEventListener('click', () => {
-  ['spotName', 'structure', 'targetSpecies', 'dateTime', 'conditions', 'temperature'].forEach(id => {
-    const elem = el(id);
-    if (elem) elem.value = '';
+const clearBtn = el('clearBtn');
+if (clearBtn) {
+  clearBtn.addEventListener('click', () => {
+    ['spotName', 'structure', 'targetSpecies', 'dateTime', 'conditions', 'temperature'].forEach(id => {
+      const elem = el(id);
+      if (elem) elem.value = '';
+    });
+    const pressureEl = el('pressure');
+    if (pressureEl) pressureEl.value = 'medium';
+    const waterTypeEl = el('waterType');
+    if (waterTypeEl) waterTypeEl.value = 'Étang';
+    const fishingTimeEl = el('fishingTime');
+    if (fishingTimeEl) fishingTimeEl.value = '08:00';
+    const adviceEl = el('advice');
+    if (adviceEl) {
+      adviceEl.innerHTML = '<p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>';
+    }
+    const voiceControls = el('voiceControls');
+    if (voiceControls) voiceControls.style.display = 'none';
   });
-  el('pressure') && (el('pressure').value = 'medium');
-  el('waterType') && (el('waterType').value = 'Étang');
-  el('fishingTime') && (el('fishingTime').value = '08:00');
-  el('advice').innerHTML = '<p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>';
-});
+}
 
 // === COMMANDE VOCALE ===
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -155,7 +180,7 @@ function parseVoiceCommand(text) {
   text = text.replace(/[^a-z0-9° ]/g, ' ').replace(/\s+/g, ' ');
 
   const speciesMap = { 'perche': 'perche', 'brochet': 'brochet', 'sandre': 'sandre', 'carpe': 'carpe', 'truite': 'truite', 'black bass': 'bass', 'bass': 'bass' };
-  for (const [key, value] of Object.entries(socialMap)) {
+  for (const [key, value] of Object.entries(speciesMap)) {
     if (text.includes(key)) {
       const elem = el('targetSpecies');
       if (elem) elem.value = value;
@@ -203,14 +228,84 @@ function parseVoiceCommand(text) {
     }
   }
 
-  const speciesElem = el('targetSpecies');
-  const condElem = el('conditions');
-  if ((speciesElem && speciesElem.value) || (condElem && condElem.value)) {
-    el('getAdvice')?.click();
+  const speciesEl = el('targetSpecies');
+  const condEl = el('conditions');
+  if ((speciesEl && speciesEl.value) || (condEl && condEl.value)) {
+    const getAdviceBtn = el('getAdvice');
+    if (getAdviceBtn) getAdviceBtn.click();
   } else {
     alert('Dis-moi au moins l’espèce et les conditions ! Ex: "Perche, rivière, nuages"');
   }
 }
+
+// === SYNTHÈSE VOCALE ===
+let currentUtterance = null;
+
+function speakAdvice(html) {
+  if (speechSynthesis.speaking || speechSynthesis.pending) {
+    speechSynthesis.cancel();
+  }
+
+  const cleanText = html
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!cleanText) return;
+
+  const utterance = new SpeechSynthesisUtterance(cleanText);
+  utterance.lang = 'fr-FR';
+  utterance.rate = 0.9;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+
+  const voices = speechSynthesis.getVoices();
+  const frenchVoice = voices.find(v => v.lang === 'fr-FR' || v.lang.startsWith('fr')) || voices[0];
+  if (frenchVoice) utterance.voice = frenchVoice;
+
+  utterance.onstart = () => {
+    const speakBtn = el('speakBtn');
+    if (speakBtn) speakBtn.textContent = 'En cours...';
+  };
+
+  utterance.onend = () => {
+    const speakBtn = el('speakBtn');
+    if (speakBtn) speakBtn.textContent = 'Lire les conseils';
+  };
+
+  utterance.onerror = () => {
+    alert('Erreur de lecture vocale.');
+    const speakBtn = el('speakBtn');
+    if (speakBtn) speakBtn.textContent = 'Lire les conseils';
+  };
+
+  currentUtterance = utterance;
+  speechSynthesis.speak(utterance);
+}
+
+// Bouton lire
+const speakBtn = el('speakBtn');
+if (speakBtn) {
+  speakBtn.addEventListener('click', () => {
+    const adviceHTML = el('advice')?.innerHTML || '';
+    speakAdvice(adviceHTML);
+  });
+}
+
+// Bouton arrêter
+const stopBtn = el('stopBtn');
+if (stopBtn) {
+  stopBtn.addEventListener('click', () => {
+    speechSynthesis.cancel();
+    const speakBtn = el('speakBtn');
+    if (speakBtn) speakBtn.textContent = 'Lire les conseils';
+  });
+}
+
+speechSynthesis.onvoiceschanged = () => {
+  speechSynthesis.getVoices();
+};
 
 // === ANIMATION MICRO ===
 const style = document.createElement('style');
@@ -223,7 +318,7 @@ style.textContent = `
 document.head.appendChild(style);
 
 // === INIT ===
-const adviceElem = el('advice');
-if (adviceElem) {
-  adviceElem.innerHTML = '<p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>';
+const adviceEl = el('advice');
+if (adviceEl) {
+  adviceEl.innerHTML = '<p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>';
 }
