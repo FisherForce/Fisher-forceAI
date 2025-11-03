@@ -85,16 +85,8 @@
     IA en direct : <span id="patternCount">0</span> patterns appris
   </div>
 
-  <!-- === SON AU CHARGEMENT === -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const audio = new Audio('sounds/Part1per 2025-10-22_10-54-30.mp3');
-      audio.volume = 0.6;
-      const playSound = () => audio.play().catch(() => {});
-      playSound();
-      document.addEventListener('click', () => { if (audio.paused) audio.play(); }, { once: true });
-    });
-  </script>
+  <!-- === SON DÉSACTIVÉ (évite 502) === -->
+  <!-- <script> SON SUPPRIMÉ TEMPORAIREMENT </script> -->
 
   <header class="site-header">
     <div class="container">
@@ -149,7 +141,7 @@
         <input type="text" id="anglerName" placeholder="Ex: LoulouPeche" style="width:100%; padding:8px; margin:5px 0;">
       </label>
 
-      <!-- === BOUTONS (UN SEUL SET) === -->
+      <!-- === BOUTONS UNIQUES === -->
       <div class="row" style="margin-top:15px; gap:10px; flex-wrap:wrap;">
         <button id="getAdvice">Obtenir des conseils</button>
         <button id="voiceBtn" class="secondary" style="background:#00a085; color:white; display:flex; align-items:center; gap:8px; padding:10px 16px;">
@@ -164,8 +156,20 @@
     <!-- === CONSEILS + STATS + CLASSEMENT + QR === -->
     <section class="card output-card">
       <h2>Conseils de l'IA</h2>
+
+      <!-- === CONSEILS + CONTRÔLES VOCAUX === -->
       <div id="advice">
         <p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>
+      </div>
+
+      <!-- === CONTRÔLES SYNTHÈSE VOCALE === -->
+      <div id="voiceControls" style="margin-top:15px; text-align:center; display:none;">
+        <button id="speakBtn" style="background:#00a085; color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">
+          Lire les conseils
+        </button>
+        <button id="stopBtn" style="background:#e74c3c; color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; margin-left:10px;">
+          Arrêter
+        </button>
       </div>
 
       <!-- === BOUTON STATS === -->
@@ -188,7 +192,7 @@
       <!-- === LIEN VERS RÉSULTAT === -->
       <a href="resultat.html"><button style="margin-top:10px; width:100%;">Enregistrer un résultat</button></a>
 
-      <!-- === QR CODE + PHRASE D'ACCROCHE === -->
+      <!-- === QR CODE === -->
       <div class="qr-section">
         <p>Scan & pêche plus malin : l'IA apprend de tes prises !</p>
         <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://fisher-forceai.onrender.com/" alt="QR Code FisherForce AI">
@@ -226,7 +230,7 @@
   <script src="app.js"></script>
   <script src="script.js"></script>
 
-  <!-- === FONCTION STATS === -->
+  <!-- === FONCTIONS STATS / BADGE / LEADERBOARD / SAVE === -->
   <script>
     async function showStats() {
       const btn = document.getElementById('statsBtn');
@@ -262,10 +266,7 @@ ${JSON.stringify(data, null, 2)}
       btn.disabled = false;
       btn.innerHTML = "Voir mes stats d'IA";
     }
-  </script>
 
-  <!-- === BADGE IA EN DIRECT === -->
-  <script>
     async function updateLiveBadge() {
       try {
         const res = await fetch('/api/learnedPatterns');
@@ -285,12 +286,7 @@ ${JSON.stringify(data, null, 2)}
         document.getElementById('patternCount').textContent = '—';
       }
     }
-    setInterval(updateLiveBadge, 10000);
-    updateLiveBadge();
-  </script>
 
-  <!-- === CLASSEMENT TOP 5 === -->
-  <script>
     async function updateLeaderboard() {
       try {
         const res = await fetch('/api/leaderboard');
@@ -311,12 +307,7 @@ ${JSON.stringify(data, null, 2)}
         document.getElementById('leaderboard').innerHTML = '<p>Erreur de chargement</p>';
       }
     }
-    setInterval(updateLeaderboard, 15000);
-    updateLeaderboard();
-  </script>
 
-  <!-- === SAUVEGARDE DU CONSEIL === -->
-  <script>
     window.saveLastAdvice = function(species, spotType, conditions, structure) {
       sessionStorage.setItem('lastAdvice', JSON.stringify({
         species: species || "inconnu",
@@ -325,6 +316,11 @@ ${JSON.stringify(data, null, 2)}
         structure: structure || ""
       }));
     };
+
+    setInterval(updateLiveBadge, 10000);
+    updateLiveBadge();
+    setInterval(updateLeaderboard, 15000);
+    updateLeaderboard();
   </script>
 
 </body>
