@@ -75,6 +75,7 @@
   </style>
 </head>
 <body>
+
   <!-- === BADGE ANIMÉ : IA APPRENANTE === -->
   <div class="badge-ia">IA Apprenante</div>
 
@@ -101,12 +102,15 @@
       <p class="tagline">La 1ère IA de pêche 100% Française</p>
     </div>
   </header>
- 
+
   <main class="container main-grid">
+
     <!-- === FORMULAIRE === -->
     <section class="card input-card">
       <h2>Décris ton spot</h2>
+
       <label>Nom du spot <input id="spotName" placeholder="Ex: Étang du Moulin"></label>
+
       <label>Type d'eau<br>
         <select id="waterType">
           <option>Étang</option>
@@ -115,7 +119,9 @@
           <option>Canal</option>
         </select>
       </label>
+
       <label>Fond / Structure <input id="structure" placeholder="Ex: herbiers, rochers"></label>
+
       <label>Fréquentation<br>
         <select id="pressure">
           <option value="low">Faible</option>
@@ -123,26 +129,35 @@
           <option value="high">Élevée</option>
         </select>
       </label>
+
       <label>Espèce ciblée <input id="targetSpecies" placeholder="Ex: brochet, perche"></label>
+
       <label>Heure / Date prévue <input id="dateTime" type="datetime-local"></label>
+
       <label>Conditions (brève) <input id="conditions" placeholder="Ex: clair, pluie, vent NE"></label>
 
-      <!-- === CHAMP PSEUDO POUR CLASSEMENT === -->
+      <!-- === CHAMPS VOCAUX === -->
+      <label>Température de l'eau (°C)<br>
+        <input type="number" id="temperature" placeholder="Ex: 15" step="0.5" style="width:100%; padding:8px; margin:5px 0;">
+      </label>
+      <label>Heure de pêche<br>
+        <input type="time" id="fishingTime" value="08:00" style="width:100%; padding:8px; margin:5px 0;">
+      </label>
+
+      <!-- === PSEUDO === -->
       <label>Ton pseudo (facultatif)<br>
         <input type="text" id="anglerName" placeholder="Ex: LoulouPeche" style="width:100%; padding:8px; margin:5px 0;">
       </label>
 
-      <div class="row">
+      <!-- === BOUTONS (UN SEUL SET) === -->
+      <div class="row" style="margin-top:15px; gap:10px; flex-wrap:wrap;">
         <button id="getAdvice">Obtenir des conseils</button>
-        <div class="row" style="margin-top:10px; gap:10px;">
-  <button id="getAdvice">Obtenir des conseils</button>
-  <button id="voiceBtn" class="secondary" style="background:#00a085; color:white; display:flex; align-items:center; gap:8px;">
-    <span id="micIcon">Microphone</span> Écoute vocale
-  </button>
-  <button id="clearBtn" class="secondary">Réinitialiser</button>
-</div>
+        <button id="voiceBtn" class="secondary" style="background:#00a085; color:white; display:flex; align-items:center; gap:8px; padding:10px 16px;">
+          <span id="micIcon">Microphone</span> Commande vocale
+        </button>
         <button id="clearBtn" class="secondary">Réinitialiser</button>
       </div>
+
       <p class="muted">Admin: <a href="/admin">Gérer sponsors</a></p>
     </section>
 
@@ -169,17 +184,15 @@
           <p>Chargement du classement...</p>
         </div>
       </div>
-            <!-- === LIEN VERS RÉSULTAT === -->
-      <a href="resultat.html"><button style="margin-top:10px; width:100%;">Enregistrer un résultat</button></a>
 
+      <!-- === LIEN VERS RÉSULTAT === -->
+      <a href="resultat.html"><button style="margin-top:10px; width:100%;">Enregistrer un résultat</button></a>
 
       <!-- === QR CODE + PHRASE D'ACCROCHE === -->
       <div class="qr-section">
         <p>Scan & pêche plus malin : l'IA apprend de tes prises !</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://fisher-forceai.onrender.com/" 
-             alt="QR Code FisherForce AI">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://fisher-forceai.onrender.com/" alt="QR Code FisherForce AI">
       </div>
-
 
       <details class="settings">
         <summary>Paramètres avancés</summary>
@@ -251,7 +264,7 @@ ${JSON.stringify(data, null, 2)}
     }
   </script>
 
-  <!-- === BADGE IA EN DIRECT (compteur live) === -->
+  <!-- === BADGE IA EN DIRECT === -->
   <script>
     async function updateLiveBadge() {
       try {
@@ -302,7 +315,7 @@ ${JSON.stringify(data, null, 2)}
     updateLeaderboard();
   </script>
 
-  <!-- === SAUVEGARDE DU CONSEIL DANS sessionStorage === -->
+  <!-- === SAUVEGARDE DU CONSEIL === -->
   <script>
     window.saveLastAdvice = function(species, spotType, conditions, structure) {
       sessionStorage.setItem('lastAdvice', JSON.stringify({
@@ -313,5 +326,6 @@ ${JSON.stringify(data, null, 2)}
       }));
     };
   </script>
+
 </body>
 </html>
