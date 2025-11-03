@@ -11,6 +11,10 @@
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
     }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
     .badge-ia {
       position: fixed;
       top: 15px;
@@ -25,12 +29,60 @@
       z-index: 9999;
       animation: pulse 2s infinite;
     }
+    .live-badge {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      background: #00d4aa;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 50px;
+      font-weight: bold;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,212,170,0.4);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: pulse 2s infinite;
+    }
+    .live-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: #fff;
+      border-radius: 50%;
+      animation: blink 1.5s infinite;
+    }
+    .qr-section {
+      text-align: center;
+      margin: 30px 0;
+      padding: 20px;
+      background: #f0fff9;
+      border-radius: 12px;
+      border: 2px solid #00d4aa;
+    }
+    .qr-section p {
+      font-weight: bold;
+      color: #00a085;
+      margin: 0 0 15px 0;
+      font-size: 18px;
+    }
+    .qr-section img {
+      border: 3px solid #00d4aa;
+      border-radius: 12px;
+    }
   </style>
 </head>
 <body>
-
   <!-- === BADGE ANIMÉ : IA APPRENANTE === -->
   <div class="badge-ia">IA Apprenante</div>
+
+  <!-- === BADGE "IA EN DIRECT" (compteur live) === -->
+  <div class="live-badge">
+    <span class="live-dot"></span>
+    IA en direct : <span id="patternCount">0</span> patterns appris
+  </div>
 
   <!-- === SON AU CHARGEMENT === -->
   <script>
@@ -49,9 +101,8 @@
       <p class="tagline">La 1ère IA de pêche 100% Française</p>
     </div>
   </header>
-
+ 
   <main class="container main-grid">
-
     <!-- === FORMULAIRE === -->
     <section class="card input-card">
       <h2>Décris ton spot</h2>
@@ -76,6 +127,11 @@
       <label>Heure / Date prévue <input id="dateTime" type="datetime-local"></label>
       <label>Conditions (brève) <input id="conditions" placeholder="Ex: clair, pluie, vent NE"></label>
 
+      <!-- === CHAMP PSEUDO POUR CLASSEMENT === -->
+      <label>Ton pseudo (facultatif)<br>
+        <input type="text" id="anglerName" placeholder="Ex: LoulouPeche" style="width:100%; padding:8px; margin:5px 0;">
+      </label>
+
       <div class="row">
         <button id="getAdvice">Obtenir des conseils</button>
         <button id="clearBtn" class="secondary">Réinitialiser</button>
@@ -83,7 +139,7 @@
       <p class="muted">Admin: <a href="/admin">Gérer sponsors</a></p>
     </section>
 
-    <!-- === CONSEILS + STATS + BOUTON RÉSULTAT === -->
+    <!-- === CONSEILS + STATS + CLASSEMENT + QR === -->
     <section class="card output-card">
       <h2>Conseils de l'IA</h2>
       <div id="advice">
@@ -99,8 +155,23 @@
         <div id="stats" style="margin-top: 15px; text-align: left; font-family: monospace;"></div>
       </div>
 
+      <!-- === CLASSEMENT TOP 5 === -->
+      <div style="margin: 30px 0; text-align: center;">
+        <h3 style="color: #00a085; margin-bottom:10px;">Top 5 des Maîtres de l'IA</h3>
+        <div id="leaderboard" style="font-family: monospace; background:#f9f9f9; padding:15px; border-radius:10px; border:2px solid #00d4aa; min-height:60px;">
+          <p>Chargement du classement...</p>
+        </div>
+      </div>
+
+      <!-- === QR CODE + PHRASE D'ACCROCHE === -->
+      <div class="qr-section">
+        <p>Scan & pêche plus malin : l'IA apprend de tes prises !</p>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://fisher-forceai.onrender.com/" 
+             alt="QR Code FisherForce AI">
+      </div>
+
       <!-- === LIEN VERS RÉSULTAT === -->
-      <a href="resultat.html"><button style="margin-top:10px;">Enregistrer un résultat</button></a>
+      <a href="resultat.html"><button style="margin-top:10px; width:100%;">Enregistrer un résultat</button></a>
 
       <details class="settings">
         <summary>Paramètres avancés</summary>
@@ -140,11 +211,9 @@
       const btn = document.getElementById('statsBtn');
       btn.disabled = true;
       btn.innerHTML = "Chargement...";
-
       try {
         const res = await fetch('/api/learnedPatterns');
         const data = await res.json();
-
         let total = 0;
         for (const species in data) {
           for (const saison in data[species]) {
@@ -155,11 +224,10 @@
             }
           }
         }
-
         document.getElementById('stats').innerHTML = `
           <div style="background:#f0fff9; padding:15px; border-radius:10px; border:2px solid #00d4aa;">
             <h3 style="margin:0; color:#00a085;">IA FisherForce en action !</h3>
-            <p style="margin:5px 0;"><strong>Patterns appris :</strong> 
+            <p style="margin:5px 0;"><strong>Patterns appris :</strong>
               <span style="color:#00d4aa; font-size:1.2em;">${total}</span>
             </p>
             <pre style="background:#fff; padding:10px; border:1px solid #ddd; border-radius:5px; max-height:300px; overflow:auto; font-size:12px;">
@@ -170,15 +238,64 @@ ${JSON.stringify(data, null, 2)}
       } catch (e) {
         document.getElementById('stats').innerHTML = '<p style="color:red;">Erreur de connexion</p>';
       }
-
       btn.disabled = false;
       btn.innerHTML = "Voir mes stats d'IA";
     }
   </script>
 
+  <!-- === BADGE IA EN DIRECT (compteur live) === -->
+  <script>
+    async function updateLiveBadge() {
+      try {
+        const res = await fetch('/api/learnedPatterns');
+        const data = await res.json();
+        let total = 0;
+        for (const species in data) {
+          for (const saison in data[species]) {
+            for (const cond in data[species][saison]) {
+              for (const spot in data[species][saison][cond]) {
+                total += data[species][saison][cond][spot].length;
+              }
+            }
+          }
+        }
+        document.getElementById('patternCount').textContent = total;
+      } catch (e) {
+        document.getElementById('patternCount').textContent = '—';
+      }
+    }
+    setInterval(updateLiveBadge, 10000);
+    updateLiveBadge();
+  </script>
+
+  <!-- === CLASSEMENT TOP 5 === -->
+  <script>
+    async function updateLeaderboard() {
+      try {
+        const res = await fetch('/api/leaderboard');
+        const data = await res.json();
+        if (data.length === 0) {
+          document.getElementById('leaderboard').innerHTML = '<p>Aucun pêcheur classé pour l’instant !</p>';
+          return;
+        }
+        let html = '<ol style="text-align:left; margin:0; padding-left:20px;">';
+        data.forEach((p, i) => {
+          const medals = ['gold', 'silver', 'bronze'];
+          const medal = i < 3 ? medals[i] : '';
+          html += `<li><strong>${p.name}</strong> — ${p.count} prises enseignées</li>`;
+        });
+        html += '</ol>';
+        document.getElementById('leaderboard').innerHTML = html;
+      } catch (e) {
+        document.getElementById('leaderboard').innerHTML = '<p>Erreur de chargement</p>';
+      }
+    }
+    setInterval(updateLeaderboard, 15000);
+    updateLeaderboard();
+  </script>
+
   <!-- === SAUVEGARDE DU CONSEIL DANS sessionStorage === -->
   <script>
-    // Appelé depuis app.js ou script.js après un conseil
     window.saveLastAdvice = function(species, spotType, conditions, structure) {
       sessionStorage.setItem('lastAdvice', JSON.stringify({
         species: species || "inconnu",
@@ -188,6 +305,5 @@ ${JSON.stringify(data, null, 2)}
       }));
     };
   </script>
-
 </body>
 </html>
