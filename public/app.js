@@ -389,7 +389,7 @@ function saveProgress() {
   updateDashboard();
 }
 
-// === AJOUT XP DEPUIS resultat.html ===
+// === AJOUT XP (appelable depuis popup) ===
 window.addXP = async function(success = false) {
   progress.xp += 5;
   progress.spotsTested += 1;
@@ -443,6 +443,22 @@ function updateDashboard() {
     if (outputCard) outputCard.insertAdjacentHTML('afterend', dashboardHTML);
   }
 }
+
+// === OUVRIR resultat.html EN POPUP + COMMUNICATION ===
+window.openResultat = function() {
+  const popup = window.open('resultat.html', 'resultat', 'width=500,height=400,scrollbars=no,resizable=no');
+  if (!popup) {
+    alert("Popup bloquée ! Autorise les popups pour ce site.");
+  }
+};
+
+// Réception du message depuis resultat.html
+window.addEventListener('message', (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (event.data && event.data.type === 'ADD_XP') {
+    addXP(event.data.success);
+  }
+});
 
 // === ANIMATION XP ===
 const xpStyle = document.createElement('style');
