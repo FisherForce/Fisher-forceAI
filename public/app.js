@@ -1,23 +1,22 @@
 const el = id => document.getElementById(id);
 
-// === VARIABLES GLOBALES (disponibles dès le début) ===
+// === VARIABLES GLOBALES ===
 let progress = { xp: 0, spotsTested: 0, speciesCaught: {}, successes: 0, attempts: 0 };
 let knownSpots = new Set();
 let knownSpecies = new Set();
-let currentUser = null;
-let userDocRef = null;
 
-// === CHARGEMENT HISTORIQUE ===
-function loadHistory() {
-  const spots = localStorage.getItem('knownSpots');
-  const species = localStorage.getItem('knownSpecies');
-  const savedProgress = localStorage.getItem('fisherXP');
-  if (spots) knownSpots = new Set(JSON.parse(spots));
-  if (species) knownSpecies = new Set(JSON.parse(species));
-  if (savedProgress) progress = JSON.parse(savedProgress);
+// === CHARGEMENT LOCAL ===
+function loadAll() {
+  const p = localStorage.getItem('fisherXP');
+  const s = localStorage.getItem('knownSpots');
+  const e = localStorage.getItem('knownSpecies');
+  if (p) progress = JSON.parse(p);
+  if (s) knownSpots = new Set(JSON.parse(s));
+  if (e) knownSpecies = new Set(JSON.parse(e));
 }
+loadAll();
 
-// === FONCTIONS XP (disponibles tout de suite) ===
+// === XP DOPAMINE ===
 function awardXP(amount, message) {
   progress.xp += amount;
   saveAll();
@@ -27,60 +26,70 @@ function awardXP(amount, message) {
 function showXPPop(text) {
   const pop = document.createElement('div');
   pop.innerHTML = `<strong>${text}</strong>`;
-  pop.style.cssText = 'position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#00d4aa;color:white;padding:16px 36px;border-radius:50px;font-size:22px;font-weight:bold;z-index:9999;box-shadow:0 10px 30px rgba(0,212,170,0.6);animation:pop 1.4s forwards;';
+  pop.style.cssText = 'position:fixed;top:20%;left:50%;transform:translateX(-50%);background:#00d4aa;color:white;padding:18px 40px;border-radius:50px;font-size:24px;font-weight:bold;z-index:9999;box-shadow:0 10px 30px rgba(0,212,170,0.7);animation:pop 1.5s forwards;';
   document.body.appendChild(pop);
-  setTimeout(() => pop.remove(), 1400);
+  setTimeout(() => pop.remove(), 1500);
 }
 
 function saveAll() {
   localStorage.setItem('fisherXP', JSON.stringify(progress));
   localStorage.setItem('knownSpots', JSON.stringify([...knownSpots]));
   localStorage.setItem('knownSpecies', JSON.stringify([...knownSpecies]));
-  if (currentUser && userDocRef) {
-    userDocRef.set(progress, { merge: true }).catch(() => {});
-  }
   updateDashboard();
 }
 
-// === TOUT LE RESTE DANS DOMContentLoaded ===
+function updateDashboard() {
+  const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
+  const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
+  const html = `
+    <div style="background:linear-gradient(135deg,#00d4aa,#00a085);color:white;padding:20px;border-radius:18px;margin:20px 0;text-align:center;box-shadow:0 10px 30px rgba(0,212,170,0.4);">
+      <h3 style="margin:0 0 15px;font-size:22px;">
+        <span style="background:#ffd700;color:#000;padding:8px 18px;border-radius:40px;font-weight:bold;">${level}</span> — ${progress.xp} XP
+      </h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;">
+        <div style="background:rgba(255,255,255,0.3);padding:12px;border-radius:12px;">Spots<br><strong style="font-size:20px;">${progress.spotsTested}</strong></div>
+        <div style="background:rgba(255,255,255,0.3);padding:12px;border-radius:12px;">Espèces<br><strong style="font-size:20px;">${Object.keys(progress.speciesCaught).length}</strong></div>
+        <div style="background:rgba(255,255,255,0.3);padding:12px;border-radius:12px;">Réussite<br><strong style="font-size:20px;">${rate}%</strong></div>
+      </div>
+    </div>`;
+  const dash = document.querySelector('.dashboard');
+  if (dash) dash.outerHTML = html;
+}
+
+// === TOUT LE CODE PRINCIPAL ===
 document.addEventListener('DOMContentLoaded', () => {
-  loadHistory();
   updateDashboard();
 
-  // Animation XP unique
+  // Animation XP
   if (!document.getElementById('xpAnim')) {
     const s = document.createElement('style');
     s.id = 'xpAnim';
-    s.textContent = '@keyframes pop{0%{transform:scale(0) translateX(-50%);opacity:0}40%{transform:scale(1.4) translateX(-50%)}100%{transform:scale(1) translateX(-50%);opacity:0}}';
+    s.textContent = '@keyframes pop{0%{transform:scale(0) translateX(-50%);opacity:0}40%{transform:scale(1.5) translateX(-50%)}100%{transform:scale(1) translateX(-50%);opacity:0}}';
     document.head.appendChild(s);
   }
 
-  // === CONSEILS → +1 XP + NOUVEAU SPOT ===
+  // === OBTENIR DES CONSEILS ===
   el('getAdvice')?.addEventListener('click', async () => {
     const input = readForm();
     const spotName = (input.spotName || "").trim().toLowerCase();
 
-    // +1 XP à chaque demande
     awardXP(1, "Conseil demandé !");
-
-    // +10 XP si nouveau spot
     if (spotName && !knownSpots.has(spotName)) {
       knownSpots.add(spotName);
       awardXP(10, "Nouveau spot découvert !");
     }
 
-    const formatted = {
+    el('advice').innerHTML = '<p class="muted">Génération en cours…</p>';
+    const result = await fetchAdvice({
       species: input.targetSpecies,
       structure: input.structure,
       conditions: input.conditions,
       spotType: input.waterType,
       temperature: input.temperature
-    };
+    });
 
-    el('advice').innerHTML = '<p class="muted">Génération des conseils…</p>';
-    const result = await fetchAdvice(formatted);
     if (!result || result.error) {
-      el('advice').innerHTML = `<p class="muted">Erreur: ${result?.error || "serveur HS"}</p>`;
+      el('advice').innerHTML = `<p class="muted">Erreur: serveur indisponible</p>`;
       return;
     }
     renderAdvice(result);
@@ -95,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (vc) vc.style.display = 'none';
   });
 
-  // === NOUVELLE ESPÈCE DEPUIS resultat.html ===
+  // === ADD XP DEPUIS RESULTAT.HTML ===
   window.addXP = function(success = false, speciesName = null) {
     progress.spotsTested += 1;
     progress.attempts += 1;
@@ -104,48 +113,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (success) {
       progress.successes += 1;
       const species = (speciesName || el('targetSpecies')?.value || "inconnu").toLowerCase();
-      progress.speciesCaught[species] = (progress.speciesCaught[species] || 0) + 1;
-
       if (!knownSpecies.has(species)) {
         knownSpecies.add(species);
         awardXP(15, `Première ${species} ! LÉGENDAIRE !`);
       }
+      progress.speciesCaught[species] = (progress.speciesCaught[species] || 0) + 1;
     }
     saveAll();
   };
 
-  // === FIREBASE & CONNEXION ===
-  if (typeof firebase === 'undefined') {
-    console.warn("Mode anonyme activé");
-  } else {
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    auth.onAuthStateChanged(async user => {
-      if (user) {
-        currentUser = user;
-        userDocRef = db.collection('users').doc(user.uid);
-        el('userName').textContent = user.displayName?.split(' ')[0] || "Pêcheur";
-        el('loginBtn').style.display = 'none';
-        el('userInfo').style.display = 'flex';
-        const doc = await userDocRef.get();
-        if (doc.exists) progress = { ...progress, ...doc.data() };
-      } else {
-        currentUser = null;
-        el('loginBtn').style.display = 'block';
-        el('userInfo').style.display = 'none';
-      }
-      updateDashboard();
-    });
-
-    el('loginBtn')?.addEventListener('click', () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider);
-    });
-    el('logoutBtn')?.addEventListener('click', () => auth.signOut());
-  }
-
-  // === FONCTIONS RESTANTES ===
+  // === FONCTIONS DE BASE ===
   function readForm() {
     return {
       spotName: el('spotName')?.value || "",
@@ -159,57 +136,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderAdvice(data) {
     const container = el('advice');
-    if (!container) return;
     container.innerHTML = '';
-    if (data.adviceText) container.innerHTML += `<h3>Résumé (IA)</h3><div class="advice-text">${data.adviceText}</div>`;
-    if (data.lures?.length) container.innerHTML += `<h3>Leurres & Techniques</h3><ul>${data.lures.map(l => `<li><strong>${l.split(' — ')[0]}</strong> — ${l.split(' — ').slice(1).join(' — ')}</li>`).join('')}</ul>`;
-    if (data.depthAdvice?.length) container.innerHTML += `<h3>Profondeur</h3><ul>${data.depthAdvice.map(d => `<li>${d}</li>`).join('')}</ul>`;
+    if (data.adviceText) container.innerHTML += `<h3>Résumé IA</h3><div class="advice-text">${data.adviceText}</div>`;
+    if (data.lures?.length) container.innerHTML += `<h3>Leurres</h3><ul>${data.lures.map(l => `<li><strong>${l.split(' — ')[0]}</strong> — ${l.split(' — ').slice(1).join(' — ')}</li>`).join('')}</ul>`;
     const vc = el('voiceControls');
     if (vc) vc.style.display = 'block';
-    setTimeout(() => speakAdvice(container.innerHTML), 800);
   }
 
   async function fetchAdvice(input) {
     try {
-      const res = await fetch(`${location.origin}/api/advice`, {
+      const res = await fetch('/api/advice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input)
       });
       return await res.json();
-    } catch (err) {
-      console.error(err);
-      return { error: "serveur injoignable" };
+    } catch (e) {
+      console.log("API HS, mode démo");
+      return {
+        adviceText: "Varie les leurres souples en 10cm, pêche à gratter près des herbiers.",
+        lures: ["Spinnerbait 14g — Zones peu profondes", "Jig 10g — Fond rocheux"]
+      };
     }
-  }
-
-  function speakAdvice(html) {
-    speechSynthesis.cancel();
-    const text = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (text) {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = 'fr-FR';
-      u.rate = 0.9;
-      speechSynthesis.speak(u);
-    }
-  }
-
-  function updateDashboard() {
-    const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
-    const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
-    const html = `
-      <div style="background:linear-gradient(135deg,#00d4aa,#00a085);color:white;padding:18px;border-radius:16px;margin:20px 0;text-align:center;box-shadow:0 8px 20px rgba(0,212,170,0.3);">
-        <h3 style="margin:0 0 12px;font-size:20px;">
-          <span style="background:#ffd700;color:#000;padding:6px 14px;border-radius:30px;font-weight:bold;">${level}</span> — ${progress.xp} XP
-        </h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;">
-          <div style="background:rgba(255,255,255,0.25);padding:10px;border-radius:10px;">Spots<br><strong style="font-size:18px;">${progress.spotsTested}</strong></div>
-          <div style="background:rgba(255,255,255,0.25);padding:10px;border-radius:10px;">Espèces<br><strong style="font-size:18px;">${Object.keys(progress.speciesCaught).length}</strong></div>
-          <div style="background:rgba(255,255,255,0.25);padding:10px;border-radius:10px;">Réussite<br><strong style="font-size:18px;">${rate}%</strong></div>
-        </div>
-      </div>`;
-    const dash = document.querySelector('.dashboard');
-    if (dash) dash.outerHTML = html;
   }
 
   window.openResultat = () => window.open('resultat.html', '_blank', 'width=500,height=600');
