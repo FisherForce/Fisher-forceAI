@@ -193,9 +193,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     el('logoutBtn')?.addEventListener('click', () => auth.signOut());
 
-    // BOUTON AMIS → OUVRE LA PAGE friends.html (CORRIGÉ)
-el('friendsBtn')?.addEventListener('click', () => window.open('friends.html', '_blank', 'width=600,height=800'));
-
+// VERSION INDESTRUCTIBLE — copie-colle ça
+const btn = document.getElementById('friendsBtn');
+if (btn) {
+  btn.addEventListener('click', () => {
+    window.open('friends.html', '_blank', 'width=600,height=800');
+  });
+}
   });    
   }
 });
