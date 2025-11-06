@@ -193,9 +193,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     el('logoutBtn')?.addEventListener('click', () => auth.signOut());
 
-      // BOUTON AMIS → OUVRE LA PAGE FRIENDS.HTML
-    el('friendsBtn')?.addEventListener('click', () => {
-      window.open('friends.html', '_blank', 'width=600,height=800');
+    // BOUTON AMIS → OUVRE LA PAGE friends.html (CORRIGÉ)
+    const friendsBtn = el('friendsBtn');
+    if (friendsBtn) {
+      friendsBtn.addEventListener('click', () => {
+        window.open('friends.html', '_blank', 'width=600,height=800');
+      });
+    }
   });
   });    
   }
