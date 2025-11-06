@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Amis FisherForce</title>
+  <style>
+    body { font-family: Arial; background: #f0fff9; padding: 20px; text-align: center; }
+    .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,212,170,0.2); max-width: 500px; margin: 20px auto; }
+    input { width: 80%; padding: 12px; border-radius: 12px; border: 2px solid #00d4aa; font-size: 16px; }
+    button { background: #00d4aa; color: white; padding: 12px 20px; border: none; border-radius: 12px; cursor: pointer; margin: 10px; }
+    .friend { background: #e6fffa; padding: 15px; border-radius: 15px; margin: 10px; text-align: left; }
+    .pending { background: #fff3cd; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Amis FisherForce</h1>
+    <input type="text" id="searchFriend" placeholder="Rechercher un pseudo...">
+    <button onclick="searchFriend()">Rechercher</button>
+    <div id="searchResults"></div>
+    <h2>Mes amis</h2>
+    <div id="friendsList">Chargement...</div>
+    <h2>Demandes en attente</h2>
+    <div id="pendingRequests"></div>
+  </div>
+
+  <script>
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+    let currentUser = null;
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        loadFriends();
+      }
+    });
+
+    function searchFriend() {
+      const pseudo = document.getElementById('searchFriend').value.trim();
+      if (!pseudo) return;
+      db.collection('users').where('displayName', '>=', pseudo).where('displayName', '<=', pseudo + '\uf8ff').get().then(snap => {
+        const results = document.getElementById('searchResults');
+        results.innerHTML = '';
+        snap.forEach(doc => {
+          const data = doc.data();
+          if (doc.id !== currentUser.uid) {
+            results.innerHTML += `<div class="friend">
+              <strong>${data.displayName || 'Anonyme'}</strong> — ${data.xp || 0} XP
+              <button onclick="sendFriendRequest('${doc.id}')">Ajouter</button>
+            </div>`;
+          }
+        });
+      });
+    }
+
+    function sendFriendRequest(uid) {
+      db.collection('friendRequests').add({
+        from: currentUser.uid,
+        to: uid,
+        status: 'pending',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => alert('Demande envoyée !'));
+    }
+
+    function loadFriends() {
+      // Amis acceptés
+      db.collection('friendRequests').where('status', '==', 'accepted').where('from', '==', currentUser.uid).or.where('to', '==', currentUser.uid).get().then(snap => {
+        // code complet dans le prochain message si tu veux
+      });
+    }
+  </script>
+</body>
+</html>
