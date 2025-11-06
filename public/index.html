@@ -11,52 +11,16 @@
     .badge-ia { position: fixed; top: 15px; right: 15px; background: #00d4aa; color: white; padding: 8px 16px; border-radius: 50px; font-weight: bold; font-size: 13px; box-shadow: 0 3px 10px rgba(0,0,0,0.3); z-index: 9999; animation: pulse 2s infinite; }
     .live-badge { position: fixed; top: 15px; left: 15px; background: #00d4aa; color: white; padding: 10px 16px; border-radius: 50px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 12px rgba(0,212,170,0.4); z-index: 9999; display: flex; align-items: center; gap: 8px; animation: pulse 2s infinite; }
     .live-dot { width: 10px; height: 10px; background: #fff; border-radius: 50%; animation: blink 1.5s infinite; }
-    .qr-section { text-align: center; margin: 30px 0; padding: 20px; background: #f0fff9; border-radius: 12px; border: 2px solid #00d4aa; }
-    .qr-section p { font-weight: bold; color: #00a085; margin: 0 0 15px 0; font-size: 18px; }
-    .qr-section img { border: 3px solid #00d4aa; border-radius: 12px; }
-    #authContainer { position: fixed; top: 60px; right: 15px; z-index: 9998; }
-    #loginBtn { background: #00d4aa; color: white; padding: 10px 18px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; }
-    #userInfo { background: rgba(0,0,0,0.7); color: white; padding: 8px 14px; border-radius: 50px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-    #logoutBtn { background: #e74c3c; color: white; border: none; padding: 4px 10px; border-radius: 20px; font-size: 11px; cursor: pointer; }
+    .dashboard { background: linear-gradient(135deg, #00d4aa, #00a085); color: white; padding: 18px; border-radius: 16px; margin: 20px 0; text-align: center; box-shadow: 0 8px 20px rgba(0,212,170,0.3); }
+    .level-badge { background: #ffd700; color: #000; padding: 6px 14px; border-radius: 30px; font-weight: bold; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-top: 12px; }
+    .stat-item { background: rgba(255,255,255,0.25); padding: 10px; border-radius: 10px; }
   </style>
-
-  <!-- === FIREBASE SDK (ORDRE CORRIGÉ) === -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <!-- === CONFIG FIREBASE (COLLE ICI) === -->
-  <script>
-    // === COLLE TA CONFIG ICI ===
-    const firebaseConfig = {
-      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
-      authDomain: "fisherforceai.firebaseapp.com",
-      projectId: "fisherforceai",
-      storageBucket: "fisherforceai.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef123456"
-    };
-
-    // Initialisation
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
 </head>
 <body>
 
-  <!-- === BADGES === -->
   <div class="badge-ia">IA Apprenante</div>
-  <div class="live-badge"><span class="live-dot"></span> IA en direct : <span id="patternCount">0</span> patterns appris</div>
-
-  <!-- === CONNEXION GOOGLE === -->
-  <div id="authContainer">
-    <button id="loginBtn">Connexion Google</button>
-    <div id="userInfo" style="display:none;">
-      <span id="userName"></span>
-      <button id="logoutBtn">Déconnexion</button>
-    </div>
-  </div>
+  <div class="live-badge"><span class="live-dot"></span> IA en direct : <span id="patternCount">42</span> patterns appris</div>
 
   <header class="site-header">
     <div class="container">
@@ -68,78 +32,86 @@
   <main class="container main-grid">
     <section class="card input-card">
       <h2>Décris ton spot</h2>
-      <!-- TON FORMULAIRE ICI (inchangé) -->
       <label>Nom du spot <input id="spotName" placeholder="Ex: Étang du Moulin"></label>
       <label>Type d'eau<br><select id="waterType"><option>Étang</option><option>Rivière</option><option>Lac</option><option>Canal</option></select></label>
       <label>Fond / Structure <input id="structure" placeholder="Ex: herbiers, rochers"></label>
-      <label>Fréquentation<br><select id="pressure"><option value="low">Faible</option><option value="medium" selected>Moyenne</option><option value="high">Élevée</option></select></label>
       <label>Espèce ciblée <input id="targetSpecies" placeholder="Ex: brochet, perche"></label>
-      <label>Heure / Date prévue <input id="dateTime" type="datetime-local"></label>
-      <label>Conditions (brève) <input id="conditions" placeholder="Ex: clair, pluie, vent NE"></label>
-      <label>Température de l'eau (°C)<br><input type="number" id="temperature" placeholder="Ex: 15" step="0.5"></label>
-      <label>Heure de pêche<br><input type="time" id="fishingTime" value="08:00"></label>
-      <label>Ton pseudo (facultatif)<br><input type="text" id="anglerName" placeholder="Ex: LoulouPeche"></label>
+      <label>Conditions <input id="conditions" placeholder="Ex: clair, pluie"></label>
+      <label>Température (°C)<br><input type="number" id="temperature" placeholder="15"></label>
 
-      <div class="row" style="margin-top:15px; gap:10px; flex-wrap:wrap;">
+      <div style="margin-top:15px;">
         <button id="getAdvice">Obtenir des conseils</button>
-        <button id="voiceBtn" class="secondary" style="background:#00a085; color:white; display:flex; align-items:center; gap:8px;"><span id="micIcon">Microphone</span> Commande vocale</button>
-        <button id="clearBtn" class="secondary">Réinitialiser</button>
+        <button id="voiceBtn">Commande vocale</button>
+        <button id="clearBtn">Réinitialiser</button>
       </div>
     </section>
 
     <section class="card output-card">
       <h2>Conseils de l'IA</h2>
+
+      <!-- TABLEAU DE BORD XP (localStorage) -->
+      <div class="dashboard">
+        <h3><span class="level-badge" id="level">Débutant</span> — <span id="xp">0</span> XP</h3>
+        <div class="stats-grid">
+          <div class="stat-item">Spots : <strong id="spots">0</strong></div>
+          <div class="stat-item">Prises : <strong id="success">0</strong></div>
+          <div class="stat-item">Réussite : <strong id="rate">0%</strong></div>
+        </div>
+      </div>
+
       <div id="advice"><p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p></div>
 
-      <div id="voiceControls" style="margin-top:15px; text-align:center; display:none;">
-        <button id="speakBtn" style="background:#00a085; color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">Lire les conseils</button>
-        <button id="stopBtn" style="background:#e74c3c; color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; margin-left:10px;">Arrêter</button>
-      </div>
+      <button onclick="openResultat()" style="margin:20px auto; display:block; width:90%; background:#00d4aa; color:white; border:none; padding:14px; border-radius:10px; font-weight:bold;">
+        Enregistrer un résultat
+      </button>
 
-      <div style="margin:20px 0; text-align:center;">
-        <button id="statsBtn" onclick="showStats()" style="padding:12px 24px; background:#00d4aa; color:white; border:none; border-radius:8px;">Voir mes stats d'IA</button>
-        <div id="stats"></div>
-      </div>
-
+      <!-- CLASSEMENT MOCK -->
       <div style="margin:30px 0; text-align:center;">
-        <h3 style="color:#00a085;">Top 5 des Maîtres de l'IA</h3>
-        <div id="leaderboard" style="background:#f9f9f9; padding:15px; border-radius:10px; border:2px solid #00d4aa;">Chargement...</div>
-      </div>
-
-      <button onclick="openResultat()" style="margin-top:10px; width:100%; background:#00d4aa; color:white; border:none; padding:14px; border-radius:10px; font-weight:bold;">Enregistrer un résultat</button>
-
-      <div class="qr-section">
-        <p>Scan & pêche plus malin : l'IA apprend de tes prises !</p>
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=https://fisher-forceai.onrender.com/" alt="QR Code">
+        <h3 style="color:#00a085;">Top 5 des Maîtres</h3>
+        <ol style="background:#f9f9f9; padding:20px; border-radius:10px; border:2px solid #00d4aa;">
+          <li>LoulouPeche — 285 XP</li>
+          <li>BrochetKiller — 220 XP</li>
+          <li>PercheMaster — 190 XP</li>
+          <li>Carpiste72 — 165 XP</li>
+          <li>TruiteNinja — 140 XP</li>
+        </ol>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer">
-    <div class="container">
-      <small>2025 Fisher-ForceAI. Tous droits réservés.</small>
-      <div style="margin-top:15px; text-align:center;">
-        <p>Suivez-moi sur mes réseaux :</p>
-        <div style="display:flex; justify-content:center; gap:15px; font-size:24px;">
-          <a href="https://www.instagram.com/fisherforce/" target="_blank"><img src="icons/insta.jpg" alt="Instagram" style="width:32px;height:32px;"></a>
-          <a href="https://www.youtube.com/channel/UC_gRRbnmfVhiBVgLzQ7xLAw" target="_blank"><img src="icons/yt.png" alt="YouTube" style="width:32px;height:32px;"></a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
   <script src="app.js"></script>
-  <script src="script.js"></script>
 
-  <!-- === FONCTIONS DANS app.js (pas besoin de dupliquer) === -->
+  <!-- XP LOCAL + MISE À JOUR AUTO -->
   <script>
-    // Ces fonctions sont dans app.js → elles seront chargées
-    setInterval(updateLiveBadge, 10000); updateLiveBadge();
-    setInterval(updateLeaderboard, 15000); updateLeaderboard();
-    window.saveLastAdvice = function(species, spotType, conditions, structure) {
-      sessionStorage.setItem('lastAdvice', JSON.stringify({species, spotType, conditions, structure}));
-    };
-  </script>
+    // Charger XP
+    const progress = JSON.parse(localStorage.getItem('fisherXP') || '{"xp":0,"spots":0,"success":0,"attempts":0}');
+    document.getElementById('xp').textContent = progress.xp;
+    document.getElementById('spots').textContent = progress.spots;
+    document.getElementById('success').textContent = progress.success;
+    document.getElementById('rate').textContent = progress.attempts ? Math.round(progress.success / progress.attempts * 100) + '%' : '0%';
+    document.getElementById('level').textContent = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître";
 
+    // +5 XP depuis resultat.html
+    window.addXP = function(success) {
+      progress.xp += 5;
+      progress.spots += 1;
+      progress.attempts += 1;
+      if (success) progress.success += 1;
+      localStorage.setItem('fisherXP', JSON.stringify(progress));
+      location.reload(); // refresh tableau
+    };
+
+    // Popup +5 XP
+    window.showXPPop = function() {
+      const pop = document.createElement('div');
+      pop.textContent = '+5 XP !';
+      pop.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#00d4aa;color:white;padding:20px 40px;border-radius:20px;font-size:24px;font-weight:bold;z-index:10000;animation:xpPop 1s forwards;';
+      document.body.appendChild(pop);
+      setTimeout(() => pop.remove(), 1000);
+    };
+    const style = document.createElement('style');
+    style.textContent = '@keyframes xpPop {0%{transform:scale(0)};50%{transform:scale(1.2)};100%{transform:scale(1);opacity:0;}}';
+    document.head.appendChild(style);
+  </script>
 </body>
 </html>
