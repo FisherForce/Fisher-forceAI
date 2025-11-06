@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // BOUTON AMIS → OUVRE LA PAGE friends.html (CORRIGÉ)
 el('friendsBtn')?.addEventListener('click', () => window.open('friends.html', '_blank', 'width=600,height=800'));
-  });
+
   });    
   }
 });
