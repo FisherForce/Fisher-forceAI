@@ -84,7 +84,7 @@ if (getAdviceBtn) {
     if (adviceEl) adviceEl.innerHTML = '<p class="muted">Génération des conseils…</p>';
     const result = await fetchAdvice(formattedInput);
     if (!result || result.error) {
-    if (adviceEl) {
+      if (adviceEl) {
         adviceEl.innerHTML = `<p class="muted">Erreur: ${result?.error || "Impossible d'obtenir les conseils."}</p>`;
       }
       return;
@@ -278,7 +278,7 @@ if (adviceEl) {
 let currentUser = null;
 let userDocRef = null;
 
-// CHARGEMENT INTELLIGENT : Firestore OU localStorage (aucun blocage)
+// COMPTES GOOGLE REVENUS + XP INTELLIGENT
 auth.onAuthStateChanged(async (user) => {
   const loginBtn = el('loginBtn');
   const userInfo = el('userInfo');
@@ -287,15 +287,14 @@ auth.onAuthStateChanged(async (user) => {
   if (user) {
     currentUser = user;
     userDocRef = db.collection('users').doc(user.uid);
-    if (userName) userName.textContent = user.displayName.split(' ')[0];
+    if (userName) userName.textContent = user.displayName.split(' ')[0] || "Pêcheur";
     if (loginBtn) loginBtn.style.display = 'none';
     if (userInfo) userInfo.style.display = 'flex';
 
-    // ESSAIE Firestore → sinon local
     try {
       await loadUserProgress();
     } catch (err) {
-      console.log("Firestore bloqué → on passe en local");
+      console.log("Firestore HS → mode local activé");
       loadLocalProgress();
     }
   } else {
@@ -305,13 +304,15 @@ auth.onAuthStateChanged(async (user) => {
     loadLocalProgress();
   }
 
-  // TOUJOURS afficher le tableau de bord
-  updateDashboard();
+  updateDashboard(); // TOUJOURS visible
 });
 
+// BOUTONS CONNEXION GOOGLE (revenus !)
 el('loginBtn')?.addEventListener('click', () => {
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider);
+  auth.signInWithPopup(provider).catch(err => {
+    alert("Connexion échouée : " + err.message);
+  });
 });
 
 el('logoutBtn')?.addEventListener('click', () => {
@@ -327,22 +328,21 @@ const defaultProgress = {
 };
 let progress = { ...defaultProgress };
 
-// CHARGEMENT SÉCURISÉ (ignore les erreurs Firestore)
 async function loadUserProgress() {
   if (!currentUser || !userDocRef) {
     loadLocalProgress();
     return;
   }
   try {
-    const doc = await userDocRef.get({ source: 'cache' }); // priorise cache
+    const doc = await userDocRef.get({ source: 'cache' });
     if (doc.exists) {
       progress = doc.data();
     } else {
       progress = { ...defaultProgress };
-      await userDocRef.set(progress).catch(() => {}); // ignore erreur écriture
+      await userDocRef.set(progress).catch(() => {});
     }
   } catch (err) {
-    console.log("Firestore inaccessible → mode local");
+    console.log("Firestore inaccessible → local");
     loadLocalProgress();
   }
 }
@@ -359,19 +359,14 @@ function loadLocalProgress() {
 }
 
 function saveProgress() {
-  // Sauvegarde locale TOUJOURS
   localStorage.setItem('userProgress', JSON.stringify(progress));
-
-  // Sauvegarde Firestore seulement si connecté
   if (currentUser && userDocRef) {
-    userDocRef.set(progress, { merge: true }).catch(() => {
-      console.log("Sauvegarde Firestore échouée → déjà en local");
-    });
+    userDocRef.set(progress, { merge: true }).catch(() => {});
   }
   updateDashboard();
 }
 
-// === AJOUT XP (appelable depuis popup) ===
+// === AJOUT XP ===
 window.addXP = async function(success = false) {
   progress.xp += 5;
   progress.spotsTested += 1;
@@ -425,15 +420,12 @@ function updateDashboard() {
   }
 }
 
-// === OUVRIR resultat.html EN POPUP + COMMUNICATION ===
+// === POPUP RÉSULTAT ===
 window.openResultat = function() {
   const popup = window.open('resultat.html', 'resultat', 'width=500,height=400,scrollbars=no,resizable=no');
-  if (!popup) {
-    alert("Popup bloquée ! Autorise les popups pour ce site.");
-  }
+  if (!popup) alert("Popup bloquée ! Autorise les popups.");
 };
 
-// Réception du message depuis resultat.html
 window.addEventListener('message', (event) => {
   if (event.origin !== window.location.origin) return;
   if (event.data && event.data.type === 'ADD_XP') {
