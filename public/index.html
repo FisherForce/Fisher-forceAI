@@ -16,11 +16,40 @@
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-top: 12px; }
     .stat-item { background: rgba(255,255,255,0.25); padding: 10px; border-radius: 10px; }
   </style>
+
+  <!-- FIREBASE CHARGÉ EN PREMIER (obligatoire) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // TA CONFIG FIREBASE (remplace apiKey si besoin)
+    const firebaseConfig = {
+      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+      authDomain: "fisherforceai.firebaseapp.com",
+      projectId: "fisherforceai",
+      storageBucket: "fisherforceai.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef1234567890"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
 
   <div class="badge-ia">IA Apprenante</div>
   <div class="live-badge"><span class="live-dot"></span> IA en direct : <span id="patternCount">42</span> patterns appris</div>
+
+  <!-- CONNEXION GOOGLE (en haut à droite) -->
+  <div style="position:fixed;top:15px;right:140px;z-index:9999;display:flex;gap:10px;align-items:center;">
+    <div id="userInfo" style="display:none;color:white;font-weight:bold;">
+      <span id="userName">Loulou</span> 
+      <button id="logoutBtn" style="margin-left:8px;background:#ff4444;color:white;border:none;padding:6px 10px;border-radius:20px;font-size:12px;cursor:pointer;">Déconnexion</button>
+    </div>
+    <button id="loginBtn" style="background:#00d4aa;color:white;border:none;padding:8px 16px;border-radius:50px;font-weight:bold;cursor:pointer;">Connexion Google</button>
+  </div>
 
   <header class="site-header">
     <div class="container">
@@ -49,7 +78,7 @@
     <section class="card output-card">
       <h2>Conseils de l'IA</h2>
 
-      <!-- TABLEAU DE BORD XP (localStorage) -->
+      <!-- TABLEAU DE BORD XP (mis à jour par app.js) -->
       <div class="dashboard">
         <h3><span class="level-badge" id="level">Débutant</span> — <span id="xp">0</span> XP</h3>
         <div class="stats-grid">
@@ -79,39 +108,32 @@
     </section>
   </main>
 
+  <!-- app.js chargé après Firebase -->
   <script src="app.js"></script>
 
-  <!-- XP LOCAL + MISE À JOUR AUTO -->
+  <!-- XP LOCAL + POPUP (compatible avec le nouvel app.js) -->
   <script>
-    // Charger XP
-    const progress = JSON.parse(localStorage.getItem('fisherXP') || '{"xp":0,"spots":0,"success":0,"attempts":0}');
-    document.getElementById('xp').textContent = progress.xp;
-    document.getElementById('spots').textContent = progress.spots;
-    document.getElementById('success').textContent = progress.success;
-    document.getElementById('rate').textContent = progress.attempts ? Math.round(progress.success / progress.attempts * 100) + '%' : '0%';
-    document.getElementById('level').textContent = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître";
+    // Popup +5 XP (une seule animation)
+    if (!document.getElementById('xpAnimStyle')) {
+      const xpStyle = document.createElement('style');
+      xpStyle.id = 'xpAnimStyle';
+      xpStyle.textContent = `
+        @keyframes xpPop {
+          0% { transform: scale(0); opacity: 0; }
+          50% { transform: scale(1.3); opacity: 1; }
+          100% { transform: scale(1); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(xpStyle);
+    }
 
-    // +5 XP depuis resultat.html
-    window.addXP = function(success) {
-      progress.xp += 5;
-      progress.spots += 1;
-      progress.attempts += 1;
-      if (success) progress.success += 1;
-      localStorage.setItem('fisherXP', JSON.stringify(progress));
-      location.reload(); // refresh tableau
-    };
-
-    // Popup +5 XP
     window.showXPPop = function() {
       const pop = document.createElement('div');
       pop.textContent = '+5 XP !';
-      pop.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#00d4aa;color:white;padding:20px 40px;border-radius:20px;font-size:24px;font-weight:bold;z-index:10000;animation:xpPop 1s forwards;';
+      pop.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#00d4aa;color:white;padding:20px 40px;border-radius:20px;font-size:28px;font-weight:bold;z-index:9999;animation:xpPop 1s forwards;';
       document.body.appendChild(pop);
       setTimeout(() => pop.remove(), 1000);
     };
-    const style = document.createElement('style');
-    style.textContent = '@keyframes xpPop {0%{transform:scale(0)};50%{transform:scale(1.2)};100%{transform:scale(1);opacity:0;}}';
-    document.head.appendChild(style);
   </script>
 </body>
 </html>
