@@ -125,22 +125,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.data?.type === 'ADD_XP') {
       const { success, speciesName, spotName } = e.data;
 
-      // +5 XP de base
       awardXP(5, success ? "Prise validée !" : "Session enregistrée");
 
-      // +7 XP si nouveau spot pêché
       if (spotName && !knownSpots.has(spotName)) {
         knownSpots.add(spotName);
         awardXP(7, "Nouveau spot conquis !");
       }
 
-      // +10 XP si nouvelle espèce
       if (success && speciesName && !knownSpecies.has(speciesName)) {
         knownSpecies.add(speciesName);
         awardXP(10, `NOUVELLE ESPÈCE : ${speciesName.toUpperCase()} !`);
       }
 
-      // Stats espèce
       if (success && speciesName) {
         progress.speciesCaught[speciesName] = (progress.speciesCaught[speciesName] || 0) + 1;
       }
@@ -192,14 +188,13 @@ document.addEventListener('DOMContentLoaded', () => {
       auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     });
     el('logoutBtn')?.addEventListener('click', () => auth.signOut());
+  }
 
-// VERSION INDESTRUCTIBLE — copie-colle ça
-const btn = document.getElementById('friendsBtn');
-if (btn) {
-  btn.addEventListener('click', () => {
-    window.open('friends.html', '_blank', 'width=600,height=800');
-  });
-}
-  });    
+  // BOUTON AMIS — VERSION 100% CORRECTE ET BIEN PLACÉE
+  const friendsBtn = document.getElementById('friendsBtn');
+  if (friendsBtn) {
+    friendsBtn.addEventListener('click', () => {
+      window.open('friends.html', '_blank', 'width=600,height=800');
+    });
   }
 });
