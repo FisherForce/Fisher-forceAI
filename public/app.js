@@ -27,7 +27,8 @@ function renderAdvice(data) {
     container.innerHTML += `<h3>Profondeur</h3><ul>${data.depthAdvice.map(d => `<li>${d}</li>`).join('')}</ul>`;
   }
   if (!container.innerHTML.includes('<ul') && !data.adviceText) container.innerHTML = '<p class="muted">Varie les techniques !</p>';
-  el('voiceControls')?.style = {display: 'block'};
+const voiceControls = el('voiceControls');
+if (voiceControls) voiceControls.style.display = 'block';
   setTimeout(() => speakAdvice(container.innerHTML), 800);
 }
 
@@ -68,7 +69,8 @@ el('clearBtn')?.addEventListener('click', () => {
   el('waterType').value = 'Étang';
   el('fishingTime').value = '08:00';
   el('advice').innerHTML = '<p class="muted">Remplis le formulaire…</p>';
-  el('voiceControls').style.display = 'none';
+const voiceControls = el('voiceControls');
+if (voiceControls) voiceControls.style.display = 'none';
 });
 
 // === COMMANDE VOCALE ===
