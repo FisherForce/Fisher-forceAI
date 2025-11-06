@@ -1,105 +1,75 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Résultat de session — Fisher-Force AI</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enregistrer la session - FisherForce AI</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
-    .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-    h1 { color: #00a085; text-align: center; }
-    input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; }
-    button { background: #00d4aa; color: white; border: none; font-weight: bold; cursor: pointer; }
-    .back { text-align: center; margin-top: 20px; }
-    .back a { color: #00d4aa; text-decoration: none; }
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #00d4aa, #007a63); color: white; margin:0; padding:20px; text-align:center; }
+    .card { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; max-width: 420px; margin: 40px auto; box-shadow: 0 15px 40px rgba(0,0,0,0.3); }
+    h1 { font-size: 28px; margin-bottom: 10px; }
+    label { display: block; margin: 18px 0 8px; font-size: 18px; text-align: left; }
+    input, select { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; background: rgba(255,255,255,0.9); color: #000; }
+    .btn { margin-top: 25px; padding: 16px; font-size: 20px; font-weight: bold; border: none; border-radius: 50px; background: #ffd700; color: #000; cursor: pointer; width: 100%; }
+    .btn:hover { background: #ffed4e; transform: scale(1.05); transition: 0.3s; }
+    .success { background: #00d4aa !important; }
   </style>
 </head>
 <body>
+  <div class="card">
+    <h1>Enregistrer ta session</h1>
+    <p id="spotNameDisplay">Spot : <strong>Étang du Moulin</strong></p>
 
-  <div class="container">
-    <h1>Enregistre ton résultat</h1>
-    <p><strong>Dernier conseil :</strong> <span id="lastAdvice">Chargement...</span></p>
+    <label>
+      <input type="checkbox" id="caught"> J'ai pris un poisson !
+    </label>
 
-    <label><strong>Leurre utilisé :</strong></label>
-    <input type="text" id="lureUsed" placeholder="ex: leurre souple 5cm">
+    <div id="fishDetails" style="display:none;">
+      <label>Espèce pêchée</label>
+      <input type="text" id="species" placeholder="Ex: brochet, perche, sandre..." list="speciesList">
+      <datalist id="speciesList">
+        <option>brochet</option><option>perche</option><option>sandre</option><option>carpe</option><option>truite</option><option>black-bass</option><option>silure</option>
+      </datalist>
 
-    <label><strong>Résultat :</strong></label>
-    <label><input type="checkbox" id="resultFish"> Oui, j'ai pris du poisson !</label>
-
-    <button onclick="saveResult()">Enregistrer → L'IA apprend</button>
-    <p id="msg" style="text-align:center; font-weight:bold; margin-top:15px;"></p>
-
-    <div class="back">
-      <a href="index.html">← Retour aux conseils</a>
+      <label>Leurre utilisé</label>
+      <input type="text" id="lure" placeholder="Ex: Jerkbait 11cm, Texas rig 10g...">
     </div>
+
+    <button class="btn" onclick="saveSession()">ENREGISTER + XP</button>
   </div>
-<h1>Résultat de pêche</h1>
-  <p>As-tu attrapé quelque chose ?</p>
-  <button class="success" onclick="sendXP(true)">Oui !</button>
-  <button class="fail" onclick="sendXP(false)">Non</button>
 
   <script>
-    function sendXP(success) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const spotName = urlParams.get('spot') || "Spot inconnu";
+    document.getElementById('spotNameDisplay').innerHTML = `Spot : <strong>${spotName}</strong>`;
+
+    document.getElementById('caught').addEventListener('change', function() {
+      document.getElementById('fishDetails').style.display = this.checked ? 'block' : 'none';
+    });
+
+    function saveSession() {
+      const caught = document.getElementById('caught').checked;
+      const species = document.getElementById('species').value.trim().toLowerCase();
+      const lure = document.getElementById('lure').value.trim();
+      const spot = spotName.toLowerCase();
+
+      // Envoie à la page principale
       window.opener.postMessage({
         type: 'ADD_XP',
-        success: success
-      }, window.location.origin);
+        success: caught,
+        speciesName: caught ? species : null,
+        spotName: spot,
+        lure: lure
+      }, '*');
 
-      alert(success ? 'Bravo ! +5 XP' : 'Dommage... +5 XP quand même !');
-      window.close();
+      // Animation de succès
+      document.querySelector('.card').innerHTML = `
+        <h1>SESSION ENREGISTRÉE !</h1>
+        <p style="font-size:60px;margin:30px 0;">+ XP</p>
+        <p style="font-size:20px;">Ferme cette fenêtre</p>
+      `;
+      document.body.style.background = '#00d4aa';
     }
   </script>
-
-  <script>
-    // Afficher le dernier conseil
-    const last = JSON.parse(sessionStorage.getItem('lastAdvice') || '{}');
-    document.getElementById('lastAdvice').innerText = 
-      `${last.species || "?"} • ${last.spotType || "?"} • ${last.conditions || "?"}`;
-
-    async function saveResult() {
-      const lureUsed = document.getElementById('lureUsed').value.trim();
-      const resultFish = document.getElementById('resultFish').checked;
-
-      if (!lureUsed) {
-        alert("Entre le leurre utilisé !");
-        return;
-      }
-
-      const session = {
-        species: last.species || "inconnu",
-        spotType: last.spotType || "inconnu",
-        conditions: last.conditions || "inconnu",
-        structure: last.structure || "",
-        lureUsed,
-        resultFish
-      };
-
-      try {
-        const res = await fetch('/api/learn', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(session)
-        });
-        const data = await res.json();
-
-        document.getElementById('msg').innerHTML = 
-          data.success 
-            ? "Session enregistrée ! L'IA apprend... Merci !" 
-            : "Erreur";
-
-        if (data.success) {
-          document.getElementById('lureUsed').value = "";
-          document.getElementById('resultFish').checked = false;
-        }
-
-      } catch (e) {
-        document.getElementById('msg').innerHTML = "Erreur de connexion";
-      }
-    }
-  </script>
-
 </body>
 </html>
-
-
