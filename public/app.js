@@ -260,7 +260,7 @@ if (stopBtn) {
 speechSynthesis.onvoiceschanged = () => {
   speechSynthesis.getVoices();
 };
-// === ANIMATION MICRO ===
+// === ANIMATION MICROrea
 const style = document.createElement('style');
 style.textContent = `
 @keyframes pulse {
@@ -274,172 +274,151 @@ const adviceEl = el('advice');
 if (adviceEl) {
   adviceEl.innerHTML = '<p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p>';
 }
-// === SYSTÈME DE COMPTE & PROGRESSION ===
-let currentUser = null;
-let userDocRef = null;
 
-// COMPTES GOOGLE REVENUS + XP INTELLIGENT
-auth.onAuthStateChanged(async (user) => {
-  const loginBtn = el('loginBtn');
-  const userInfo = el('userInfo');
-  const userName = el('userName');
-
-  if (user) {
-    currentUser = user;
-    userDocRef = db.collection('users').doc(user.uid);
-    if (userName) userName.textContent = user.displayName.split(' ')[0] || "Pêcheur";
-    if (loginBtn) loginBtn.style.display = 'none';
-    if (userInfo) userInfo.style.display = 'flex';
-
-    try {
-      await loadUserProgress();
-    } catch (err) {
-      console.log("Firestore HS → mode local activé");
-      loadLocalProgress();
-    }
-  } else {
-    currentUser = null;
-    if (loginBtn) loginBtn.style.display = 'block';
-    if (userInfo) userInfo.style.display = 'none';
-    loadLocalProgress();
-  }
-
-  updateDashboard(); // TOUJOURS visible
-});
-
-// BOUTONS CONNEXION GOOGLE (revenus !)
-el('loginBtn')?.addEventListener('click', () => {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(err => {
-    alert("Connexion échouée : " + err.message);
-  });
-});
-
-el('logoutBtn')?.addEventListener('click', () => {
-  auth.signOut();
-});
-
-const defaultProgress = {
-  xp: 0,
-  spotsTested: 0,
-  speciesCaught: {},
-  successes: 0,
-  attempts: 0
-};
-let progress = { ...defaultProgress };
-
-async function loadUserProgress() {
-  if (!currentUser || !userDocRef) {
-    loadLocalProgress();
+// === ATTENDRE QUE FIREBASE SOIT CHARGÉ ===
+window.addEventListener('load', () => {
+  if (typeof firebase === 'undefined' || !firebase.auth || !firebase.firestore) {
+    console.error("Firebase non chargé !");
     return;
   }
-  try {
-    const doc = await userDocRef.get({ source: 'cache' });
-    if (doc.exists) {
-      progress = doc.data();
+
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let currentUser = null;
+  let userDocRef = null;
+
+  // === SYSTÈME DE COMPTE & PROGRESSION ===
+  const defaultProgress = {
+    xp: 0,
+    spotsTested: 0,
+    speciesCaught: {},
+    successes: 0,
+    attempts: 0
+  };
+  let progress = { ...defaultProgress };
+
+  // CHARGEMENT INTELLIGENT
+  auth.onAuthStateChanged(async (user) => {
+    const loginBtn = el('loginBtn');
+    const userInfo = el('userInfo');
+    const userName = el('userName');
+
+    if (user) {
+      currentUser = user;
+      userDocRef = db.collection('users').doc(user.uid);
+      if (userName) userName.textContent = user.displayName?.split(' ')[0] || "Pêcheur";
+      if (loginBtn) loginBtn.style.display = 'none';
+      if (userInfo) userInfo.style.display = 'flex';
+
+      try {
+        await loadUserProgress();
+      } catch (err) {
+        console.log("Firestore HS → mode local");
+        loadLocalProgress();
+      }
     } else {
-      progress = { ...defaultProgress };
-      await userDocRef.set(progress).catch(() => {});
+      currentUser = null;
+      if (loginBtn) loginBtn.style.display = 'block';
+      if (userInfo) userInfo.style.display = 'none';
+      loadLocalProgress();
     }
-  } catch (err) {
-    console.log("Firestore inaccessible → local");
-    loadLocalProgress();
-  }
-}
+    updateDashboard();
+  });
 
-function loadLocalProgress() {
-  const saved = localStorage.getItem('userProgress');
-  if (saved) {
+  // BOUTONS CONNEXION
+  el('loginBtn')?.addEventListener('click', () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(err => alert("Connexion échouée : " + err.message));
+  });
+
+  el('logoutBtn')?.addEventListener('click', () => auth.signOut());
+
+  // CHARGEMENT PROGRESSION
+  async function loadUserProgress() {
+    if (!currentUser || !userDocRef) return loadLocalProgress();
     try {
-      progress = JSON.parse(saved);
-    } catch {
-      progress = { ...defaultProgress };
+      const doc = await userDocRef.get({ source: 'cache' });
+      if (doc.exists) progress = doc.data();
+      else {
+        progress = { ...defaultProgress };
+        await userDocRef.set(progress).catch(() => {});
+      }
+    } catch (err) {
+      console.log("Firestore inaccessible → local");
+      loadLocalProgress();
     }
   }
-}
 
-function saveProgress() {
-  localStorage.setItem('userProgress', JSON.stringify(progress));
-  if (currentUser && userDocRef) {
-    userDocRef.set(progress, { merge: true }).catch(() => {});
+  function loadLocalProgress() {
+    const saved = localStorage.getItem('userProgress');
+    if (saved) {
+      try { progress = JSON.parse(saved); } catch { progress = { ...defaultProgress }; }
+    }
   }
-  updateDashboard();
-}
 
-// === AJOUT XP ===
-window.addXP = async function(success = false) {
-  progress.xp += 5;
-  progress.spotsTested += 1;
-  progress.attempts += 1;
-  if (success) {
-    progress.successes += 1;
-    const species = el('targetSpecies')?.value || "inconnu";
-    progress.speciesCaught[species] = (progress.speciesCaught[species] || 0) + 1;
+  function saveProgress() {
+    localStorage.setItem('userProgress', JSON.stringify(progress));
+    if (currentUser && userDocRef) {
+      userDocRef.set(progress, { merge: true }).catch(() => {});
+    }
+    updateDashboard();
   }
-  saveProgress();
-  showXPPop();
-};
 
-// === POP-UP +5 XP ===
-function showXPPop() {
-  const pop = document.createElement('div');
-  pop.style.cssText = `
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #00d4aa; color: white; padding: 20px 30px; border-radius: 20px;
-    font-size: 24px; font-weight: bold; z-index: 10000;
-    animation: xpPop 1s ease-out forwards;
-  `;
-  pop.textContent = '+5 XP !';
-  document.body.appendChild(pop);
-  setTimeout(() => pop.remove(), 1000);
-}
+  // AJOUT XP
+  window.addXP = function(success = false) {
+    progress.xp += 5;
+    progress.spotsTested += 1;
+    progress.attempts += 1;
+    if (success) {
+      progress.successes += 1;
+      const species = el('targetSpecies')?.value || "inconnu";
+      progress.speciesCaught[species] = (progress.speciesCaught[species] || 0) + 1;
+    }
+    saveProgress();
+    showXPPop();
+  };
 
-// === TABLEAU DE BORD ===
-function updateDashboard() {
-  const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
-  const successRate = progress.attempts > 0 ? Math.round((progress.successes / progress.attempts) * 100) : 0;
-  const dashboardHTML = `
-    <div style="background: linear-gradient(135deg, #00d4aa, #00a085); color: white; padding: 15px; border-radius: 12px; margin: 20px 0; text-align: center;">
-      <h3 style="margin: 0 0 10px 0; font-size: 18px;">
-        <span style="background: #ffd700; color: #000; padding: 5px 10px; border-radius: 20px; font-weight: bold;">${level}</span> — ${progress.xp} XP
-      </h3>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 10px;">
-        <div style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px;">Spots : <strong>${progress.spotsTested}</strong></div>
-        <div style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px;">Espèces : <strong>${Object.keys(progress.speciesCaught).length}</strong></div>
-        <div style="background: rgba(255,255,255,0.2); padding: 8px; border-radius: 8px;">Réussite : <strong>${successRate}%</strong></div>
+  // POP-UP +5 XP
+  function showXPPop() {
+    const pop = document.createElement('div');
+    pop.textContent = '+5 XP !';
+    pop.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#00d4aa;color:white;padding:20px 40px;border-radius:20px;font-size:24px;font-weight:bold;z-index:10000;animation:xpPop 1s forwards;';
+    document.body.appendChild(pop);
+    setTimeout(() => pop.remove(), 1000);
+  }
+
+  // TABLEAU DE BORD
+  function updateDashboard() {
+    const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
+    const rate = progress.attempts > 0 ? Math.round((progress.successes / progress.attempts) * 100) : 0;
+    const html = `
+      <div style="background:linear-gradient(135deg,#00d4aa,#00a085);color:white;padding:15px;border-radius:12px;margin:20px 0;text-align:center;">
+        <h3 style="margin:0 0 10px;font-size:18px;">
+          <span style="background:#ffd700;color:#000;padding:5px 10px;border-radius:20px;font-weight:bold;">${level}</span> — ${progress.xp} XP
+        </h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;">
+          <div style="background:rgba(255,255,255,0.2);padding:8px;border-radius:8px;">Spots : <strong>${progress.spotsTested}</strong></div>
+          <div style="background:rgba(255,255,255,0.2);padding:8px;border-radius:8px;">Espèces : <strong>${Object.keys(progress.speciesCaught).length}</strong></div>
+          <div style="background:rgba(255,255,255,0.2);padding:8px;border-radius:8px;">Réussite : <strong>${rate}%</strong></div>
+        </div>
       </div>
-    </div>
-  `;
-
-  let dashboard = document.querySelector('.dashboard');
-  if (dashboard) {
-    dashboard.outerHTML = dashboardHTML;
-  } else {
-    const outputCard = document.querySelector('.output-card h2');
-    if (outputCard) outputCard.insertAdjacentHTML('afterend', dashboardHTML);
+    `;
+    let dash = document.querySelector('.dashboard');
+    if (dash) dash.outerHTML = html;
+    else document.querySelector('.output-card h2')?.insertAdjacentHTML('afterend', html);
   }
-}
 
-// === POPUP RÉSULTAT ===
-window.openResultat = function() {
-  const popup = window.open('resultat.html', 'resultat', 'width=500,height=400,scrollbars=no,resizable=no');
-  if (!popup) alert("Popup bloquée ! Autorise les popups.");
-};
+  // POPUP RÉSULTAT
+  window.openResultat = () => window.open('resultat.html', 'resultat', 'width=500,height=400');
 
-window.addEventListener('message', (event) => {
-  if (event.origin !== window.location.origin) return;
-  if (event.data && event.data.type === 'ADD_XP') {
-    addXP(event.data.success);
-  }
+  window.addEventListener('message', e => {
+    if (e.origin !== location.origin) return;
+    if (e.data?.type === 'ADD_XP') addXP(e.data.success);
+  });
+
+  // ANIMATION XP
+  const xpStyle = document.createElement('style');
+  xpStyle.textContent = `@keyframes xpPop{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1);opacity:0}}`;
+  document.head.appendChild(xpStyle);
 });
-
-// === ANIMATION XP ===
-const xpStyle = document.createElement('style');
-xpStyle.textContent = `
-@keyframes xpPop {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 0; }
-}
-`;
-document.head.appendChild(xpStyle);
