@@ -192,5 +192,11 @@ document.addEventListener('DOMContentLoaded', () => {
       auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     });
     el('logoutBtn')?.addEventListener('click', () => auth.signOut());
+
+      // BOUTON AMIS → OUVRE LA PAGE FRIENDS.HTML
+    el('friendsBtn')?.addEventListener('click', () => {
+      window.open('friends.html', '_blank', 'width=600,height=800');
+  });
+  });    
   }
 });
