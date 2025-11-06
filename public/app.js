@@ -25,17 +25,17 @@ function awardXP(amount, message) {
 
 function showXPPop(text) {
   const pop = document.createElement('div');
-  pop.innerHTML = `<strong style="font-size:28px;">${text}</strong>`;
-  pop.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#00d4aa;color:white;padding:20px 50px;border-radius:60px;z-index:99999;box-shadow:0 15px 40px rgba(0,212,170,0.8);animation:pop 1.6s forwards;';
+  pop.innerHTML = `<strong style="font-size:30px;">${text}</strong>`;
+  pop.style.cssText = 'position:fixed;top:18%;left:50%;transform:translateX(-50%);background:#00d4aa;color:white;padding:22px 60px;border-radius:70px;z-index:99999;box-shadow:0 20px 50px rgba(0,212,170,0.9);animation:pop 1.8s forwards;';
   document.body.appendChild(pop);
-  setTimeout(() => pop.remove(), 1600);
+  setTimeout(() => pop.remove(), 1800);
 }
 
 function saveAll() {
   localStorage.setItem('fisherXP', JSON.stringify(progress));
   localStorage.setItem('knownSpots', JSON.stringify([...knownSpots]));
   localStorage.setItem('knownSpecies', JSON.stringify([...knownSpecies]));
-  updateDashboard(); // TOUJOURS mis à jour
+  updateDashboard();
 }
 
 // === DASHBOARD LIVE ===
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('xpAnim')) {
     const s = document.createElement('style');
     s.id = 'xpAnim';
-    s.textContent = '@keyframes pop{0%{transform:scale(0) translateX(-50%)}40%{transform:scale(1.6) translateX(-50%)}100%{transform:scale(1) translateX(-50%);opacity:0}}';
+    s.textContent = '@keyframes pop{0%{transform:scale(0) translateX(-50%)}40%{transform:scale(1.7) translateX(-50%)}100%{transform:scale(1) translateX(-50%);opacity:0}}';
     document.head.appendChild(s);
   }
 
@@ -96,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log("API HS → mode démo activé");
     }
 
-    // FALLBACK SI API 400 OU HS
     if (!result || result.error) {
       result = {
         adviceText: "Pêche en poids suspendu avec un leurre souple 10cm texan. Varie les couleurs selon la luminosité.",
@@ -115,23 +114,44 @@ document.addEventListener('DOMContentLoaded', () => {
     el('voiceControls') && (el('voiceControls').style.display = 'none');
   });
 
-  // === ADD XP DEPUIS RESULTAT.HTML ===
-  window.addXP = function(success = false, species = null) {
-    progress.spotsTested += 1;
-    progress.attempts += 1;
-    awardXP(5, success ? "Prise validée !" : "Spot testé");
-
-    if (success) {
-      progress.successes += 1;
-      const sp = (species || el('targetSpecies')?.value || "inconnu").toLowerCase();
-      if (!knownSpecies.has(sp)) {
-        knownSpecies.add(sp);
-        awardXP(15, `Première ${sp} ! LÉGENDAIRE !`);
-      }
-      progress.speciesCaught[sp] = (progress.speciesCaught[sp] || 0) + 1;
-    }
-    saveAll();
+  // === OUVRIR POPUP AVEC NOM DU SPOT ===
+  window.openResultat = () => {
+    const spot = el('spotName')?.value.trim() || "Spot inconnu";
+    window.open(`resultat.html?spot=${encodeURIComponent(spot)}`, '_blank', 'width=500,height=700');
   };
+
+  // === RÉCEPTION DES DONNÉES DEPUIS resultat.html ===
+  window.addEventListener('message', (e) => {
+    if (e.data?.type === 'ADD_XP') {
+      const { success, speciesName, spotName } = e.data;
+
+      // +5 XP de base
+      awardXP(5, success ? "Prise validée !" : "Session enregistrée");
+
+      // +7 XP si nouveau spot pêché
+      if (spotName && !knownSpots.has(spotName)) {
+        knownSpots.add(spotName);
+        awardXP(7, "Nouveau spot conquis !");
+      }
+
+      // +10 XP si nouvelle espèce
+      if (success && speciesName && !knownSpecies.has(speciesName)) {
+        knownSpecies.add(speciesName);
+        awardXP(10, `NOUVELLE ESPÈCE : ${speciesName.toUpperCase()} !`);
+      }
+
+      // Stats espèce
+      if (success && speciesName) {
+        progress.speciesCaught[speciesName] = (progress.speciesCaught[speciesName] || 0) + 1;
+      }
+
+      progress.spotsTested += 1;
+      progress.attempts += 1;
+      if (success) progress.successes += 1;
+
+      saveAll();
+    }
+  });
 
   // === FONCTIONS DE BASE ===
   function readForm() {
@@ -173,6 +193,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     el('logoutBtn')?.addEventListener('click', () => auth.signOut());
   }
-
-  window.openResultat = () => window.open('resultat.html', '_blank');
 });
