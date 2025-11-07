@@ -16,7 +16,7 @@
     .loading { color: #00d4aa; font-style: italic; }
   </style>
 
-  <!-- FIREBASE (identique à index.html) -->
+  <!-- FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -59,7 +59,7 @@
     const savedPseudo = localStorage.getItem('fisherPseudo') || 'Thao';
     document.getElementById('userName').textContent = savedPseudo;
 
-    // ATTEND FIREBASE
+    // ATTEND QUE FIREBASE SOIT CHARGÉ
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof firebase === 'undefined') {
         document.getElementById('searchResults').innerHTML = '<p style="color:#e74c3c;">Firebase non chargé. Recharge la page.</p>';
@@ -83,9 +83,7 @@
       const query = document.getElementById('searchFriend').value.trim().toLowerCase();
       if (!query || !currentUser) return alert('Tape un pseudo ou connecte-toi.');
 
-      // RECHERCHE PAR PREFIXE (commence par "query")
-      const queryRef = db.collection('users').where('displayName', '>=', query).where('displayName', '<=', query + '\uf8ff');
-      queryRef.get().then(snap => {
+      db.collection('users').where('displayName', '>=', query).where('displayName', '<=', query + '\uf8ff').get().then(snap => {
         const results = document.getElementById('searchResults');
         results.innerHTML = '';
         if (snap.empty) {
@@ -123,7 +121,7 @@
       }).then(() => {
         alert(`Demande envoyée à ${name} !`);
         document.getElementById('searchFriend').value = '';
-        searchFriend(); // Rechercher pour cacher
+        searchFriend();
       }).catch(err => alert("Erreur : " + err.message));
     }
 
@@ -134,12 +132,9 @@
         list.innerHTML = '';
         snap.forEach(doc => {
           const data = doc.data();
-          list.innerHTML += `<div class="friend">
-            <strong>${data.toName}</strong> — <span id="friendXP-${doc.id}">${data.toXP || 0}</span> XP
-            <button onclick="removeFriend('${doc.id}')">Retirer</button>
-          </div>`;
+          list.innerHTML += `<div class="friend"><strong>${data.toName}</strong> — ${data.toXP || 0} XP</div>`;
         });
-        if (snap.empty) list.innerHTML = 'Aucun ami pour l'instant';
+        if (snap.empty) list.innerHTML = 'Aucun ami pour l’instant';
       }).catch(err => {
         console.error("Erreur amis :", err);
         document.getElementById('friendsList').innerHTML = 'Erreur de chargement';
@@ -155,7 +150,7 @@
           const data = doc.data();
           list.innerHTML += `<div class="pending">
             <strong>${data.fromName}</strong> demande d'amitié
-            <button onclick="acceptRequest('${doc.id}', '${data.fromName}')">Accepter</button>
+            <button onclick="acceptRequest('${doc.id}')">Accepter</button>
             <button onclick="rejectRequest('${doc.id}')">Refuser</button>
           </div>`;
         });
@@ -166,25 +161,18 @@
       });
     }
 
-    function acceptRequest(docId, name) {
-      db.collection('friendRequests').doc(docId).update({ status: 'accepted' }).then(() => {
-        alert(`${name} est maintenant ton ami !`);
+    function acceptRequest(reqId) {
+      db.collection('friendRequests').doc(reqId).update({ status: 'accepted' }).then(() => {
+        alert('Ami ajouté !');
         loadFriends();
         loadPendingRequests();
       }).catch(err => alert("Erreur : " + err.message));
     }
 
-    function rejectRequest(docId) {
-      db.collection('friendRequests').doc(docId).delete().then(() => {
+    function rejectRequest(reqId) {
+      db.collection('friendRequests').doc(reqId).delete().then(() => {
         alert('Demande refusée.');
         loadPendingRequests();
-      });
-    }
-
-    function removeFriend(docId) {
-      db.collection('friendRequests').doc(docId).delete().then(() => {
-        alert('Ami retiré.');
-        loadFriends();
       });
     }
   </script>
