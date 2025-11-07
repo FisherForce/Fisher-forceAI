@@ -12,119 +12,181 @@
     button:hover { background: #00a085; }
     .friend { background: #e6fffa; padding: 15px; border-radius: 15px; margin: 10px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
     .pending { background: #fff3cd; }
-    .status { color: #00d4aa; font-weight: bold; }
+    .status { color: #00d4aa; font-weight: bold; margin-bottom: 20px; }
+    .loading { color: #00d4aa; font-style: italic; }
   </style>
+
+  <!-- FIREBASE (identique à index.html) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+      authDomain: "fisher-forceai.firebaseapp.com",
+      projectId: "fisher-forceai",
+      storageBucket: "fisher-forceai.firebasestorage.app",
+      messagingSenderId: "293964630939",
+      appId: "1:293964630939:web:063ed88456613a33e96f3e",
+      measurementId: "G-3H9E51FWXY"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
   <div class="card">
     <h1>Amis FisherForce</h1>
-    <p class="status">Connecté en tant que <span id="userName"></span></p>
+    <p class="status">Connecté en tant que <span id="userName">Thao</span></p>
 
     <input type="text" id="searchFriend" placeholder="Rechercher un pseudo...">
     <button onclick="searchFriend()">Rechercher</button>
     <div id="searchResults"></div>
 
     <h2>Mes amis</h2>
-    <div id="friendsList">Aucun ami pour l’instant</div>
+    <div id="friendsList">Chargement...</div>
 
     <h2>Demandes en attente</h2>
     <div id="pendingRequests">Aucune demande</div>
   </div>
 
   <script>
-    // === DONNÉES SIMULÉES LOCALES (pas de Firebase) ===
-    const currentUser = { name: localStorage.getItem('fisherUserName') || 'Thao' };
-    document.getElementById('userName').textContent = currentUser.name;
+    let currentUser = null;
 
-    // Base de données locale simulée
-    const fakeUsers = [
-      { name: "LoulouPeche", xp: 285, level: "Maître du brochet" },
-      { name: "BrochetKiller", xp: 220, level: "Traqueur" },
-      { name: "PercheMaster", xp: 190, level: "Traqueur" },
-      { name: "Carpiste72", xp: 165, level: "Débutant" },
-      { name: "TruiteNinja", xp: 140, level: "Débutant" }
-    ];
+    // CHARGE LE PSEUDO
+    const savedPseudo = localStorage.getItem('fisherPseudo') || 'Thao';
+    document.getElementById('userName').textContent = savedPseudo;
 
-    // Sauvegarde locale
-    const friends = JSON.parse(localStorage.getItem('fisherFriends') || '[]');
-    const pending = JSON.parse(localStorage.getItem('fisherPending') || '[]');
-
-    // === RECHERCHE ===
-    function searchFriend() {
-      const query = document.getElementById('searchFriend').value.trim().toLowerCase();
-      const results = document.getElementById('searchResults');
-      results.innerHTML = '';
-
-      if (!query) return;
-
-      const matches = fakeUsers.filter(u => u.name.toLowerCase().includes(query) && !friends.includes(u.name) && !pending.includes(u.name));
-      
-      if (matches.length === 0) {
-        results.innerHTML = '<p style="color:#e74c3c;">Aucun pêcheur trouvé</p>';
+    // ATTEND FIREBASE
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof firebase === 'undefined') {
+        document.getElementById('searchResults').innerHTML = '<p style="color:#e74c3c;">Firebase non chargé. Recharge la page.</p>';
         return;
       }
 
-      matches.forEach(user => {
-        results.innerHTML += `
-          <div class="friend">
-            <div>
-              <strong>${user.name}</strong> — ${user.xp} XP (${user.level})
-            </div>
-            <button onclick="sendRequest('${user.name}')">Ajouter</button>
-          </div>`;
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          currentUser = user;
+          loadFriends();
+          loadPendingRequests();
+        } else {
+          alert('Connecte-toi pour voir tes amis.');
+          window.close();
+        }
+      });
+    });
+
+    // RECHERCHE RÉELLE DANS FIRESTORE
+    function searchFriend() {
+      const query = document.getElementById('searchFriend').value.trim().toLowerCase();
+      if (!query || !currentUser) return alert('Tape un pseudo ou connecte-toi.');
+
+      // RECHERCHE PAR PREFIXE (commence par "query")
+      const queryRef = db.collection('users').where('displayName', '>=', query).where('displayName', '<=', query + '\uf8ff');
+      queryRef.get().then(snap => {
+        const results = document.getElementById('searchResults');
+        results.innerHTML = '';
+        if (snap.empty) {
+          results.innerHTML = '<p style="color:#e74c3c;">Aucun pêcheur trouvé</p>';
+          return;
+        }
+        snap.forEach(doc => {
+          const data = doc.data();
+          if (doc.id !== currentUser.uid) {
+            results.innerHTML += `
+              <div class="friend">
+                <div>
+                  <strong>${data.displayName || 'Anonyme'}</strong> — ${data.xp || 0} XP (${data.level || 'Débutant'})
+                </div>
+                <button onclick="addFriend('${doc.id}', '${data.displayName || 'Anonyme'}')">Ajouter</button>
+              </div>`;
+          }
+        });
+      }).catch(err => {
+        console.error("Erreur recherche :", err);
+        document.getElementById('searchResults').innerHTML = '<p style="color:#e74c3c;">Erreur de recherche. Réessaye.</p>';
       });
     }
 
-    // === ENVOYER DEMANDE ===
-    function sendRequest(name) {
-      pending.push(name);
-      localStorage.setItem('fisherPending', JSON.stringify(pending));
-      alert(`Demande envoyée à ${name} !`);
-      updateLists();
+    // ENVOYER DEMANDE
+    function addFriend(uid, name) {
+      if (!currentUser) return alert('Connecte-toi !');
+      db.collection('friendRequests').add({
+        from: currentUser.uid,
+        to: uid,
+        status: 'pending',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        fromName: localStorage.getItem('fisherPseudo') || currentUser.displayName,
+        toName: name
+      }).then(() => {
+        alert(`Demande envoyée à ${name} !`);
+        document.getElementById('searchFriend').value = '';
+        searchFriend(); // Rechercher pour cacher
+      }).catch(err => alert("Erreur : " + err.message));
     }
 
-    // === ACCEPTER DEMANDE (simulation) ===
-    function acceptRequest(name) {
-      const idx = pending.indexOf(name);
-      if (idx > -1) {
-        pending.splice(idx, 1);
-        friends.push(name);
-        localStorage.setItem('fisherPending', JSON.stringify(pending));
-        localStorage.setItem('fisherFriends', JSON.stringify(friends));
+    // CHARGER AMIS
+    function loadFriends() {
+      db.collection('friendRequests').where('status', '==', 'accepted').where('from', '==', currentUser.uid).get().then(snap => {
+        const list = document.getElementById('friendsList');
+        list.innerHTML = '';
+        snap.forEach(doc => {
+          const data = doc.data();
+          list.innerHTML += `<div class="friend">
+            <strong>${data.toName}</strong> — <span id="friendXP-${doc.id}">${data.toXP || 0}</span> XP
+            <button onclick="removeFriend('${doc.id}')">Retirer</button>
+          </div>`;
+        });
+        if (snap.empty) list.innerHTML = 'Aucun ami pour l'instant';
+      }).catch(err => {
+        console.error("Erreur amis :", err);
+        document.getElementById('friendsList').innerHTML = 'Erreur de chargement';
+      });
+    }
+
+    // CHARGER DEMANDES
+    function loadPendingRequests() {
+      db.collection('friendRequests').where('to', '==', currentUser.uid).where('status', '==', 'pending').get().then(snap => {
+        const list = document.getElementById('pendingRequests');
+        list.innerHTML = '';
+        snap.forEach(doc => {
+          const data = doc.data();
+          list.innerHTML += `<div class="pending">
+            <strong>${data.fromName}</strong> demande d'amitié
+            <button onclick="acceptRequest('${doc.id}', '${data.fromName}')">Accepter</button>
+            <button onclick="rejectRequest('${doc.id}')">Refuser</button>
+          </div>`;
+        });
+        if (snap.empty) list.innerHTML = 'Aucune demande';
+      }).catch(err => {
+        console.error("Erreur demandes :", err);
+        document.getElementById('pendingRequests').innerHTML = 'Erreur de chargement';
+      });
+    }
+
+    function acceptRequest(docId, name) {
+      db.collection('friendRequests').doc(docId).update({ status: 'accepted' }).then(() => {
         alert(`${name} est maintenant ton ami !`);
-        updateLists();
-      }
+        loadFriends();
+        loadPendingRequests();
+      }).catch(err => alert("Erreur : " + err.message));
     }
 
-    // === MISE À JOUR DES LISTES ===
-    function updateLists() {
-      // Amis
-      const friendsList = document.getElementById('friendsList');
-      if (friends.length === 0) {
-        friendsList.innerHTML = 'Aucun ami pour l’instant';
-      } else {
-        friendsList.innerHTML = friends.map(name => {
-          const user = fakeUsers.find(u => u.name === name);
-          return `<div class="friend"><strong>${name}</strong> — ${user.xp} XP</div>`;
-        }).join('');
-      }
-
-      // Demandes
-      const pendingList = document.getElementById('pendingRequests');
-      if (pending.length === 0) {
-        pendingList.innerHTML = 'Aucune demande';
-      } else {
-        pendingList.innerHTML = pending.map(name => `
-          <div class="pending">
-            <strong>${name}</strong> veut être ton ami
-            <button onclick="acceptRequest('${name}')">Accepter</button>
-          </div>
-        `).join('');
-      }
+    function rejectRequest(docId) {
+      db.collection('friendRequests').doc(docId).delete().then(() => {
+        alert('Demande refusée.');
+        loadPendingRequests();
+      });
     }
 
-    // Init
-    updateLists();
+    function removeFriend(docId) {
+      db.collection('friendRequests').doc(docId).delete().then(() => {
+        alert('Ami retiré.');
+        loadFriends();
+      });
+    }
   </script>
 </body>
 </html>
