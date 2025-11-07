@@ -16,12 +16,10 @@
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-top: 12px; }
     .stat-item { background: rgba(255,255,255,0.25); padding: 10px; border-radius: 10px; }
   </style>
-
   <!-- FIREBASE CHARGÉ EN PREMIER -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
@@ -38,14 +36,13 @@
   </script>
 </head>
 <body>
-
-
   <div class="live-badge"><span class="live-dot"></span> IA en direct : <span id="patternCount">42</span> patterns appris</div>
 
-  <!-- AUTH UNIFIÉ (UN SEUL BLOC, PROPRE) -->
+  <!-- AUTH UNIFIÉ + CHAMP PSEUDO MODIFIABLE -->
   <div id="authContainer" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.3);padding:10px 16px;border-radius:30px;">
     <div id="userInfo" style="display:none;color:white;font-weight:bold;align-items:center;gap:10px;">
-      <span id="userName">Thao</span>
+      <input id="pseudoInput" type="text" placeholder="Ton pseudo" style="padding:6px 10px;border-radius:20px;border:none;font-size:13px;width:100px;">
+      <button id="savePseudo" style="background:#ffd700;color:#000;border:none;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;">OK</button>
       <button id="friendsBtn" style="background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:25px;font-weight:bold;cursor:pointer;font-size:13px;">Amis</button>
       <button id="logoutBtn" style="background:#e74c3c;color:white;border:none;padding:8px 14px;border-radius:25px;font-size:12px;cursor:pointer;">Déconnexion</button>
     </div>
@@ -68,7 +65,6 @@
       <label>Espèce ciblée <input id="targetSpecies" placeholder="Ex: brochet, perche"></label>
       <label>Conditions <input id="conditions" placeholder="Ex: clair, pluie"></label>
       <label>Température (°C)<br><input type="number" id="temperature" placeholder="15"></label>
-
       <div style="margin-top:15px;">
         <button id="getAdvice">Obtenir des conseils</button>
         <button id="voiceBtn">Commande vocale</button>
@@ -78,7 +74,6 @@
 
     <section class="card output-card">
       <h2>Conseils de l'IA</h2>
-
       <!-- TABLEAU DE BORD XP -->
       <div class="dashboard">
         <h3><span class="level-badge" id="level">Débutant</span> — <span id="xp">0</span> XP</h3>
@@ -88,13 +83,10 @@
           <div class="stat-item">Réussite : <strong id="rate">0%</strong></div>
         </div>
       </div>
-
       <div id="advice"><p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p></div>
-
       <button onclick="openResultat()" style="margin:20px auto; display:block; width:90%; background:#00d4aa; color:white; border:none; padding:14px; border-radius:10px; font-weight:bold;">
         Enregistrer un résultat
       </button>
-
       <!-- CLASSEMENT MOCK -->
       <div style="margin:30px 0; text-align:center;">
         <h3 style="color:#00a085;">Top 5 des Maîtres</h3>
@@ -126,7 +118,6 @@
       `;
       document.head.appendChild(xpStyle);
     }
-
     window.showXPPop = function() {
       const pop = document.createElement('div');
       pop.textContent = '+5 XP !';
