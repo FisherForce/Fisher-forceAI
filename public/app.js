@@ -170,14 +170,29 @@ document.addEventListener('DOMContentLoaded', () => {
     el('voiceControls') && (el('voiceControls').style.display = 'block');
   }
 
-  // === CONNEXION GOOGLE (FIXÉE) ===
+  // === CONNEXION GOOGLE + PSEUDO MODIFIABLE ===
   if (typeof firebase !== 'undefined') {
     const auth = firebase.auth();
     auth.onAuthStateChanged(user => {
       if (user) {
-        el('userName').textContent = user.displayName.split(' ')[0];
         el('loginBtn').style.display = 'none';
         el('userInfo').style.display = 'flex';
+
+        // CHARGE LE PSEUDO SAUVEGARDÉ
+        const savedPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
+        el('pseudoInput').value = savedPseudo;
+
+        // SAUVEGARDE DU PSEUDO
+        el('savePseudo')?.addEventListener('click', () => {
+          const newPseudo = el('pseudoInput').value.trim();
+          if (newPseudo && newPseudo.length >= 2) {
+            localStorage.setItem('fisherPseudo', newPseudo);
+            alert(`Pseudo changé : ${newPseudo} !`);
+          } else {
+            alert("Pseudo trop court ! (min 2 caractères)");
+          }
+        });
+
       } else {
         el('loginBtn').style.display = 'block';
         el('userInfo').style.display = 'none';
