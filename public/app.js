@@ -181,17 +181,22 @@ document.addEventListener('DOMContentLoaded', () => {
         // CHARGE LE PSEUDO SAUVEGARDÉ
         const savedPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
         el('pseudoInput').value = savedPseudo;
+        el('userName').textContent = savedPseudo; // Affiche dans le texte
 
         // SAUVEGARDE DU PSEUDO
-        el('savePseudo')?.addEventListener('click', () => {
-          const newPseudo = el('pseudoInput').value.trim();
-          if (newPseudo && newPseudo.length >= 2) {
-            localStorage.setItem('fisherPseudo', newPseudo);
-            alert(`Pseudo changé : ${newPseudo} !`);
-          } else {
-            alert("Pseudo trop court ! (min 2 caractères)");
-          }
-        });
+        const saveBtn = el('savePseudo');
+        if (saveBtn) {
+          saveBtn.onclick = () => {
+            const newPseudo = el('pseudoInput').value.trim();
+            if (newPseudo && newPseudo.length >= 2) {
+              localStorage.setItem('fisherPseudo', newPseudo);
+              el('userName').textContent = newPseudo; // Met à jour l'affichage
+              alert(`Pseudo changé : ${newPseudo} !`);
+            } else {
+              alert("Pseudo trop court ! (min 2 caractères)");
+            }
+          };
+        }
 
       } else {
         el('loginBtn').style.display = 'block';
