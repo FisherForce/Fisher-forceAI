@@ -13,8 +13,27 @@
     .friend { background: #e6fffa; padding: 15px; border-radius: 15px; margin: 10px; text-align: left; display: flex; justify-content: space-between; align-items: center; }
     .pending { background: #fff3cd; }
     .status { color: #00d4aa; font-weight: bold; margin-bottom: 20px; }
-    .loading { color: #00d4aa; font-style: italic; }
   </style>
+
+  <!-- FIREBASE RTDB -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+      authDomain: "fisher-forceai.firebaseapp.com",
+      databaseURL: "https://fisher-forceai-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "fisher-forceai",
+      storageBucket: "fisher-forceai.firebasestorage.app",
+      messagingSenderId: "293964630939",
+      appId: "1:293964630939:web:063ed88456613a33e96f3e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+  </script>
 </head>
 <body>
   <div class="card">
@@ -26,129 +45,124 @@
     <div id="searchResults"></div>
 
     <h2>Mes amis</h2>
-    <div id="friendsList">Aucun ami pour l'instant</div>
+    <div id="friendsList">Chargement...</div>
 
     <h2>Demandes en attente</h2>
     <div id="pendingRequests">Aucune demande</div>
   </div>
 
   <script>
-    // === DONNÉES SIMULÉES LOCALES (0 FIREBASE) ===
-    const currentUser = { name: localStorage.getItem('fisherPseudo') || 'Thao' };
-    document.getElementById('userName').textContent = currentUser.name;
+    let currentUser = null;
+    let currentPseudo = 'Thao';
 
-    // BASE DE DONNÉES LOCALE SIMULÉE
-    const fakeUsers = [
-      { name: "LoulouPeche", xp: 285, level: "Maître du brochet" },
-      { name: "BrochetKiller", xp: 220, level: "Traqueur" },
-      { name: "PercheMaster", xp: 190, level: "Traqueur" },
-      { name: "Carpiste72", xp: 165, level: "Débutant" },
-      { name: "TruiteNinja", xp: 140, level: "Débutant" },
-      { name: "SandreSlayer", xp: 320, level: "Maître du sandre" },
-      { name: "BassBoss", xp: 95, level: "Débutant" }
-    ];
+    // CHARGE LE PSEUDO
+    document.getElementById('userName').textContent = localStorage.getItem('fisherPseudo') || 'Thao';
 
-    // SAUVEGARDE LOCALE
-    let friends = JSON.parse(localStorage.getItem('fisherFriends') || '[]');
-    let pending = JSON.parse(localStorage.getItem('fisherPending') || '[]');
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        currentPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
+        document.getElementById('userName').textContent = currentPseudo;
 
-    // === RECHERCHE LOCALE ===
+        // Crée le profil dans RTDB
+        db.ref('users/' + user.uid).set({
+          name: currentPseudo,
+          xp: 0,
+          level: 'Débutant'
+        });
+
+        loadFriends();
+        loadPendingRequests();
+      } else {
+        alert('Connecte-toi !');
+        window.close();
+      }
+    });
+
+    // RECHERCHE DANS RTDB
     function searchFriend() {
       const query = document.getElementById('searchFriend').value.trim().toLowerCase();
-      const results = document.getElementById('searchResults');
-      results.innerHTML = '';
-
       if (!query) return;
 
-      const matches = fakeUsers.filter(u => 
-        u.name.toLowerCase().includes(query) && 
-        !friends.includes(u.name) && 
-        !pending.includes(u.name)
-      );
-
-      if (matches.length === 0) {
-        results.innerHTML = '<p style="color:#e74c3c;">Aucun pêcheur trouvé</p>';
-        return;
-      }
-
-      matches.forEach(user => {
-        results.innerHTML += `
-          <div class="friend">
-            <div>
-              <strong>${user.name}</strong> — ${user.xp} XP (${user.level})
-            </div>
-            <button onclick="sendRequest('${user.name}')">Ajouter</button>
-          </div>`;
+      db.ref('users').orderByChild('name').startAt(query).endAt(query + '\uf8ff').once('value', snap => {
+        const results = document.getElementById('searchResults');
+        results.innerHTML = '';
+        if (!snap.exists()) {
+          results.innerHTML = '<p style="color:#e74c3c;">Aucun pêcheur trouvé</p>';
+          return;
+        }
+        snap.forEach(child => {
+          const data = child.val();
+          if (child.key !== currentUser.uid) {
+            results.innerHTML += `
+              <div class="friend">
+                <div><strong>${data.name}</strong> — ${data.xp} XP</div>
+                <button onclick="sendRequest('${child.key}', '${data.name}')">Ajouter</button>
+              </div>`;
+          }
+        });
       });
     }
 
-    // === ENVOYER DEMANDE LOCALE ===
-    function sendRequest(name) {
-      pending.push(name);
-      localStorage.setItem('fisherPending', JSON.stringify(pending));
-      alert(`Demande envoyée à ${name} !`);
-      document.getElementById('searchFriend').value = '';
-      searchFriend();
+    // ENVOYER DEMANDE
+    function sendRequest(uid, name) {
+      const reqId = db.ref('requests').push().key;
+      db.ref('requests/' + reqId).set({
+        from: currentUser.uid,
+        fromName: currentPseudo,
+        to: uid,
+        toName: name,
+        status: 'pending'
+      }).then(() => {
+        alert(`Demande envoyée à ${name} !`);
+        document.getElementById('searchFriend').value = '';
+      });
     }
 
-    // === ACCEPTER DEMANDE LOCALE ===
-    function acceptRequest(name) {
-      const idx = pending.indexOf(name);
-      if (idx > -1) {
-        pending.splice(idx, 1);
-        friends.push(name);
-        localStorage.setItem('fisherPending', JSON.stringify(pending));
-        localStorage.setItem('fisherFriends', JSON.stringify(friends));
-        alert(`${name} est maintenant ton ami !`);
-        updateLists();
-      }
-    }
-
-    // === RETIRER AMI LOCALE ===
-    function removeFriend(name) {
-      const idx = friends.indexOf(name);
-      if (idx > -1) {
-        friends.splice(idx, 1);
-        localStorage.setItem('fisherFriends', JSON.stringify(friends));
-        alert(`${name} retiré de tes amis.`);
-        updateLists();
-      }
-    }
-
-    // === MISE À JOUR LISTES LOCALE ===
-    function updateLists() {
-      // Amis
-      const friendsList = document.getElementById('friendsList');
-      friendsList.innerHTML = '';
-      if (friends.length === 0) {
-        friendsList.innerHTML = 'Aucun ami pour l’instant';
-      } else {
-        friends.forEach(name => {
-          const user = fakeUsers.find(u => u.name === name);
-          friendsList.innerHTML += `<div class="friend">
-            <div><strong>${name}</strong> — ${user ? user.xp + ' XP (' + user.level + ')' : 'XP inconnu'}</div>
-            <button onclick="removeFriend('${name}')">Retirer</button>
-          </div>`;
+    // CHARGER AMIS
+    function loadFriends() {
+      db.ref('requests').orderByChild('status').equalTo('accepted').on('value', snap => {
+        const list = document.getElementById('friendsList');
+        list.innerHTML = '';
+        let hasFriends = false;
+        snap.forEach(child => {
+          const r = child.val();
+          if (r.from === currentUser.uid || r.to === currentUser.uid) {
+            hasFriends = true;
+            const friendName = r.from === currentUser.uid ? r.toName : r.fromName;
+            list.innerHTML += `<div class="friend"><strong>${friendName}</strong></div>`;
+          }
         });
-      }
-
-      // Demandes
-      const pendingList = document.getElementById('pendingRequests');
-      pendingList.innerHTML = '';
-      if (pending.length === 0) {
-        pendingList.innerHTML = 'Aucune demande';
-      } else {
-        pending.forEach(name => {
-          pendingList.innerHTML += `<div class="pending">
-            <strong>${name}</strong> demande d'amitié
-            <button onclick="acceptRequest('${name}')">Accepter</button>
-          </div>`;
-        });
-      }
+        if (!hasFriends) list.innerHTML = 'Aucun ami pour l’instant';
+      });
     }
 
-    // INIT
-    updateLists();
+    // CHARGER DEMANDES
+    function loadPendingRequests() {
+      db.ref('requests').orderByChild('to').equalTo(currentUser.uid).on('value', snap => {
+        const list = document.getElementById('pendingRequests');
+        list.innerHTML = '';
+        let hasPending = false;
+        snap.forEach(child => {
+          const r = child.val();
+          if (r.status === 'pending') {
+            hasPending = true;
+            list.innerHTML += `<div class="pending">
+              <strong>${r.fromName}</strong> veut être ton ami
+              <button onclick="acceptRequest('${child.key}')">Accepter</button>
+            </div>`;
+          }
+        });
+        if (!hasPending) list.innerHTML = 'Aucune demande';
+      });
+    }
+
+    // ACCEPTER
+    function acceptRequest(reqId) {
+      db.ref('requests/' + reqId).update({ status: 'accepted' }).then(() => {
+        alert('Ami ajouté !');
+      });
+    }
   </script>
 </body>
 </html>
