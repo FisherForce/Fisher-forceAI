@@ -15,26 +15,6 @@
     .status { color: #00d4aa; font-weight: bold; margin-bottom: 20px; }
     .loading { color: #00d4aa; font-style: italic; }
   </style>
-
-  <!-- FIREBASE -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
-      authDomain: "fisher-forceai.firebaseapp.com",
-      projectId: "fisher-forceai",
-      storageBucket: "fisher-forceai.firebasestorage.app",
-      messagingSenderId: "293964630939",
-      appId: "1:293964630939:web:063ed88456613a33e96f3e",
-      measurementId: "G-3H9E51FWXY"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
 </head>
 <body>
   <div class="card">
@@ -46,135 +26,129 @@
     <div id="searchResults"></div>
 
     <h2>Mes amis</h2>
-    <div id="friendsList">Chargement...</div>
+    <div id="friendsList">Aucun ami pour l'instant</div>
 
     <h2>Demandes en attente</h2>
     <div id="pendingRequests">Aucune demande</div>
   </div>
 
   <script>
-    let currentUser = null;
+    // === DONNÉES SIMULÉES LOCALES (0 FIREBASE) ===
+    const currentUser = { name: localStorage.getItem('fisherPseudo') || 'Thao' };
+    document.getElementById('userName').textContent = currentUser.name;
 
-    // CHARGE LE PSEUDO
-    const savedPseudo = localStorage.getItem('fisherPseudo') || 'Thao';
-    document.getElementById('userName').textContent = savedPseudo;
+    // BASE DE DONNÉES LOCALE SIMULÉE
+    const fakeUsers = [
+      { name: "LoulouPeche", xp: 285, level: "Maître du brochet" },
+      { name: "BrochetKiller", xp: 220, level: "Traqueur" },
+      { name: "PercheMaster", xp: 190, level: "Traqueur" },
+      { name: "Carpiste72", xp: 165, level: "Débutant" },
+      { name: "TruiteNinja", xp: 140, level: "Débutant" },
+      { name: "SandreSlayer", xp: 320, level: "Maître du sandre" },
+      { name: "BassBoss", xp: 95, level: "Débutant" }
+    ];
 
-    // ATTEND QUE FIREBASE SOIT CHARGÉ
-    document.addEventListener('DOMContentLoaded', () => {
-      if (typeof firebase === 'undefined') {
-        document.getElementById('searchResults').innerHTML = '<p style="color:#e74c3c;">Firebase non chargé. Recharge la page.</p>';
+    // SAUVEGARDE LOCALE
+    let friends = JSON.parse(localStorage.getItem('fisherFriends') || '[]');
+    let pending = JSON.parse(localStorage.getItem('fisherPending') || '[]');
+
+    // === RECHERCHE LOCALE ===
+    function searchFriend() {
+      const query = document.getElementById('searchFriend').value.trim().toLowerCase();
+      const results = document.getElementById('searchResults');
+      results.innerHTML = '';
+
+      if (!query) return;
+
+      const matches = fakeUsers.filter(u => 
+        u.name.toLowerCase().includes(query) && 
+        !friends.includes(u.name) && 
+        !pending.includes(u.name)
+      );
+
+      if (matches.length === 0) {
+        results.innerHTML = '<p style="color:#e74c3c;">Aucun pêcheur trouvé</p>';
         return;
       }
 
-      auth.onAuthStateChanged(user => {
-        if (user) {
-          currentUser = user;
-          loadFriends();
-          loadPendingRequests();
-        } else {
-          alert('Connecte-toi pour voir tes amis.');
-          window.close();
-        }
-      });
-    });
-
-    // RECHERCHE RÉELLE DANS FIRESTORE
-    function searchFriend() {
-      const query = document.getElementById('searchFriend').value.trim().toLowerCase();
-      if (!query || !currentUser) return alert('Tape un pseudo ou connecte-toi.');
-
-      db.collection('users').where('displayName', '>=', query).where('displayName', '<=', query + '\uf8ff').get().then(snap => {
-        const results = document.getElementById('searchResults');
-        results.innerHTML = '';
-        if (snap.empty) {
-          results.innerHTML = '<p style="color:#e74c3c;">Aucun pêcheur trouvé</p>';
-          return;
-        }
-        snap.forEach(doc => {
-          const data = doc.data();
-          if (doc.id !== currentUser.uid) {
-            results.innerHTML += `
-              <div class="friend">
-                <div>
-                  <strong>${data.displayName || 'Anonyme'}</strong> — ${data.xp || 0} XP (${data.level || 'Débutant'})
-                </div>
-                <button onclick="addFriend('${doc.id}', '${data.displayName || 'Anonyme'}')">Ajouter</button>
-              </div>`;
-          }
-        });
-      }).catch(err => {
-        console.error("Erreur recherche :", err);
-        document.getElementById('searchResults').innerHTML = '<p style="color:#e74c3c;">Erreur de recherche. Réessaye.</p>';
+      matches.forEach(user => {
+        results.innerHTML += `
+          <div class="friend">
+            <div>
+              <strong>${user.name}</strong> — ${user.xp} XP (${user.level})
+            </div>
+            <button onclick="sendRequest('${user.name}')">Ajouter</button>
+          </div>`;
       });
     }
 
-    // ENVOYER DEMANDE
-    function addFriend(uid, name) {
-      if (!currentUser) return alert('Connecte-toi !');
-      db.collection('friendRequests').add({
-        from: currentUser.uid,
-        to: uid,
-        status: 'pending',
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        fromName: localStorage.getItem('fisherPseudo') || currentUser.displayName,
-        toName: name
-      }).then(() => {
-        alert(`Demande envoyée à ${name} !`);
-        document.getElementById('searchFriend').value = '';
-        searchFriend();
-      }).catch(err => alert("Erreur : " + err.message));
+    // === ENVOYER DEMANDE LOCALE ===
+    function sendRequest(name) {
+      pending.push(name);
+      localStorage.setItem('fisherPending', JSON.stringify(pending));
+      alert(`Demande envoyée à ${name} !`);
+      document.getElementById('searchFriend').value = '';
+      searchFriend();
     }
 
-    // CHARGER AMIS
-    function loadFriends() {
-      db.collection('friendRequests').where('status', '==', 'accepted').where('from', '==', currentUser.uid).get().then(snap => {
-        const list = document.getElementById('friendsList');
-        list.innerHTML = '';
-        snap.forEach(doc => {
-          const data = doc.data();
-          list.innerHTML += `<div class="friend"><strong>${data.toName}</strong> — ${data.toXP || 0} XP</div>`;
-        });
-        if (snap.empty) list.innerHTML = 'Aucun ami pour l’instant';
-      }).catch(err => {
-        console.error("Erreur amis :", err);
-        document.getElementById('friendsList').innerHTML = 'Erreur de chargement';
-      });
+    // === ACCEPTER DEMANDE LOCALE ===
+    function acceptRequest(name) {
+      const idx = pending.indexOf(name);
+      if (idx > -1) {
+        pending.splice(idx, 1);
+        friends.push(name);
+        localStorage.setItem('fisherPending', JSON.stringify(pending));
+        localStorage.setItem('fisherFriends', JSON.stringify(friends));
+        alert(`${name} est maintenant ton ami !`);
+        updateLists();
+      }
     }
 
-    // CHARGER DEMANDES
-    function loadPendingRequests() {
-      db.collection('friendRequests').where('to', '==', currentUser.uid).where('status', '==', 'pending').get().then(snap => {
-        const list = document.getElementById('pendingRequests');
-        list.innerHTML = '';
-        snap.forEach(doc => {
-          const data = doc.data();
-          list.innerHTML += `<div class="pending">
-            <strong>${data.fromName}</strong> demande d'amitié
-            <button onclick="acceptRequest('${doc.id}')">Accepter</button>
-            <button onclick="rejectRequest('${doc.id}')">Refuser</button>
+    // === RETIRER AMI LOCALE ===
+    function removeFriend(name) {
+      const idx = friends.indexOf(name);
+      if (idx > -1) {
+        friends.splice(idx, 1);
+        localStorage.setItem('fisherFriends', JSON.stringify(friends));
+        alert(`${name} retiré de tes amis.`);
+        updateLists();
+      }
+    }
+
+    // === MISE À JOUR LISTES LOCALE ===
+    function updateLists() {
+      // Amis
+      const friendsList = document.getElementById('friendsList');
+      friendsList.innerHTML = '';
+      if (friends.length === 0) {
+        friendsList.innerHTML = 'Aucun ami pour l’instant';
+      } else {
+        friends.forEach(name => {
+          const user = fakeUsers.find(u => u.name === name);
+          friendsList.innerHTML += `<div class="friend">
+            <div><strong>${name}</strong> — ${user ? user.xp + ' XP (' + user.level + ')' : 'XP inconnu'}</div>
+            <button onclick="removeFriend('${name}')">Retirer</button>
           </div>`;
         });
-        if (snap.empty) list.innerHTML = 'Aucune demande';
-      }).catch(err => {
-        console.error("Erreur demandes :", err);
-        document.getElementById('pendingRequests').innerHTML = 'Erreur de chargement';
-      });
+      }
+
+      // Demandes
+      const pendingList = document.getElementById('pendingRequests');
+      pendingList.innerHTML = '';
+      if (pending.length === 0) {
+        pendingList.innerHTML = 'Aucune demande';
+      } else {
+        pending.forEach(name => {
+          pendingList.innerHTML += `<div class="pending">
+            <strong>${name}</strong> demande d'amitié
+            <button onclick="acceptRequest('${name}')">Accepter</button>
+          </div>`;
+        });
+      }
     }
 
-    function acceptRequest(reqId) {
-      db.collection('friendRequests').doc(reqId).update({ status: 'accepted' }).then(() => {
-        alert('Ami ajouté !');
-        loadFriends();
-        loadPendingRequests();
-      }).catch(err => alert("Erreur : " + err.message));
-    }
-
-    function rejectRequest(reqId) {
-      db.collection('friendRequests').doc(reqId).delete().then(() => {
-        alert('Demande refusée.');
-        loadPendingRequests();
-      });
-    }
+    // INIT
+    updateLists();
   </script>
 </body>
 </html>
