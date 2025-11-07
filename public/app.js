@@ -183,26 +183,52 @@ document.addEventListener('DOMContentLoaded', () => {
         el('pseudoInput').value = savedPseudo;
         el('userName').textContent = savedPseudo; // Affiche dans le texte
 
-        // SAUVEGARDE DU PSEUDO
-        const saveBtn = el('savePseudo');
-        if (saveBtn) {
-          saveBtn.onclick = () => {
-            const newPseudo = el('pseudoInput').value.trim();
-            if (newPseudo && newPseudo.length >= 2) {
-              localStorage.setItem('fisherPseudo', newPseudo);
-              el('userName').textContent = newPseudo; // Met à jour l'affichage
-              alert(`Pseudo changé : ${newPseudo} !`);
-            } else {
-              alert("Pseudo trop court ! (min 2 caractères)");
-            }
-          };
-        }
+  auth.onAuthStateChanged(user => {
+  if (user) {
+    el('loginBtn').style.display = 'none';
+    el('userInfo').style.display = 'flex';
 
-      } else {
-        el('loginBtn').style.display = 'block';
-        el('userInfo').style.display = 'none';
-      }
+    // CHARGE LE PSEUDO SAUVEGARDÉ
+    const savedPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
+    el('pseudoInput').value = savedPseudo;
+    el('userName').textContent = savedPseudo;
+
+    // CRÉE LE PROFIL DANS FIRESTORE
+    db.collection('users').doc(user.uid).set({
+      displayName: savedPseudo,
+      xp: 0,
+      level: "Débutant",
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).then(() => {
+      console.log("Profil créé dans Firestore");
+    }).catch(err => {
+      console.error("Erreur création profil :", err);
     });
+
+    // SAUVEGARDE DU PSEUDO
+    const saveBtn = el('savePseudo');
+    if (saveBtn) {
+      saveBtn.onclick = () => {
+        const newPseudo = el('pseudoInput').value.trim();
+        if (newPseudo && newPseudo.length >= 2) {
+          localStorage.setItem('fisherPseudo', newPseudo);
+          el('userName').textContent = newPseudo;
+
+          // MET À JOUR FIRESTORE
+          db.collection('users').doc(user.uid).update({ displayName: newPseudo })
+            .then(() => alert(`Pseudo changé : ${newPseudo} !`))
+            .catch(err => alert("Erreur mise à jour : " + err.message));
+        } else {
+          alert("Pseudo trop court ! (min 2 caractères)");
+        }
+      };
+    }
+
+  } else {
+    el('loginBtn').style.display = 'block';
+    el('userInfo').style.display = 'none';
+  }
+});
 
     el('loginBtn')?.addEventListener('click', () => {
       auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
