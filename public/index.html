@@ -51,14 +51,15 @@ const firebaseConfig = {
     </div>
     <button id="loginBtn" style="background:#00d4aa;color:white;border:none;padding:8px 16px;border-radius:50px;font-weight:bold;cursor:pointer;">Connexion Google</button>
   </div>
-<div id="authContainer" style="position:fixed;top:60px;right:15px;z-index:9998;display:flex;gap:10px;align-items:center;">
-  <div id="userInfo" style="display:none;color:white;font-weight:bold;">
-    <span id="userName"></span> 
-    <button id="friendsBtn" style="background:#ffd700;color:#000;border:none;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;margin-left:8px;">Amis</button>
-    <button id="logoutBtn" style="margin-left:8px;background:#e74c3c;color:white;border:none;padding:6px 10px;border-radius:20px;font-size:11px;">Déconnexion</button>
+<!-- BARRE DE CONNEXION + BOUTON AMIS (toujours visible) -->
+<div id="authContainer" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.3);padding:10px 16px;border-radius:30px;">
+  <div id="userInfo" style="display:none;color:white;font-weight:bold;align-items:center;gap:10px;">
+    <span id="userName"></span>
+    <button id="friendsBtn" style="background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:25px;font-weight:bold;cursor:pointer;font-size:13px;">Amis</button>
+    <button id="logoutBtn" style="background:#e74c3c;color:white;border:none;padding:8px 14px;border-radius:25px;font-size:12px;cursor:pointer;">Déconnexion</button>
   </div>
-  <button id="loginBtn">Connexion Google</button>
-</div>  
+  <button id="loginBtn" style="background:#4285f4;color:white;border:none;padding:10px 20px;border-radius:25px;font-weight:bold;cursor:pointer;">Connexion Google</button>
+</div>
 
   <header class="site-header">
     <div class="container">
