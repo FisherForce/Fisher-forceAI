@@ -61,7 +61,17 @@
 
     <section class="card output-card">
       <h2>Conseils de l'IA</h2>
-      <!-- DASHBOARD GÉRÉ PAR app.js -->
+
+      <!-- DASHBOARD DE BASE (existe toujours) -->
+      <div class="dashboard">
+        <h3><span class="level-badge">Débutant</span> — <span id="xp">0</span> XP</h3>
+        <div class="stats-grid">
+          <div class="stat-item">Spots : <strong>0</strong></div>
+          <div class="stat-item">Espèces : <strong>0</strong></div>
+          <div class="stat-item">Réussite : <strong>0%</strong></div>
+        </div>
+      </div>
+
       <div id="advice"><p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p></div>
 
       <button onclick="openResultat()" style="margin:20px auto; display:block; width:90%; background:#00d4aa; color:white; border:none; padding:14px; border-radius:10px; font-weight:bold;">
