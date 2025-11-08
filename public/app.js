@@ -1,8 +1,8 @@
 const el = id => document.getElementById(id);
 
-// === VARIABLES GLOBALES (local + sync) ===
-let progress = { xp: 0, spotsTested: 0, speciesCaught: {}, successes: 0, attempts: 0 };
-let knownSpots = new Set(); // stocke les spotKey (lat,lng)
+// === VARIABLES GLOBALES ===
+let progress = { xp: 0, speciesCaught: {}, successes: 0, attempts: 0 };
+let knownSpots = new Set(); // stocke les spotKey (ex: "47200,-15500")
 let knownSpecies = new Set();
 
 // === CHARGEMENT LOCAL ===
@@ -57,7 +57,7 @@ function updateDashboard() {
 document.addEventListener('DOMContentLoaded', () => {
   updateDashboard();
 
-  // Animation XP unique
+  // Animation XP
   if (!document.getElementById('xpAnim')) {
     const s = document.createElement('style');
     s.id = 'xpAnim';
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(s);
   }
 
-  // === CONSEILS + XP + FALLBACK SI API HS ===
+  // === CONSEILS + XP ===
   el('getAdvice')?.addEventListener('click', async () => {
     const input = readForm();
     const spotName = (input.spotName || "").trim().toLowerCase();
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       result = await res.json();
     } catch (e) {
-      console.log("API HS → mode démo activé");
+      console.log("API HS → mode démo");
     }
 
     if (!result || result.error) {
@@ -114,42 +114,37 @@ document.addEventListener('DOMContentLoaded', () => {
     el('voiceControls') && (el('voiceControls').style.display = 'none');
   });
 
-  // === OUVRIR POPUP AVEC NOM DU SPOT ===
+  // === OUVRIR POPUP ===
   window.openResultat = () => {
     const spot = el('spotName')?.value.trim() || "Spot inconnu";
     window.open(`resultat.html?spot=${encodeURIComponent(spot)}`, '_blank', 'width=500,height=700');
   };
 
-  // === RÉCEPTION DES DONNÉES DEPUIS resultat.html (CARTE) ===
+  // === RÉCEPTION DES DONNÉES DEPUIS resultat.html ===
   window.addEventListener('message', (e) => {
     if (e.data?.type === 'ADD_XP') {
-      const { success, speciesName, spotKey } = e.data; // spotKey = "47.2,-1.55"
+      const { success, speciesName, spotKey } = e.data;
 
-      // +5 XP PAR PRISE
       if (success) {
         awardXP(5, "Prise validée !");
       } else {
         awardXP(5, "Session enregistrée");
       }
 
-      // +10 XP PAR NOUVEAU SPOT (500m²)
       if (spotKey && !knownSpots.has(spotKey)) {
         knownSpots.add(spotKey);
         awardXP(10, "NOUVEAU SPOT CONQUIS !");
       }
 
-      // NOUVELLE ESPÈCE
       if (success && speciesName && !knownSpecies.has(speciesName)) {
         knownSpecies.add(speciesName);
         awardXP(10, `NOUVELLE ESPÈCE : ${speciesName.toUpperCase()} !`);
       }
 
-      // COMPTEUR
       if (success && speciesName) {
         progress.speciesCaught[speciesName] = (progress.speciesCaught[speciesName] || 0) + 1;
       }
 
-      progress.spotsTested = knownSpots.size;
       progress.attempts += 1;
       if (success) progress.successes += 1;
 
@@ -181,7 +176,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
     const auth = firebase.auth();
-    const db = firebase.firestore();
+    let db; // Déclaré ici, initialisé après initializeApp
+
+    // INITIALISE FIREBASE UNE SEULE FOIS
+    const firebaseConfig = {
+      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+      authDomain: "fisher-forceai.firebaseapp.com",
+      projectId: "fisher-forceai",
+      storageBucket: "fisher-forceai.firebasestorage.app",
+      messagingSenderId: "293964630939",
+      appId: "1:293964630939:web:063ed88456613a33e96f3e"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore(); // INITIALISÉ APRÈS
 
     auth.onAuthStateChanged(user => {
       if (user) {
