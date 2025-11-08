@@ -2,7 +2,7 @@ const el = id => document.getElementById(id);
 
 // === VARIABLES GLOBALES (local + sync) ===
 let progress = { xp: 0, spotsTested: 0, speciesCaught: {}, successes: 0, attempts: 0 };
-let knownSpots = new Set();
+let knownSpots = new Set(); // stocke les spotKey (lat,lng)
 let knownSpecies = new Set();
 
 // === CHARGEMENT LOCAL ===
@@ -46,7 +46,7 @@ function updateDashboard() {
     <div class="dashboard">
       <h3><span class="level-badge">${level}</span> — <span id="xp">${progress.xp}</span> XP</h3>
       <div class="stats-grid">
-        <div class="stat-item">Spots : <strong>${progress.spotsTested}</strong></div>
+        <div class="stat-item">Spots : <strong>${knownSpots.size}</strong></div>
         <div class="stat-item">Espèces : <strong>${Object.keys(progress.speciesCaught).length}</strong></div>
         <div class="stat-item">Réussite : <strong>${rate}%</strong></div>
       </div>
@@ -120,28 +120,36 @@ document.addEventListener('DOMContentLoaded', () => {
     window.open(`resultat.html?spot=${encodeURIComponent(spot)}`, '_blank', 'width=500,height=700');
   };
 
-  // === RÉCEPTION DES DONNÉES DEPUIS resultat.html ===
+  // === RÉCEPTION DES DONNÉES DEPUIS resultat.html (CARTE) ===
   window.addEventListener('message', (e) => {
     if (e.data?.type === 'ADD_XP') {
-      const { success, speciesName, spotName } = e.data;
+      const { success, speciesName, spotKey } = e.data; // spotKey = "47.2,-1.55"
 
-      awardXP(5, success ? "Prise validée !" : "Session enregistrée");
-
-      if (spotName && !knownSpots.has(spotName)) {
-        knownSpots.add(spotName);
-        awardXP(7, "Nouveau spot conquis !");
+      // +5 XP PAR PRISE
+      if (success) {
+        awardXP(5, "Prise validée !");
+      } else {
+        awardXP(5, "Session enregistrée");
       }
 
+      // +10 XP PAR NOUVEAU SPOT (500m²)
+      if (spotKey && !knownSpots.has(spotKey)) {
+        knownSpots.add(spotKey);
+        awardXP(10, "NOUVEAU SPOT CONQUIS !");
+      }
+
+      // NOUVELLE ESPÈCE
       if (success && speciesName && !knownSpecies.has(speciesName)) {
         knownSpecies.add(speciesName);
         awardXP(10, `NOUVELLE ESPÈCE : ${speciesName.toUpperCase()} !`);
       }
 
+      // COMPTEUR
       if (success && speciesName) {
         progress.speciesCaught[speciesName] = (progress.speciesCaught[speciesName] || 0) + 1;
       }
 
-      progress.spotsTested += 1;
+      progress.spotsTested = knownSpots.size;
       progress.attempts += 1;
       if (success) progress.successes += 1;
 
@@ -173,20 +181,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
     const auth = firebase.auth();
-    const db = firebase.firestore(); // INITIALISE DB
+    const db = firebase.firestore();
 
     auth.onAuthStateChanged(user => {
       if (user) {
         el('loginBtn').style.display = 'none';
         el('userInfo').style.display = 'flex';
 
-        // CHARGE LE PSEUDO
         const savedPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
         el('pseudoInput').value = savedPseudo;
         el('userName').textContent = savedPseudo;
 
-        // CRÉE LE PROFIL DANS FIRESTORE
         const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
+
         db.collection('users').doc(user.uid).set({
           displayName: savedPseudo,
           xp: progress.xp || 0,
@@ -196,10 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
           photoURL: user.photoURL || "",
           lastSeen: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true })
-        .then(() => console.log("Profil créé dans Firestore pour UID:", user.uid))
-        .catch(err => console.error("Erreur création profil :", err));
+        .then(() => console.log("Profil sync Firestore"))
+        .catch(err => console.error("Erreur profil :", err));
 
-        // SAUVEGARDE DU PSEUDO
         const saveBtn = el('savePseudo');
         if (saveBtn) {
           saveBtn.onclick = () => {
@@ -207,12 +213,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (newPseudo && newPseudo.length >= 2) {
               localStorage.setItem('fisherPseudo', newPseudo);
               el('userName').textContent = newPseudo;
-
               db.collection('users').doc(user.uid).update({ displayName: newPseudo })
                 .then(() => alert(`Pseudo changé : ${newPseudo} !`))
-                .catch(err => alert("Erreur mise à jour : " + err.message));
+                .catch(err => alert("Erreur : " + err.message));
             } else {
-              alert("Pseudo trop court ! (min 2 caractères)");
+              alert("Pseudo trop court !");
             }
           };
         }
