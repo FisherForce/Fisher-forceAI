@@ -2,16 +2,18 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Résultat Pêche</title>
+  <title>Résultat Pêche - FisherForce AI</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     body { margin:0; font-family:Arial; background:#f0fff9; }
     #map { width:100%; height:60vh; }
-    .form { padding:20px; text-align:center; }
-    input, button { margin:5px; padding:10px; font-size:16px; border-radius:10px; }
-    button { background:#00d4aa; color:white; border:none; cursor:pointer; }
-    .photo { margin:10px; }
-    #photoPreview { max-width:100%; border-radius:10px; }
+    .form { padding:20px; text-align:center; background:white; }
+    input, button, select { margin:5px; padding:12px; font-size:16px; border-radius:12px; border:2px solid #00d4aa; width:90%; }
+    button { background:#00d4aa; color:white; font-weight:bold; cursor:pointer; }
+    button:hover { background:#00a085; }
+    .photo { margin:15px 0; }
+    #photoPreview { max-width:90%; border-radius:12px; margin-top:10px; display:none; }
+    .spot-info { background:#e6fffa; padding:15px; border-radius:12px; margin:10px; }
   </style>
 
   <!-- LEAFLET (gratuit, sans clé) -->
@@ -22,6 +24,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -35,17 +38,28 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+    const storage = firebase.storage();
   </script>
 </head>
 <body>
   <div id="map"></div>
   <div class="form">
-    <h2>Enregistre ta prise</h2>
-    <input type="text" id="species" placeholder="Espèce (ex: Brochet)">
+    <div class="spot-info" id="spotInfo">Clique sur la carte pour placer ton spot</div>
+    <select id="species">
+      <option value="">Espèce pêchée...</option>
+      <option>Brochet</option>
+      <option>Perche</option>
+      <option>Sandre</option>
+      <option>Carpe</option>
+      <option>Truite</option>
+      <option>Black-bass</option>
+    </select>
     <input type="number" id="weight" placeholder="Poids (kg)" step="0.1">
-    <input type="file" id="photo" accept="image/*">
-    <img id="photoPreview" style="display:none;">
-    <button onclick="saveCatch()">Valider la prise</button>
+    <div class="photo">
+      <input type="file" id="photo" accept="image/*">
+      <img id="photoPreview">
+    </div>
+    <button onclick="saveCatch()">VALIDER LA PRISE</button>
   </div>
 
   <script>
@@ -55,30 +69,53 @@
     // INIT CARTE
     function initMap() {
       map = L.map('map').setView([47.2, -1.55], 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
 
       map.on('click', e => {
         currentPos = e.latlng;
         if (marker) marker.setLatLng(currentPos);
         else marker = L.marker(currentPos).addTo(map);
-        alert("Spot sélectionné ! Prends une photo et valide.");
+        document.getElementById('spotInfo').innerHTML = `
+          <strong>Spot sélectionné !</strong><br>
+          Lat: ${currentPos.lat.toFixed(4)}, Lng: ${currentPos.lng.toFixed(4)}
+        `;
       });
     }
 
+    // PREVIEW PHOTO
+    document.getElementById('photo').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = document.getElementById('photoPreview');
+          img.src = ev.target.result;
+          img.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
     // SAUVEGARDE PRISE
     function saveCatch() {
-      if (!currentPos) return alert("Clique sur la carte !");
-      const species = document.getElementById('species').value.trim();
+      if (!currentPos) return alert("Clique sur la carte d'abord !");
+      const species = document.getElementById('species').value;
       const weight = parseFloat(document.getElementById('weight').value) || 0;
       const photoFile = document.getElementById('photo').files[0];
 
-      auth.onAuthStateChanged(user => {
-        if (!user) return alert("Connecte-toi !");
+      if (!species) return alert("Choisis une espèce !");
 
-        const spotKey = `${Math.round(currentPos.lat*1000)},${Math.round(currentPos.lng*1000)}`;
+      auth.onAuthStateChanged(user => {
+        if (!user) return alert("Connecte-toi d'abord !");
+
+        const spotKey = `${Math.round(currentPos.lat * 1000)},${Math.round(currentPos.lng * 1000)}`;
+        const pseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
+
         const catchData = {
           uid: user.uid,
-          pseudo: localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0],
+          pseudo: pseudo,
           species,
           weight,
           lat: currentPos.lat,
@@ -89,48 +126,40 @@
 
         // UPLOAD PHOTO
         if (photoFile) {
-          const ref = firebase.storage().ref(`catches/${user.uid}/${Date.now()}`);
-          ref.put(photoFile).then(snap => {
-            snap.ref.getDownloadURL().then(url => {
-              catchData.photoURL = url;
-              saveToDB(catchData);
-            });
-          });
+          const ref = storage.ref(`catches/${user.uid}/${Date.now()}_${photoFile.name}`);
+          const task = ref.put(photoFile);
+          task.on('state_changed', 
+            () => {}, 
+            err => alert("Erreur photo : " + err.message),
+            () => {
+              task.snapshot.ref.getDownloadURL().then(url => {
+                catchData.photoURL = url;
+                saveToDB(catchData, spotKey);
+              });
+            }
+          );
         } else {
-          saveToDB(catchData);
+          saveToDB(catchData, spotKey);
         }
       });
     }
 
-    function saveToDB(data) {
+    function saveToDB(data, spotKey) {
       db.collection('catches').add(data)
-        .then(doc => {
-          // ENVOIE À LA PAGE PRINCIPALE
+        .then(() => {
           window.opener.postMessage({
             type: 'ADD_XP',
             success: true,
             speciesName: data.species,
-            spotName: data.spotKey
+            spotKey: spotKey
           }, '*');
-          alert("Prise enregistrée ! +10 XP (nouveau spot) ou +5 XP");
+          alert("Prise enregistrée ! +10 XP si nouveau spot !");
           window.close();
-        });
-    }
-
-    // CHARGE LES SPOTS DES AMIS
-    function loadFriendsSpots() {
-      db.collection('catches').onSnapshot(snap => {
-        snap.forEach(doc => {
-          const d = doc.data();
-          L.circle([d.lat, d.lng], { radius: SPOT_RADIUS, color: '#00d4aa' })
-            .addTo(map)
-            .bindPopup(`${d.pseudo}: ${d.species} (${d.weight}kg)`);
-        });
-      });
+        })
+        .catch(err => alert("Erreur : " + err.message));
     }
 
     initMap();
-    auth.onAuthStateChanged(user => { if (user) loadFriendsSpots(); });
   </script>
 </body>
 </html>
