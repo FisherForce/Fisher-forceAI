@@ -1,75 +1,136 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Enregistrer la session - FisherForce AI</title>
+  <meta charset="utf-8">
+  <title>Résultat Pêche</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #00d4aa, #007a63); color: white; margin:0; padding:20px; text-align:center; }
-    .card { background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; max-width: 420px; margin: 40px auto; box-shadow: 0 15px 40px rgba(0,0,0,0.3); }
-    h1 { font-size: 28px; margin-bottom: 10px; }
-    label { display: block; margin: 18px 0 8px; font-size: 18px; text-align: left; }
-    input, select { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; background: rgba(255,255,255,0.9); color: #000; }
-    .btn { margin-top: 25px; padding: 16px; font-size: 20px; font-weight: bold; border: none; border-radius: 50px; background: #ffd700; color: #000; cursor: pointer; width: 100%; }
-    .btn:hover { background: #ffed4e; transform: scale(1.05); transition: 0.3s; }
-    .success { background: #00d4aa !important; }
+    body { margin:0; font-family:Arial; background:#f0fff9; }
+    #map { width:100%; height:60vh; }
+    .form { padding:20px; text-align:center; }
+    input, button { margin:5px; padding:10px; font-size:16px; border-radius:10px; }
+    button { background:#00d4aa; color:white; border:none; cursor:pointer; }
+    .photo { margin:10px; }
+    #photoPreview { max-width:100%; border-radius:10px; }
   </style>
+
+  <!-- LEAFLET (gratuit, sans clé) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- FIREBASE -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+      authDomain: "fisher-forceai.firebaseapp.com",
+      projectId: "fisher-forceai",
+      storageBucket: "fisher-forceai.firebasestorage.app",
+      messagingSenderId: "293964630939",
+      appId: "1:293964630939:web:063ed88456613a33e96f3e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
-  <div class="card">
-    <h1>Enregistrer ta session</h1>
-    <p id="spotNameDisplay">Spot : <strong>Étang du Moulin</strong></p>
-
-    <label>
-      <input type="checkbox" id="caught"> J'ai pris un poisson !
-    </label>
-
-    <div id="fishDetails" style="display:none;">
-      <label>Espèce pêchée</label>
-      <input type="text" id="species" placeholder="Ex: brochet, perche, sandre..." list="speciesList">
-      <datalist id="speciesList">
-        <option>brochet</option><option>perche</option><option>sandre</option><option>carpe</option><option>truite</option><option>black-bass</option><option>silure</option>
-      </datalist>
-
-      <label>Leurre utilisé</label>
-      <input type="text" id="lure" placeholder="Ex: Jerkbait 11cm, Texas rig 10g...">
-    </div>
-
-    <button class="btn" onclick="saveSession()">ENREGISTER + XP</button>
+  <div id="map"></div>
+  <div class="form">
+    <h2>Enregistre ta prise</h2>
+    <input type="text" id="species" placeholder="Espèce (ex: Brochet)">
+    <input type="number" id="weight" placeholder="Poids (kg)" step="0.1">
+    <input type="file" id="photo" accept="image/*">
+    <img id="photoPreview" style="display:none;">
+    <button onclick="saveCatch()">Valider la prise</button>
   </div>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const spotName = urlParams.get('spot') || "Spot inconnu";
-    document.getElementById('spotNameDisplay').innerHTML = `Spot : <strong>${spotName}</strong>`;
+    let map, marker, currentPos;
+    const SPOT_RADIUS = 25; // ~500m²
 
-    document.getElementById('caught').addEventListener('change', function() {
-      document.getElementById('fishDetails').style.display = this.checked ? 'block' : 'none';
-    });
+    // INIT CARTE
+    function initMap() {
+      map = L.map('map').setView([47.2, -1.55], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-    function saveSession() {
-      const caught = document.getElementById('caught').checked;
-      const species = document.getElementById('species').value.trim().toLowerCase();
-      const lure = document.getElementById('lure').value.trim();
-      const spot = spotName.toLowerCase();
-
-      // Envoie à la page principale
-      window.opener.postMessage({
-        type: 'ADD_XP',
-        success: caught,
-        speciesName: caught ? species : null,
-        spotName: spot,
-        lure: lure
-      }, '*');
-
-      // Animation de succès
-      document.querySelector('.card').innerHTML = `
-        <h1>SESSION ENREGISTRÉE !</h1>
-        <p style="font-size:60px;margin:30px 0;">+ XP</p>
-        <p style="font-size:20px;">Ferme cette fenêtre</p>
-      `;
-      document.body.style.background = '#00d4aa';
+      map.on('click', e => {
+        currentPos = e.latlng;
+        if (marker) marker.setLatLng(currentPos);
+        else marker = L.marker(currentPos).addTo(map);
+        alert("Spot sélectionné ! Prends une photo et valide.");
+      });
     }
+
+    // SAUVEGARDE PRISE
+    function saveCatch() {
+      if (!currentPos) return alert("Clique sur la carte !");
+      const species = document.getElementById('species').value.trim();
+      const weight = parseFloat(document.getElementById('weight').value) || 0;
+      const photoFile = document.getElementById('photo').files[0];
+
+      auth.onAuthStateChanged(user => {
+        if (!user) return alert("Connecte-toi !");
+
+        const spotKey = `${Math.round(currentPos.lat*1000)},${Math.round(currentPos.lng*1000)}`;
+        const catchData = {
+          uid: user.uid,
+          pseudo: localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0],
+          species,
+          weight,
+          lat: currentPos.lat,
+          lng: currentPos.lng,
+          spotKey,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // UPLOAD PHOTO
+        if (photoFile) {
+          const ref = firebase.storage().ref(`catches/${user.uid}/${Date.now()}`);
+          ref.put(photoFile).then(snap => {
+            snap.ref.getDownloadURL().then(url => {
+              catchData.photoURL = url;
+              saveToDB(catchData);
+            });
+          });
+        } else {
+          saveToDB(catchData);
+        }
+      });
+    }
+
+    function saveToDB(data) {
+      db.collection('catches').add(data)
+        .then(doc => {
+          // ENVOIE À LA PAGE PRINCIPALE
+          window.opener.postMessage({
+            type: 'ADD_XP',
+            success: true,
+            speciesName: data.species,
+            spotName: data.spotKey
+          }, '*');
+          alert("Prise enregistrée ! +10 XP (nouveau spot) ou +5 XP");
+          window.close();
+        });
+    }
+
+    // CHARGE LES SPOTS DES AMIS
+    function loadFriendsSpots() {
+      db.collection('catches').onSnapshot(snap => {
+        snap.forEach(doc => {
+          const d = doc.data();
+          L.circle([d.lat, d.lng], { radius: SPOT_RADIUS, color: '#00d4aa' })
+            .addTo(map)
+            .bindPopup(`${d.pseudo}: ${d.species} (${d.weight}kg)`);
+        });
+      });
+    }
+
+    initMap();
+    auth.onAuthStateChanged(user => { if (user) loadFriendsSpots(); });
   </script>
 </body>
 </html>
