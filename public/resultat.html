@@ -2,30 +2,22 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Résultat Pêche - FisherForce AI</title>
+  <title>Amis - FisherForce AI</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body { margin:0; font-family:Arial; background:#f0fff9; }
-    #map { width:100%; height:60vh; }
-    .form { padding:20px; text-align:center; background:white; }
-    input, button, select { margin:5px; padding:12px; font-size:16px; border-radius:12px; border:2px solid #00d4aa; width:90%; }
-    button { background:#00d4aa; color:white; font-weight:bold; cursor:pointer; }
-    button:hover { background:#00a085; }
-    .photo { margin:15px 0; }
-    #photoPreview { max-width:90%; border-radius:12px; margin-top:10px; display:none; }
-    .spot-info { background:#e6fffa; padding:15px; border-radius:12px; margin:10px; }
+    body { margin:0; font-family:Arial; background:#f0fff9; padding:20px; }
+    .container { max-width:500px; margin:auto; background:white; padding:20px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
+    input, button { padding:10px; margin:5px 0; border-radius:10px; border:1px solid #00d4aa; width:100%; font-size:16px; }
+    button { background:#00d4aa; color:white; border:none; cursor:pointer; font-weight:bold; }
+    .friend { background:#e6fffa; padding:15px; border-radius:12px; margin:10px 0; }
+    .master { background:#fffacd; border:2px solid #ffd700; }
+    #spotMasters { margin-top:30px; }
   </style>
-
-  <!-- LEAFLET (gratuit, sans clé) -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <!-- FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
@@ -38,128 +30,126 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-    const storage = firebase.storage();
   </script>
 </head>
 <body>
-  <div id="map"></div>
-  <div class="form">
-    <div class="spot-info" id="spotInfo">Clique sur la carte pour placer ton spot</div>
-    <select id="species">
-      <option value="">Espèce pêchée...</option>
-      <option>Brochet</option>
-      <option>Perche</option>
-      <option>Sandre</option>
-      <option>Carpe</option>
-      <option>Truite</option>
-      <option>Black-bass</option>
-    </select>
-    <input type="number" id="weight" placeholder="Poids (kg)" step="0.1">
-    <div class="photo">
-      <input type="file" id="photo" accept="image/*">
-      <img id="photoPreview">
-    </div>
-    <button onclick="saveCatch()">VALIDER LA PRISE</button>
+  <div class="container">
+    <h2>Mes Amis</h2>
+    <input type="text" id="searchInput" placeholder="Rechercher un pseudo...">
+    <button onclick="searchFriend()">Rechercher</button>
+    <div id="searchResult"></div>
+
+    <h2 style="margin-top:30px;">Mes Amis</h2>
+    <div id="friendsList">Connexion en cours...</div>
+
+    <h2 id="spotMasters">Spots dominés</h2>
+    <div id="mastersList">Chargement...</div>
   </div>
 
   <script>
-    let map, marker, currentPos;
-    const SPOT_RADIUS = 25; // ~500m²
+    let currentUser = null;
+    let currentPseudo = "";
 
-    // INIT CARTE
-    function initMap() {
-      map = L.map('map').setView([47.2, -1.55], 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-      }).addTo(map);
+    // RECHERCHE AMI
+    function searchFriend() {
+      const pseudo = document.getElementById('searchInput').value.trim();
+      if (!pseudo || pseudo.length < 2) return alert("Pseudo trop court");
 
-      map.on('click', e => {
-        currentPos = e.latlng;
-        if (marker) marker.setLatLng(currentPos);
-        else marker = L.marker(currentPos).addTo(map);
-        document.getElementById('spotInfo').innerHTML = `
-          <strong>Spot sélectionné !</strong><br>
-          Lat: ${currentPos.lat.toFixed(4)}, Lng: ${currentPos.lng.toFixed(4)}
-        `;
-      });
+      db.collection('users')
+        .where('displayName', '==', pseudo)
+        .get()
+        .then(snap => {
+          const result = document.getElementById('searchResult');
+          result.innerHTML = '';
+          if (snap.empty) {
+            result.innerHTML = `<p>Aucun pêcheur trouvé avec le pseudo "${pseudo}"</p>`;
+          } else {
+            snap.forEach(doc => {
+              const data = doc.data();
+              if (data.uid === currentUser.uid) {
+                result.innerHTML = `<p>C’est toi !</p>`;
+              } else {
+                result.innerHTML = `
+                  <div class="friend">
+                    <strong>${data.displayName}</strong> — ${data.xp} XP<br>
+                    <small>Niveau: ${data.level}</small>
+                  </div>`;
+              }
+            });
+          }
+        })
+        .catch(err => {
+          console.error("Erreur recherche :", err);
+          alert("Erreur : " + err.message);
+        });
     }
 
-    // PREVIEW PHOTO
-    document.getElementById('photo').addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = ev => {
-          const img = document.getElementById('photoPreview');
-          img.src = ev.target.result;
-          img.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+    // CHARGE LES AMIS (mock pour l’instant)
+    function loadFriends() {
+      const list = document.getElementById('friendsList');
+      list.innerHTML = `
+        <div class="friend">LoulouPeche — 285 XP</div>
+        <div class="friend">BrochetKiller — 220 XP</div>
+      `;
+    }
+
+    // CHARGE LES MAÎTRES DES SPOTS
+    function loadSpotMasters() {
+      const list = document.getElementById('mastersList');
+      list.innerHTML = 'Analyse des territoires...';
+
+      db.collection('catches')
+        .get()
+        .then(snap => {
+          const masters = {};
+          snap.forEach(doc => {
+            const d = doc.data();
+            const key = d.spotKey;
+            if (!masters[key]) masters[key] = {};
+            masters[key][d.uid] = (masters[key][d.uid] || 0) + 1;
+          });
+
+          list.innerHTML = '';
+          if (Object.keys(masters).length === 0) {
+            list.innerHTML = 'Aucun spot conquis';
+            return;
+          }
+
+          Object.keys(masters).forEach(key => {
+            const counts = masters[key];
+            const masterUid = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+            const masterCount = counts[masterUid];
+
+            db.collection('users').doc(masterUid).get().then(doc => {
+              if (doc.exists) {
+                const pseudo = doc.data().displayName;
+                list.innerHTML += `
+                  <div class="friend master">
+                    <strong>${pseudo}</strong> domine le <strong>Spot ${key}</strong><br>
+                    <small>${masterCount} prises</small>
+                  </div>`;
+              }
+            });
+          });
+        })
+        .catch(err => {
+          console.error("Erreur Firestore :", err);
+          list.innerHTML = 'Erreur de connexion';
+        });
+    }
+
+    // AUTH
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        currentPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
+        loadFriends();
+        loadSpotMasters();
+      } else {
+        alert("Connecte-toi d'abord !");
+        window.close();
       }
     });
-
-    // SAUVEGARDE PRISE
-    function saveCatch() {
-      if (!currentPos) return alert("Clique sur la carte d'abord !");
-      const species = document.getElementById('species').value;
-      const weight = parseFloat(document.getElementById('weight').value) || 0;
-      const photoFile = document.getElementById('photo').files[0];
-
-      if (!species) return alert("Choisis une espèce !");
-
-      auth.onAuthStateChanged(user => {
-        if (!user) return alert("Connecte-toi d'abord !");
-
-        const spotKey = `${Math.round(currentPos.lat * 1000)},${Math.round(currentPos.lng * 1000)}`;
-        const pseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
-
-        const catchData = {
-          uid: user.uid,
-          pseudo: pseudo,
-          species,
-          weight,
-          lat: currentPos.lat,
-          lng: currentPos.lng,
-          spotKey,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        // UPLOAD PHOTO
-        if (photoFile) {
-          const ref = storage.ref(`catches/${user.uid}/${Date.now()}_${photoFile.name}`);
-          const task = ref.put(photoFile);
-          task.on('state_changed', 
-            () => {}, 
-            err => alert("Erreur photo : " + err.message),
-            () => {
-              task.snapshot.ref.getDownloadURL().then(url => {
-                catchData.photoURL = url;
-                saveToDB(catchData, spotKey);
-              });
-            }
-          );
-        } else {
-          saveToDB(catchData, spotKey);
-        }
-      });
-    }
-
-    function saveToDB(data, spotKey) {
-      db.collection('catches').add(data)
-        .then(() => {
-          window.opener.postMessage({
-            type: 'ADD_XP',
-            success: true,
-            speciesName: data.species,
-            spotKey: spotKey
-          }, '*');
-          alert("Prise enregistrée ! +10 XP si nouveau spot !");
-          window.close();
-        })
-        .catch(err => alert("Erreur : " + err.message));
-    }
-
-    initMap();
   </script>
 </body>
 </html>
