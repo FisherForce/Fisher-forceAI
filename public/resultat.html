@@ -14,7 +14,7 @@
     #spotMasters { margin-top:30px; }
   </style>
 
-  <!-- FIREBASE COMPAT -->
+  <!-- FIREBASE -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -29,7 +29,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const db = firebase.firestore(); // CORRECT
+    const db = firebase.firestore();
   </script>
 </head>
 <body>
@@ -55,7 +55,7 @@
       const pseudo = document.getElementById('searchInput').value.trim();
       if (!pseudo || pseudo.length < 2) return alert("Pseudo trop court");
 
-      db.collection('users') // CORRECT : collection, pas ref
+      db.collection('users')
         .where('displayName', '==', pseudo)
         .get()
         .then(snap => {
@@ -69,10 +69,10 @@
               if (data.uid === currentUser.uid) {
                 result.innerHTML = `<p>C’est toi !</p>`;
               } else {
-                result.innerHTML += `
+                result.innerHTML = `
                   <div class="friend">
-                    <strong>${data.displayName}</strong> — ${data.xp || 0} XP<br>
-                    <small>Niveau: ${data.level || "Débutant"}</small>
+                    <strong>${data.displayName}</strong> — ${data.xp} XP<br>
+                    <small>Niveau: ${data.level}</small>
                   </div>`;
               }
             });
@@ -84,7 +84,7 @@
         });
     }
 
-    // CHARGE LES AMIS (mock)
+    // CHARGE LES AMIS (mock pour l’instant)
     function loadFriends() {
       const list = document.getElementById('friendsList');
       list.innerHTML = `
@@ -98,17 +98,15 @@
       const list = document.getElementById('mastersList');
       list.innerHTML = 'Analyse des territoires...';
 
-      db.collection('catches') // CORRECT
+      db.collection('catches')
         .get()
         .then(snap => {
           const masters = {};
           snap.forEach(doc => {
             const d = doc.data();
             const key = d.spotKey;
-            if (key && d.uid) {
-              if (!masters[key]) masters[key] = {};
-              masters[key][d.uid] = (masters[key][d.uid] || 0) + 1;
-            }
+            if (!masters[key]) masters[key] = {};
+            masters[key][d.uid] = (masters[key][d.uid] || 0) + 1;
           });
 
           list.innerHTML = '';
@@ -124,14 +122,14 @@
 
             db.collection('users').doc(masterUid).get().then(doc => {
               if (doc.exists) {
-                const pseudo = doc.data().displayName || "Anonyme";
+                const pseudo = doc.data().displayName;
                 list.innerHTML += `
                   <div class="friend master">
                     <strong>${pseudo}</strong> domine le <strong>Spot ${key}</strong><br>
                     <small>${masterCount} prises</small>
                   </div>`;
               }
-            }).catch(() => {});
+            });
           });
         })
         .catch(err => {
