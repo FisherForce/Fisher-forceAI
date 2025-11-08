@@ -36,6 +36,59 @@
   </script>
 </head>
 <body>
+  <h2>Spots dominés par les amis</h2>
+<div id="spotMasters">Chargement des territoires...</div>
+
+<script>
+  // CHARGE LES SPOTS + MAÎTRES
+  function loadSpotMasters() {
+    db.collection('catches').onSnapshot(snap => {
+      const masters = {};
+      const spotNames = {};
+
+      snap.forEach(doc => {
+        const d = doc.data();
+        const key = d.spotKey;
+        if (!masters[key]) masters[key] = {};
+        masters[key][d.uid] = (masters[key][d.uid] || 0) + 1;
+        spotNames[key] = `Spot ${key}`;
+      });
+
+      const list = document.getElementById('spotMasters');
+      list.innerHTML = '';
+
+      Object.keys(masters).forEach(key => {
+        const counts = masters[key];
+        const masterUid = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+        const masterCount = counts[masterUid];
+
+        // Récupère le pseudo du maître
+        db.collection('users').doc(masterUid).get().then(doc => {
+          if (doc.exists) {
+            const pseudo = doc.data().displayName;
+            list.innerHTML += `
+              <div class="friend" style="background:#fffacd;">
+                <strong>${pseudo}</strong> domine le <strong>Spot ${key}</strong><br>
+                <small>${masterCount} prises</small>
+              </div>`;
+          }
+        });
+      });
+
+      if (Object.keys(masters).length === 0) {
+        list.innerHTML = 'Aucun spot conquis pour l’instant';
+      }
+    });
+  }
+
+  // APPELLE ÇA APRÈS auth.onAuthStateChanged
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      // ... ton code existant ...
+      loadSpotMasters();
+    }
+  });
+</script>
   <div class="card">
     <h1>Amis FisherForce</h1>
     <p class="status">Connecté en tant que <span id="userName">Thao</span></p>
