@@ -16,29 +16,16 @@
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-top: 12px; }
     .stat-item { background: rgba(255,255,255,0.25); padding: 10px; border-radius: 10px; }
   </style>
-  <!-- FIREBASE CHARGÉ EN PREMIER -->
+
+  <!-- FIREBASE (compat, sans init) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
-      authDomain: "fisher-forceai.firebaseapp.com",
-      projectId: "fisher-forceai",
-      storageBucket: "fisher-forceai.firebasestorage.app",
-      messagingSenderId: "293964630939",
-      appId: "1:293964630939:web:063ed88456613a33e96f3e",
-      measurementId: "G-3H9E51FWXY"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
 </head>
 <body>
   <div class="live-badge"><span class="live-dot"></span> IA en direct : <span id="patternCount">42</span> patterns appris</div>
 
-  <!-- AUTH UNIFIÉ + CHAMP PSEUDO MODIFIABLE -->
+  <!-- AUTH UNIFIÉ + PSEUDO + AMIS -->
   <div id="authContainer" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.3);padding:10px 16px;border-radius:30px;">
     <div id="userInfo" style="display:none;color:white;font-weight:bold;align-items:center;gap:10px;">
       <input id="pseudoInput" type="text" placeholder="Ton pseudo" style="padding:6px 10px;border-radius:20px;border:none;font-size:13px;width:100px;">
@@ -74,19 +61,13 @@
 
     <section class="card output-card">
       <h2>Conseils de l'IA</h2>
-      <!-- TABLEAU DE BORD XP -->
-      <div class="dashboard">
-        <h3><span class="level-badge" id="level">Débutant</span> — <span id="xp">0</span> XP</h3>
-        <div class="stats-grid">
-          <div class="stat-item">Spots : <strong id="spots">0</strong></div>
-          <div class="stat-item">Prises : <strong id="success">0</strong></div>
-          <div class="stat-item">Réussite : <strong id="rate">0%</strong></div>
-        </div>
-      </div>
+      <!-- DASHBOARD GÉRÉ PAR app.js -->
       <div id="advice"><p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p></div>
+
       <button onclick="openResultat()" style="margin:20px auto; display:block; width:90%; background:#00d4aa; color:white; border:none; padding:14px; border-radius:10px; font-weight:bold;">
         Enregistrer un résultat
       </button>
+
       <!-- CLASSEMENT MOCK -->
       <div style="margin:30px 0; text-align:center;">
         <h3 style="color:#00a085;">Top 5 des Maîtres</h3>
@@ -101,30 +82,7 @@
     </section>
   </main>
 
-  <!-- app.js chargé après Firebase -->
+  <!-- app.js (gère Firebase + init + dashboard + XP) -->
   <script src="app.js"></script>
-
-  <!-- XP LOCAL + POPUP -->
-  <script>
-    if (!document.getElementById('xpAnimStyle')) {
-      const xpStyle = document.createElement('style');
-      xpStyle.id = 'xpAnimStyle';
-      xpStyle.textContent = `
-        @keyframes xpPop {
-          0% { transform: scale(0); opacity: 0; }
-          50% { transform: scale(1.3); opacity: 1; }
-          100% { transform: scale(1); opacity: 0; }
-        }
-      `;
-      document.head.appendChild(xpStyle);
-    }
-    window.showXPPop = function() {
-      const pop = document.createElement('div');
-      pop.textContent = '+5 XP !';
-      pop.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#00d4aa;color:white;padding:20px 40px;border-radius:20px;font-size:28px;font-weight:bold;z-index:9999;animation:xpPop 1s forwards;';
-      document.body.appendChild(pop);
-      setTimeout(() => pop.remove(), 1000);
-    };
-  </script>
 </body>
 </html>
