@@ -15,25 +15,27 @@
     .status { color: #00d4aa; font-weight: bold; margin-bottom: 20px; }
   </style>
 
-  <!-- FIREBASE RTDB -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
-      authDomain: "fisher-forceai.firebaseapp.com",
-      databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com/",
-      projectId: "fisher-forceai",
-      storageBucket: "fisher-forceai.firebasestorage.app",
-      messagingSenderId: "293964630939",
-      appId: "1:293964630939:web:063ed88456613a33e96f3e"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
-  </script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+    authDomain: "fisher-forceai.firebaseapp.com",
+    projectId: "fisher-forceai",
+    storageBucket: "fisher-forceai.firebasestorage.app",
+    messagingSenderId: "293964630939",
+    appId: "1:293964630939:web:063ed88456613a33e96f3e"
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  const auth = firebase.auth();
+  const db = firebase.firestore(); // CORRECT
+  const storage = firebase.storage();
+</script>
 </head>
 <body>
   <h2>Spots dominés par les amis</h2>
