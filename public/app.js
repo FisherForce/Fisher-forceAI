@@ -38,25 +38,28 @@ function saveAll() {
   updateDashboard();
 }
 
-// === DASHBOARD LIVE ===
+// === DASHBOARD LIVE (SÉCURISÉ) ===
 function updateDashboard() {
+  const dashboard = document.querySelector('.dashboard');
+  if (!dashboard) {
+    console.warn("Dashboard non trouvé dans le DOM. Attente...");
+    return;
+  }
+
   const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
   const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
-  document.querySelector('.dashboard').outerHTML = `
-    <div class="dashboard">
-      <h3><span class="level-badge">${level}</span> — <span id="xp">${progress.xp}</span> XP</h3>
-      <div class="stats-grid">
-        <div class="stat-item">Spots : <strong>${knownSpots.size}</strong></div>
-        <div class="stat-item">Espèces : <strong>${Object.keys(progress.speciesCaught).length}</strong></div>
-        <div class="stat-item">Réussite : <strong>${rate}%</strong></div>
-      </div>
+
+  dashboard.innerHTML = `
+    <h3><span class="level-badge">${level}</span> — <span id="xp">${progress.xp}</span> XP</h3>
+    <div class="stats-grid">
+      <div class="stat-item">Spots : <strong>${knownSpots.size}</strong></div>
+      <div class="stat-item">Espèces : <strong>${Object.keys(progress.speciesCaught).length}</strong></div>
+      <div class="stat-item">Réussite : <strong>${rate}%</strong></div>
     </div>`;
 }
 
 // === TOUT LE CODE ===
 document.addEventListener('DOMContentLoaded', () => {
-  updateDashboard();
-
   // Animation XP
   if (!document.getElementById('xpAnim')) {
     const s = document.createElement('style');
@@ -175,10 +178,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
-    const auth = firebase.auth();
-    let db; // Déclaré ici, initialisé après initializeApp
-
-    // INITIALISE FIREBASE UNE SEULE FOIS
     const firebaseConfig = {
       apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
       authDomain: "fisher-forceai.firebaseapp.com",
@@ -189,7 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore(); // INITIALISÉ APRÈS
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
     auth.onAuthStateChanged(user => {
       if (user) {
@@ -249,4 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.open('friends.html', '_blank', 'width=600,height=800');
     });
   }
+
+  // === DASHBOARD INITIAL (APRÈS DOM) ===
+  updateDashboard();
 });
