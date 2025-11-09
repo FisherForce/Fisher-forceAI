@@ -1,155 +1,80 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <title>Amis - FisherForce AI</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Résultat - FisherForce AI</title>
   <style>
-    body { margin:0; font-family:Arial; background:#f0fff9; padding:20px; }
-    .container { max-width:500px; margin:auto; background:white; padding:20px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.1); }
-    input, button { padding:10px; margin:5px 0; border-radius:10px; border:1px solid #00d4aa; width:100%; font-size:16px; }
-    button { background:#00d4aa; color:white; border:none; cursor:pointer; font-weight:bold; }
-    .friend { background:#e6fffa; padding:15px; border-radius:12px; margin:10px 0; }
-    .master { background:#fffacd; border:2px solid #ffd700; }
-    #spotMasters { margin-top:30px; }
+    body { font-family: Arial; background: #f0fff9; padding: 20px; text-align: center; margin: 0; }
+    .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,212,170,0.2); }
+    label { display: block; margin: 15px 0 5px; text-align: left; font-weight: bold; }
+    input, select { width: 100%; padding: 12px; border: 2px solid #00d4aa; border-radius: 10px; box-sizing: border-box; }
+    button { width: 100%; padding: 15px; background: #00d4aa; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+    button:hover { background: #00a085; }
+    #successBtn { background: #27ae60; }
+    #failBtn { background: #e74c3c; }
+    #successBtn:hover { background: #229954; }
+    #failBtn:hover { background: #c0392b; }
   </style>
-
-  <!-- FIREBASE -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
-      authDomain: "fisher-forceai.firebaseapp.com",
-      projectId: "fisher-forceai",
-      storageBucket: "fisher-forceai.firebasestorage.app",
-      messagingSenderId: "293964630939",
-      appId: "1:293964630939:web:063ed88456613a33e96f3e"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
 </head>
 <body>
   <div class="container">
-    <h2>Mes Amis</h2>
-    <input type="text" id="searchInput" placeholder="Rechercher un pseudo...">
-    <button onclick="searchFriend()">Rechercher</button>
-    <div id="searchResult"></div>
+    <h1>Enregistrer ta session</h1>
+    <p id="spotInfo">Spot : <strong id="spotName">Spot inconnu</strong></p>
 
-    <h2 style="margin-top:30px;">Mes Amis</h2>
-    <div id="friendsList">Connexion en cours...</div>
+    <label>
+      <input type="checkbox" id="success"> J'ai pris un poisson !
+    </label>
 
-    <h2 id="spotMasters">Spots dominés</h2>
-    <div id="mastersList">Chargement...</div>
+    <div id="details" style="display:none;">
+      <label>Espèce pêchée</label>
+      <input type="text" id="species" placeholder="Ex: brochet, perche...">
+
+      <label>Leurre utilisé</label>
+      <input type="text" id="lure" placeholder="Ex: Jerkbait 11cm, Texas rig...">
+
+      <label>Poids (kg)</label>
+      <input type="number" id="weight" step="0.1" placeholder="Ex: 2.5">
+    </div>
+
+    <button id="successBtn" onclick="sendResult(true)">OUI ! Enregistrer</button>
+    <button id="failBtn" onclick="sendResult(false)">NON, bredouille</button>
   </div>
 
   <script>
-    let currentUser = null;
-    let currentPseudo = "";
+    // Récupère le spot depuis l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const spot = urlParams.get('spot') || "Spot inconnu";
+    document.getElementById('spotName').textContent = spot;
 
-    // RECHERCHE AMI
-    function searchFriend() {
-      const pseudo = document.getElementById('searchInput').value.trim();
-      if (!pseudo || pseudo.length < 2) return alert("Pseudo trop court");
-
-      db.collection('users')
-        .where('displayName', '==', pseudo)
-        .get()
-        .then(snap => {
-          const result = document.getElementById('searchResult');
-          result.innerHTML = '';
-          if (snap.empty) {
-            result.innerHTML = `<p>Aucun pêcheur trouvé avec le pseudo "${pseudo}"</p>`;
-          } else {
-            snap.forEach(doc => {
-              const data = doc.data();
-              if (data.uid === currentUser.uid) {
-                result.innerHTML = `<p>C’est toi !</p>`;
-              } else {
-                result.innerHTML = `
-                  <div class="friend">
-                    <strong>${data.displayName}</strong> — ${data.xp} XP<br>
-                    <small>Niveau: ${data.level}</small>
-                  </div>`;
-              }
-            });
-          }
-        })
-        .catch(err => {
-          console.error("Erreur recherche :", err);
-          alert("Erreur : " + err.message);
-        });
-    }
-
-    // CHARGE LES AMIS (mock pour l’instant)
-    function loadFriends() {
-      const list = document.getElementById('friendsList');
-      list.innerHTML = `
-        <div class="friend">LoulouPeche — 285 XP</div>
-        <div class="friend">BrochetKiller — 220 XP</div>
-      `;
-    }
-
-    // CHARGE LES MAÎTRES DES SPOTS
-    function loadSpotMasters() {
-      const list = document.getElementById('mastersList');
-      list.innerHTML = 'Analyse des territoires...';
-
-      db.collection('catches')
-        .get()
-        .then(snap => {
-          const masters = {};
-          snap.forEach(doc => {
-            const d = doc.data();
-            const key = d.spotKey;
-            if (!masters[key]) masters[key] = {};
-            masters[key][d.uid] = (masters[key][d.uid] || 0) + 1;
-          });
-
-          list.innerHTML = '';
-          if (Object.keys(masters).length === 0) {
-            list.innerHTML = 'Aucun spot conquis';
-            return;
-          }
-
-          Object.keys(masters).forEach(key => {
-            const counts = masters[key];
-            const masterUid = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-            const masterCount = counts[masterUid];
-
-            db.collection('users').doc(masterUid).get().then(doc => {
-              if (doc.exists) {
-                const pseudo = doc.data().displayName;
-                list.innerHTML += `
-                  <div class="friend master">
-                    <strong>${pseudo}</strong> domine le <strong>Spot ${key}</strong><br>
-                    <small>${masterCount} prises</small>
-                  </div>`;
-              }
-            });
-          });
-        })
-        .catch(err => {
-          console.error("Erreur Firestore :", err);
-          list.innerHTML = 'Erreur de connexion';
-        });
-    }
-
-    // AUTH
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        currentUser = user;
-        currentPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
-        loadFriends();
-        loadSpotMasters();
-      } else {
-        alert("Connecte-toi d'abord !");
-        window.close();
-      }
+    // Affiche/masque les détails
+    document.getElementById('success').addEventListener('change', function() {
+      document.getElementById('details').style.display = this.checked ? 'block' : 'none';
     });
+
+    function sendResult(success) {
+      const species = document.getElementById('species').value.trim();
+      const lure = document.getElementById('lure').value.trim();
+      const weight = parseFloat(document.getElementById('weight').value) || 0;
+
+      if (success && !species) {
+        alert("Choisis une espèce !");
+        return;
+      }
+
+      // Envoie à la page principale
+      window.opener.postMessage({
+        type: 'ADD_XP',
+        success: success,
+        speciesName: success ? species : null,
+        spotName: spot,
+        lure: lure,
+        weight: weight
+      }, '*');
+
+      const msg = success ? `Prise de ${species} enregistrée ! (${weight}kg)` : "Session bredouille enregistrée.";
+      alert(msg);
+      window.close();
+    }
   </script>
 </body>
 </html>
