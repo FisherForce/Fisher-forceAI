@@ -127,6 +127,30 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('message', (e) => {
     if (e.data?.type === 'ADD_XP') {
       const { success, speciesName, spotKey } = e.data;
+          // === ENVOI AU SERVEUR POUR APPRENTISSAGE ===
+    if (success && speciesName && lure) {
+      const input = readForm(); // Récupère les champs du formulaire
+      const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
+
+      try {
+        await fetch('/api/learn', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            species: speciesName,
+            lureUsed: lure,
+            resultFish: true,
+            spotType: input.waterType || "Étang",
+            conditions: input.conditions || "",
+            structure: input.structure || "",
+            anglerName: pseudo
+          })
+        });
+        console.log("Session envoyée à l'IA → apprentissage en cours");
+      } catch (err) {
+        console.warn("Échec envoi session IA", err);
+      }
+    }
 
       if (success) {
         awardXP(5, "Prise validée !");
