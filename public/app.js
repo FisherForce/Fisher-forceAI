@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // === RÉCEPTION DES DONNÉES DEPUIS resultat.html ===
-  window.addEventListener('message', (e) => {
+window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
       const { success, speciesName, spotKey } = e.data;
           // === ENVOI AU SERVEUR POUR APPRENTISSAGE ===
