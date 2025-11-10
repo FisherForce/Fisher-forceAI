@@ -148,7 +148,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
 
   if (species.includes('bass')) {
-  list.push('Utiliser des leurres imitatifs des plus petites proies— Récupération lente avec des pauses proche ou dans des obstacles');    
+  list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');    
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Ned Rig ou ver manié — Récupération lente ou dandine en verticale');
     if (saison === "printemps" && spotType === "étang" && conditions.includes('vent'))
@@ -168,7 +168,9 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   if (species.includes('chevesne')) {
   list.push('Lame Vibrante — Récupération rapide avec des pauses proche des obstacles');    
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
-      list.push('Lame vibrante ou cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
+      list.push('Cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
+    if (saison === "été" && spotType === "rivière" )
+      list.push('Leurres Insectes — Récupération par à coups pour déclencher des attaques de réaction');    
   }
 
   if (species.includes('sandre')) {
@@ -178,6 +180,20 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
   }
+  if (species.includes('aspe')) {
+  list.push('Essaie un jerkminnow de 7cm — Ramène le très vite, puis un jig de 10G à utiliser près du fond, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');      
+  }
+  if (species.includes('silure')) {
+  list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');      
+  }
+  if (species.includes('truite')) {
+  list.push('Essaie une ondulante de 5g — Lance dans les courants et ramène sans pause pour déclencher des attaques de réaction, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');      
+  }
+    if (species.includes('carpe')) {
+  list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');      
+  }
+  
+      
 
   // --- Conseils généraux ---
 if (list.length === 0) {
