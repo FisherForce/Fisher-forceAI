@@ -80,6 +80,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
 
   // Cas ultra-ciblés
   if (species.includes('perche')) {
+  list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Dropshot — Animation lente proche des structures');
     if (saison === "hiver" && spotType === "rivière" && conditions.includes('soleil'))
