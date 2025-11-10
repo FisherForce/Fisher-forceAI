@@ -118,6 +118,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
 
   if (species.includes('brochet')) {
+  list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
     if (saison === "été" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
     if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
@@ -147,6 +148,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
 
   if (species.includes('bass')) {
+  list.push('Utiliser des leurres imitatifs des plus petites proies— Récupération lente avec des pauses proche ou dans des obstacles');    
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Ned Rig ou ver manié — Récupération lente ou dandine en verticale');
     if (saison === "printemps" && spotType === "étang" && conditions.includes('vent'))
@@ -164,11 +166,13 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
 
   if (species.includes('chevesne')) {
+  list.push('Lame Vibrante — Récupération rapide avec des pauses proche des obstacles');    
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Lame vibrante ou cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
   }
 
   if (species.includes('sandre')) {
+  list.push('Leurre souple jaune — Toujours ramener au ras du fond');    
     if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages') && structure.includes('pont'))
