@@ -20,6 +20,21 @@ function resetDailyCount() {
 }
 resetDailyCount();
 
+// === LIMITATION 6 RÉSULTATS/JOUR ===
+let dailyResultCount = parseInt(localStorage.getItem('dailyResultCount') || '0');
+let lastResultDate = localStorage.getItem('lastResultDate') || '';
+
+function resetDailyResultCount() {
+  const today = new Date().toDateString();
+  if (lastResultDate !== today) {
+    dailyResultCount = 0;
+    lastResultDate = today;
+    localStorage.setItem('dailyResultCount', '0');
+    localStorage.setItem('lastResultDate', today);
+  }
+}
+resetDailyResultCount();
+
 // === CHARGEMENT LOCAL ===
 function loadAll() {
   const data = localStorage.getItem('fisherXP');
@@ -148,11 +163,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // === RÉCEPTION DES DONNÉES DEPUIS resultat.html ===
   window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
-      const { success, speciesName, spotName, lure } = e.data; // ← AJOUT DE lure ET spotName
+
+      // === LIMITATION 6 RÉSULTATS/JOUR ===
+      if (dailyResultCount >= 6) {
+        alert("Limite de 6 sessions enregistrées par jour atteinte ! Reviens demain pour plus de gloire.");
+        return;
+      }
+      dailyResultCount++;
+      localStorage.setItem('dailyResultCount', dailyResultCount.toString());
+      localStorage.setItem('lastResultDate', new Date().toDateString());
+
+      const { success, speciesName, spotName, lure } = e.data;
 
       // === ENVOI AU SERVEUR POUR APPRENTISSAGE ===
       if (success && speciesName && lure) {
-        const input = readForm(); // DOM prêt ici
+        const input = readForm();
         const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
 
         try {
