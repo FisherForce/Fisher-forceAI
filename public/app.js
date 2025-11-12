@@ -1,9 +1,24 @@
 const el = id => document.getElementById(id);
-
 // === VARIABLES GLOBALES ===
 let progress = { xp: 0, speciesCaught: {}, successes: 0, attempts: 0 };
 let knownSpots = new Set(); // stocke les spotKey (ex: "47200,-15500")
 let knownSpecies = new Set();
+
+// === LIMITATION 5 CONSEILS/JOUR ===
+let dailyAdviceCount = parseInt(localStorage.getItem('dailyAdviceCount') || '0');
+let lastAdviceDate = localStorage.getItem('lastAdviceDate') || '';
+
+// RESET QUOTIDIEN
+function resetDailyCount() {
+  const today = new Date().toDateString();
+  if (lastAdviceDate !== today) {
+    dailyAdviceCount = 0;
+    lastAdviceDate = today;
+    localStorage.setItem('dailyAdviceCount', '0');
+    localStorage.setItem('lastAdviceDate', today);
+  }
+}
+resetDailyCount();
 
 // === CHARGEMENT LOCAL ===
 function loadAll() {
@@ -45,10 +60,8 @@ function updateDashboard() {
     console.warn("Dashboard non trouvé dans le DOM. Attente...");
     return;
   }
-
   const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
   const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
-
   dashboard.innerHTML = `
     <h3><span class="level-badge">${level}</span> — <span id="xp">${progress.xp}</span> XP</h3>
     <div class="stats-grid">
@@ -68,8 +81,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(s);
   }
 
-  // === CONSEILS + XP ===
+  // === CONSEILS + XP + LIMITATION 5/JOUR ===
   el('getAdvice')?.addEventListener('click', async () => {
+    // === LIMITATION 5 CONSEILS/JOUR ===
+    if (dailyAdviceCount >= 5) {
+      alert("Limite de 5 conseils par jour atteinte ! Reviens demain pour plus d'aventure.");
+      return;
+    }
+    dailyAdviceCount++;
+    localStorage.setItem('dailyAdviceCount', dailyAdviceCount.toString());
+    localStorage.setItem('lastAdviceDate', new Date().toDateString());
+
     const input = readForm();
     const spotName = (input.spotName || "").trim().toLowerCase();
 
@@ -124,33 +146,34 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // === RÉCEPTION DES DONNÉES DEPUIS resultat.html ===
-window.addEventListener('message', async (e) => {
+  window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
-      const { success, speciesName, spotKey } = e.data;
-          // === ENVOI AU SERVEUR POUR APPRENTISSAGE ===
-    if (success && speciesName && lure) {
-      const input = readForm(); // Récupère les champs du formulaire
-      const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
+      const { success, speciesName, spotName, lure } = e.data; // ← AJOUT DE lure ET spotName
 
-      try {
-        await fetch('/api/learn', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            species: speciesName,
-            lureUsed: lure,
-            resultFish: true,
-            spotType: input.waterType || "Étang",
-            conditions: input.conditions || "",
-            structure: input.structure || "",
-            anglerName: pseudo
-          })
-        });
-        console.log("Session envoyée à l'IA → apprentissage en cours");
-      } catch (err) {
-        console.warn("Échec envoi session IA", err);
+      // === ENVOI AU SERVEUR POUR APPRENTISSAGE ===
+      if (success && speciesName && lure) {
+        const input = readForm(); // DOM prêt ici
+        const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
+
+        try {
+          await fetch('/api/learn', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              species: speciesName,
+              lureUsed: lure,
+              resultFish: true,
+              spotType: input.waterType || "Étang",
+              conditions: input.conditions || "",
+              structure: input.structure || "",
+              anglerName: pseudo
+            })
+          });
+          console.log("Session envoyée à l'IA → apprentissage en cours");
+        } catch (err) {
+          console.warn("Échec envoi session IA", err);
+        }
       }
-    }
 
       if (success) {
         awardXP(5, "Prise validée !");
@@ -158,8 +181,8 @@ window.addEventListener('message', async (e) => {
         awardXP(5, "Session enregistrée");
       }
 
-      if (spotKey && !knownSpots.has(spotKey)) {
-        knownSpots.add(spotKey);
+      if (spotName && !knownSpots.has(spotName)) {
+        knownSpots.add(spotName);
         awardXP(10, "NOUVEAU SPOT CONQUIS !");
       }
 
@@ -210,22 +233,17 @@ window.addEventListener('message', async (e) => {
       messagingSenderId: "293964630939",
       appId: "1:293964630939:web:063ed88456613a33e96f3e"
     };
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-
     auth.onAuthStateChanged(user => {
       if (user) {
         el('loginBtn').style.display = 'none';
         el('userInfo').style.display = 'flex';
-
         const savedPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
         el('pseudoInput').value = savedPseudo;
         el('userName').textContent = savedPseudo;
-
         const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
-
         db.collection('users').doc(user.uid).set({
           displayName: savedPseudo,
           xp: progress.xp || 0,
@@ -237,7 +255,6 @@ window.addEventListener('message', async (e) => {
         }, { merge: true })
         .then(() => console.log("Profil sync Firestore"))
         .catch(err => console.error("Erreur profil :", err));
-
         const saveBtn = el('savePseudo');
         if (saveBtn) {
           saveBtn.onclick = () => {
@@ -253,13 +270,11 @@ window.addEventListener('message', async (e) => {
             }
           };
         }
-
       } else {
         el('loginBtn').style.display = 'block';
         el('userInfo').style.display = 'none';
       }
     });
-
     el('loginBtn')?.addEventListener('click', () => {
       auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     });
