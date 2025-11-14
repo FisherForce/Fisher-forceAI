@@ -16,7 +16,6 @@
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-top: 12px; }
     .stat-item { background: rgba(255,255,255,0.25); padding: 10px; border-radius: 10px; }
   </style>
-
   <!-- FIREBASE SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -95,79 +94,92 @@
           .no-players { text-align: center; color: #777; font-style: italic; margin: 30px 0; }
         </style>
 
-        <!-- CLASSEMENT RÉEL (app.js gère Firebase) -->
+        <!-- CLASSEMENT RÉEL (ATTEND app.js) -->
         <script>
           document.addEventListener('DOMContentLoaded', () => {
-            if (typeof window.db === 'undefined' || typeof window.currentUserUid = 'undefined') {
-              setTimeout(arguments.callee, 100);
-              return;
-            }
+            const waitForApp = () => {
+              if (window.db && typeof window.currentUser !== 'undefined') {
+                initRanking();
+              } else {
+                setTimeout(waitForApp, 100);
+              }
+            };
+            waitForApp();
 
-            const db = window.db;
-            const rankingList = document.getElementById('ranking-list');
-            let currentUserUid = null;
+            function initRanking() {
+              const db = window.db;
+              const rankingList = document.getElementById('ranking-list');
+              let currentUserUid = null;
 
-            // Écoute l'utilisateur connecté (via app.js)
-            const updateUser = () => { currentUserUid = window.currentUser?.uid || null; };
-            setInterval(updateUser, 500);
+              // Mise à jour de l'utilisateur connecté
+              const updateUser = () => {
+                currentUserUid = window.currentUser?.uid || null;
+                if (!currentUserUid) {
+                  rankingList.innerHTML = `<p class="no-players">Connecte-toi pour voir ton classement !</p>`;
+                }
+              };
+              updateUser();
+              setInterval(updateUser, 500);
 
-            db.collection('users')
-              .orderBy('xp', 'desc')
-              .limit(50)
-              .onSnapshot(snapshot => {
-                const players = [];
-                let rank = 1;
-                let yourRank = null;
+              // Écoute Firestore
+              db.collection('users')
+                .orderBy('xp', 'desc')
+                .limit(50)
+                .onSnapshot(snapshot => {
+                  const players = [];
+                  let rank = 1;
+                  let yourRank = null;
 
-                snapshot.docs.forEach(doc => {
-                  const data = doc.data();
-                  if (data.xp >= 0 && data.displayName) {
-                    players.push({ ...data, rank: rank++ });
-                    if (data.uid === currentUserUid) yourRank = rank - 1;
-                  }
+                  snapshot.docs.forEach(doc => {
+                    const data = doc.data();
+                    if (data.xp >= 0 && data.displayName) {
+                      players.push({ ...data, rank: rank++ });
+                      if (data.uid === currentUserUid) yourRank = rank - 1;
+                    }
+                  });
+
+                  renderRanking(players, yourRank);
                 });
 
-                renderRanking(players, yourRank);
-              });
+              function renderRanking(players, yourRank) {
+                if (players.length === 0) {
+                  rankingList.innerHTML = `<p class="no-players">Aucun pêcheur pour l'instant… Sois le premier !</p>`;
+                  return;
+                }
 
-            function renderRanking(players, yourRank) {
-              if (players.length === 0) {
-                rankingList.innerHTML = `<p class="no-players">Aucun pêcheur pour l'instant… Sois le premier !</p>`;
-                return;
+                const top10 = players.slice(0, 10).map(p => `
+                  <div class="player-rank ${p.uid === currentUserUid ? 'you' : ''}">
+                    <div class="rank-num">#${p.rank}</div>
+                    <div class="player-name">
+                      ${p.displayName}
+                      <div class="player-level">${getLevel(p.xp)}</div>
+                    </div>
+                    <div class="player-xp">${p.xp} XP</div>
+                  </div>
+                `).join('');
+
+                let footer = '';
+                if (yourRank && yourRank > 10) {
+                  const you = players.find(p => p.uid === currentUserUid);
+                  footer = `
+                    <div style="margin-top:25px; text-align:center; color:#00d4aa; font-weight:bold;">
+                      Ta position : #${yourRank}
+                    </div>
+                    <div class="player-rank you">
+                      <div class="rank-num">#${yourRank}</div>
+                      <div class="player-name">Toi !</div>
+                      <div class="player-xp">${you.xp} XP</div>
+                    </div>`;
+                }
+
+                rankingList.innerHTML = top10 + footer;
               }
 
-              const top10 = players.slice(0, 10).map(p => `
-                <div class="player-rank ${p.uid === currentUserUid ? 'you' : ''}">
-                  <div class="rank-num">#${p.rank}</div>
-                  <div class="player-name">
-                    ${p.displayName}
-                    <div class="player-level">${getLevel(p.xp)}</div>
-                  </div>
-                  <div class="player-xp">${p.xp} XP</div>
-                </div>
-              `).join('');
-
-              let footer = '';
-              if (yourRank && yourRank > 10) {
-                const you = players.find(p => p.uid === currentUserUid);
-                footer = `
-                  <div style="margin-top:25px; text-align:center; color:#00d4aa; font-weight:bold;">
-                    Ta position : #${yourRank}
-                  </div>
-                  <div class="player-rank you">
-                    <div class="rank-num">#${yourRank}</div>
-                    <div class="player-name">Toi !</div>
-                    <div class="player-xp">${you.xp} XP</div>
-                  </div>`;
+              function getLevel(xp) {
+                if (xp < 50) return "Débutant";
+                if (xp < 200) return "Traqueur";
+                return "Maître du brochet";
               }
-
-              rankingList.innerHTML = top10 + footer;
-            }
-
-            function getLevel(xp) {
-              if (xp < 50) return "Débutant";
-              if (xp < 200) return "Traqueur";
-              return "Maître du brochet";
             }
           });
         </script>
