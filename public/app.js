@@ -267,7 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
         el('userInfo').style.display = 'flex';
         const savedPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
         el('pseudoInput').value = savedPseudo;
-        el('userName').textContent = savedPseudo;
+        const userNameEl = el('userName');
+if (userNameEl) userNameEl.textContent = savedPseudo;
         const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
         db.collection('users').doc(user.uid).set({
           displayName: savedPseudo,
