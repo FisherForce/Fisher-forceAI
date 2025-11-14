@@ -78,17 +78,134 @@
         Enregistrer un résultat
       </button>
 
-      <!-- CLASSEMENT MOCK -->
-      <div style="margin:30px 0; text-align:center;">
-        <h3 style="color:#00a085;">Top 5 des Maîtres</h3>
-        <ol style="background:#f9f9f9; padding:20px; border-radius:10px; border:2px solid #00d4aa;">
-          <li>LoulouPeche — 285 XP</li>
-          <li>BrochetKiller — 220 XP</li>
-          <li>PercheMaster — 190 XP</li>
-          <li>Carpiste72 — 165 XP</li>
-          <li>TruiteNinja — 140 XP</li>
-        </ol>
-      </div>
+<div id="tab-ranking" class="tab-content">
+  <h2>Classement des Pêcheurs</h2>
+  <div id="ranking-list" style="margin-top:20px;">
+    <p class="muted" style="text-align:center;">Chargement du classement…</p>
+  </div>
+
+  <style>
+    .player-rank {
+      background: #112233;
+      margin: 12px 0;
+      padding: 16px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+    .player-rank.you {
+      background: #00d4aa !important;
+      color: #000;
+      font-weight: bold;
+      box-shadow: 0 0 20px rgba(0,212,170,0.6);
+    }
+    .rank-num {
+      font-size: 24px;
+      font-weight: bold;
+      width: 50px;
+      text-align: center;
+    }
+    .player-name {
+      flex: 1;
+      margin-left: 15px;
+    }
+    .player-level {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 2px;
+    }
+    .player-xp {
+      font-weight: bold;
+      color: #ffd700;
+    }
+    .no-players {
+      text-align: center;
+      color: #777;
+      font-style: italic;
+      margin: 30px 0;
+    }
+  </style>
+
+  <script>
+    // === CLASSEMENT EN TEMPS RÉEL ===
+    if (typeof firebase !== 'undefined') {
+      const db = firebase.firestore();
+      const rankingList = document.getElementById('ranking-list');
+      let currentUserUid = null;
+
+      // Récupère l'utilisateur connecté
+      firebase.auth().onAuthStateChanged(user => {
+        currentUserUid = user?.uid || null;
+        if (!user) {
+          rankingList.innerHTML = `<p class="no-players">Connecte-toi pour voir ton classement !</p>`;
+        }
+      });
+
+      // Écoute les changements Firestore
+      db.collection('users')
+        .orderBy('xp', 'desc')
+        .limit(50)
+        .onSnapshot(snapshot => {
+          const players = [];
+          let rank = 1;
+          let yourRank = null;
+
+          snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.xp >= 0 && data.displayName) {
+              players.push({ ...data, rank: rank++ });
+              if (data.uid === currentUserUid) yourRank = rank - 1;
+            }
+          });
+
+          renderRanking(players, yourRank);
+        });
+
+      function renderRanking(players, yourRank) {
+        if (players.length === 0) {
+          rankingList.innerHTML = `<p class="no-players">Aucun pêcheur pour l'instant… Sois le premier !</p>`;
+          return;
+        }
+
+        const top10 = players.slice(0, 10).map(p => `
+          <div class="player-rank ${p.uid === currentUserUid ? 'you' : ''}">
+            <div class="rank-num">#${p.rank}</div>
+            <div class="player-name">
+              ${p.displayName}
+              <div class="player-level">${getLevel(p.xp)}</div>
+            </div>
+            <div class="player-xp">${p.xp} XP</div>
+          </div>
+        `).join('');
+
+        let footer = '';
+        if (yourRank && yourRank > 10) {
+          const you = players.find(p => p.uid === currentUserUid);
+          footer = `
+            <div style="margin-top:25px; text-align:center; color:#00d4aa; font-weight:bold;">
+              Ta position : #${yourRank}
+            </div>
+            <div class="player-rank you">
+              <div class="rank-num">#${yourRank}</div>
+              <div class="player-name">Toi !</div>
+              <div class="player-xp">${you.xp} XP</div>
+            </div>`;
+        }
+
+        rankingList.innerHTML = top10 + footer;
+      }
+
+      function getLevel(xp) {
+        if (xp < 50) return "Débutant";
+        if (xp < 200) return "Traqueur";
+        return "Maître du brochet";
+      }
+    }
+  </script>
+</div>
     </section>
   </main>
 
