@@ -98,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // === CONSEILS + XP + LIMITATION 5/JOUR ===
   el('getAdvice')?.addEventListener('click', async () => {
-    // === LIMITATION 5 CONSEILS/JOUR ===
     if (dailyAdviceCount >= 5) {
       alert("Limite de 5 conseils par jour atteinte ! Reviens demain pour plus d'aventure.");
       return;
@@ -163,8 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // === RÉCEPTION DES DONNÉES DEPUIS resultat.html ===
   window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
-
-      // === LIMITATION 6 RÉSULTATS/JOUR ===
       if (dailyResultCount >= 6) {
         alert("Limite de 6 sessions enregistrées par jour atteinte ! Reviens demain pour plus de gloire.");
         return;
@@ -175,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const { success, speciesName, spotName, lure } = e.data;
 
-      // === ENVOI AU SERVEUR POUR APPRENTISSAGE ===
       if (success && speciesName && lure) {
         const input = readForm();
         const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
@@ -250,17 +246,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
-    const firebaseConfig = {
-      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
-      authDomain: "fisher-forceai.firebaseapp.com",
-      projectId: "fisher-forceai",
-      storageBucket: "fisher-forceai.firebasestorage.app",
-      messagingSenderId: "293964630939",
-      appId: "1:293964630939:web:063ed88456613a33e96f3e"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+  authDomain: "fisher-forceai.firebaseapp.com",
+  databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com",
+  projectId: "fisher-forceai",
+  storageBucket: "fisher-forceai.firebasestorage.app",
+  messagingSenderId: "293964630939",
+  appId: "1:293964630939:web:c96b2cb554922397e96f3e",
+  measurementId: "G-EEYWH9SES8"
+}; 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+
     auth.onAuthStateChanged(user => {
       if (user) {
         el('loginBtn').style.display = 'none';
@@ -268,7 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const savedPseudo = localStorage.getItem('fisherPseudo') || user.displayName.split(' ')[0];
         el('pseudoInput').value = savedPseudo;
         const userNameEl = el('userName');
-if (userNameEl) userNameEl.textContent = savedPseudo;
+        if (userNameEl) userNameEl.textContent = savedPseudo;
+
         const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
         db.collection('users').doc(user.uid).set({
           displayName: savedPseudo,
@@ -281,13 +281,14 @@ if (userNameEl) userNameEl.textContent = savedPseudo;
         }, { merge: true })
         .then(() => console.log("Profil sync Firestore"))
         .catch(err => console.error("Erreur profil :", err));
+
         const saveBtn = el('savePseudo');
         if (saveBtn) {
           saveBtn.onclick = () => {
             const newPseudo = el('pseudoInput').value.trim();
             if (newPseudo && newPseudo.length >= 2) {
               localStorage.setItem('fisherPseudo', newPseudo);
-              el('userName').textContent = newPseudo;
+              if (userNameEl) userNameEl.textContent = newPseudo;
               db.collection('users').doc(user.uid).update({ displayName: newPseudo })
                 .then(() => alert(`Pseudo changé : ${newPseudo} !`))
                 .catch(err => alert("Erreur : " + err.message));
@@ -301,6 +302,7 @@ if (userNameEl) userNameEl.textContent = savedPseudo;
         el('userInfo').style.display = 'none';
       }
     });
+
     el('loginBtn')?.addEventListener('click', () => {
       auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     });
