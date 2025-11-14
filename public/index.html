@@ -132,6 +132,17 @@
   <script>
     // === CLASSEMENT EN TEMPS RÉEL ===
     if (typeof firebase !== 'undefined') {
+      // === INITIALISATION FIREBASE ===
+const firebaseConfig = {
+  apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+  authDomain: "fisher-forceai.firebaseapp.com",
+  projectId: "fisher-forceai",
+  storageBucket: "fisher-forceai.firebasestorage.app",
+  messagingSenderId: "293964630939",
+  appId: "1:293964630939:web:063ed88456613a33e96f3e"
+};
+
+firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
       const rankingList = document.getElementById('ranking-list');
       let currentUserUid = null;
