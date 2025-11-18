@@ -85,7 +85,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   list.push('Tu est obligé de prendre un poisson au jerk-minnow !')
   list.push('Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !')  
       ];
-  list.push(defaults[Math.floor(Math.random() * defaults.length)]);
+  list.push(species[Math.floor(Math.random() * species.length)]);
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Dropshot — Animation lente proche des structures');
     if (saison === "hiver" && spotType === "rivière" && conditions.includes('soleil'))
