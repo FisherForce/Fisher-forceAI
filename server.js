@@ -81,6 +81,11 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   // Cas ultra-ciblés
   if (species.includes('perche')) {
   list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
+  list.push('Essaie un petit leurre souple de 6cm au mileu de la rivière tu je suis sure que tu aura quelque chose ')
+  list.push('Tu est obligé de prendre un poisson au jerk-minnow !')
+  list.push('Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !')  
+      ];
+  list.push(defaults[Math.floor(Math.random() * defaults.length)]);
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Dropshot — Animation lente proche des structures');
     if (saison === "hiver" && spotType === "rivière" && conditions.includes('soleil'))
