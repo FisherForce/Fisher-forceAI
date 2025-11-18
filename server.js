@@ -201,12 +201,12 @@ if (list.length === 0) {
     'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère taille N°2. Enregistre ta session pour faire progresser l\'IA !',
     'Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer ! Dis-moi ensuite si tu as eu un poisson pour faire progresser l\'IA !',
     'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l\'attend pas. Enregistre ta session pour faire progresser l\'IA !',
-    'Essaie un grub blanc, en linéaire lent, ça peut être sympa, enregistre ta session pour me faire progresser !',
+    'Essaie un grub blanc, en linéaire lent, ça peut être sympa, enregistre ta session pour me faire progresser !'
     'Essaie un petit worm très rigide, sur le fond et gratte : ça peut rapporter de belles surprises, enregistre ta session pour me faire progresser !',
     'Essaie une écrevisse, laisse tomber sur le fond et donne des à-coups, enregistre ta session pour me faire progresser !'
     'Essaie un petit leurre souple de 6cm au mileu de la rivière tu je suis sure que tu aura quelque chose '
     'Tu est obligé de prendre un poisson au jerk-minnow !'
-    'Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !'
+    'Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !',
 
   ];
   list.push(defaults[Math.floor(Math.random() * defaults.length)]);
