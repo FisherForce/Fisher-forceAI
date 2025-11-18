@@ -81,11 +81,6 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   // Cas ultra-ciblés
   if (species.includes('perche')) {
   list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
-  list.push('Essaie un petit leurre souple de 6cm au mileu de la rivière tu je suis sure que tu aura quelque chose ')
-  list.push('Tu est obligé de prendre un poisson au jerk-minnow !')
-  list.push('Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !')  
-      ];
-  list.push(species[Math.floor(Math.random() * species.length)]);
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
       list.push('Dropshot — Animation lente proche des structures');
     if (saison === "hiver" && spotType === "rivière" && conditions.includes('soleil'))
@@ -133,13 +128,13 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Propbait — Récupération rapide avec des pauses proche des obstacles');
     if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuages'))
-      list.push('Jerk-Minnow de 12 à 15cm — Twitchs courts avec des pauses en surface');
+      list.push('Jerk-Minnow de 12 à 15cm — Twitchs courts avec des pauses en surface, envoie des coups de jerk comme si la cnne était un fouet');
     if (saison === "printemps" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Cuillère N°4 — Récupération lente en surface');
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('nénuphar'))
-      list.push('Frog — Récupération par a coups avec pauses dans les trouées');
+      list.push('Frog — Récupération par a coups avec pauses dans les trouées, attention faut ferrer comme si tu voulait envoyer le poisson sur la lune !');
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil') && structure.includes('nénuphar'))
-      list.push('Frog — Récupération par a coups avec pauses dans les trouées');
+      list.push('Frog — Récupération par a coups avec pauses dans les trouées , attention faut ferrer super fort');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Shad de 16cm — Récupération lente');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
@@ -165,7 +160,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
       list.push('Worm marron — Dandine dans les branches et les herbiers ');
     if (saison === "été" && spotType === "canal" && conditions.includes('soleil') && structure.includes('bois'))
-      list.push('Worm marron — Dandine dans les branches et les herbiers ');
+      list.push('Worm marron — Dandine dans les branches et les herbiers, envoie un vrai ferrage sans trop d\'emballer ');
     if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
       list.push('Écrevisses en punching — Dans les herbiers');
   }
@@ -179,7 +174,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
 
   if (species.includes('sandre')) {
-  list.push('Leurre souple jaune — Toujours ramener au ras du fond');    
+  list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session car je ne suis pas une spécaliste !');    
     if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages') && structure.includes('pont'))
@@ -209,6 +204,10 @@ if (list.length === 0) {
     'Essaie un grub blanc, en linéaire lent, ça peut être sympa, enregistre ta session pour me faire progresser !',
     'Essaie un petit worm très rigide, sur le fond et gratte : ça peut rapporter de belles surprises, enregistre ta session pour me faire progresser !',
     'Essaie une écrevisse, laisse tomber sur le fond et donne des à-coups, enregistre ta session pour me faire progresser !'
+    'Essaie un petit leurre souple de 6cm au mileu de la rivière tu je suis sure que tu aura quelque chose '
+    'Tu est obligé de prendre un poisson au jerk-minnow !'
+    'Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !'
+
   ];
   list.push(defaults[Math.floor(Math.random() * defaults.length)]);
 }
