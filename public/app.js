@@ -26,7 +26,7 @@ let lastResultDate = localStorage.getItem('lastResultDate') || '';
 
 function resetDailyResultCount() {
   const today = new Date().toDateString();
-  if (lastResultDate !== today) {
+  if (lastResultDate !== today.uah) {
     dailyResultCount = 0;
     lastResultDate = today;
     localStorage.setItem('dailyResultCount', '0');
@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('dailyResultCount', dailyResultCount.toString());
       localStorage.setItem('lastResultDate', new Date().toDateString());
 
-      const { success, speciesName, spotName, lure } = e.data;
+      const { success, speciesName, spotName, lure, poids = 0 } = e.data; // ← NOUVEAU : poids
 
       if (success && speciesName && lure) {
         const input = readForm();
@@ -187,7 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
               spotType: input.waterType || "Étang",
               conditions: input.conditions || "",
               structure: input.structure || "",
-              anglerName: pseudo
+              anglerName: pseudo,
+              weight: poids // envoi du poids à l'IA
             })
           });
           console.log("Session envoyée à l'IA → apprentissage en cours");
@@ -220,6 +221,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (success) progress.successes += 1;
 
       saveAll();
+
+      // === RÉACTION IA APRÈS PRISE ===
+      if (success && speciesName && poids > 0) {
+        showFishReaction(speciesName, poids);
+      }
     }
   });
 
@@ -244,23 +250,74 @@ document.addEventListener('DOMContentLoaded', () => {
     el('voiceControls') && (el('voiceControls').style.display = 'block');
   }
 
+  // === NOUVELLE FONCTION : RÉACTION IA APRÈS PRISE ===
+  function showFishReaction(species, poidsGram) {
+    const pseudo = localStorage.getItem('fisherPseudo') || "Pêcheur";
+    const poids = poidsGram / 1000; // en kg
+    const key = `pb_${species}`;
+    const ancienPB = parseFloat(localStorage.getItem(key)) || 0;
+    let message = "";
+    let bgColor = "#00d4aa";
+
+    if (poids >= 10) {
+      message = `${pseudo} TU VIENS DE SORTIR UN MONSTRE ABSOLU ! ${species.toUpperCase()} de ${poids.toFixed(2)} KG ! LA FRANCE ENTIÈRE TREMBLE !`;
+      bgColor = "#ff0066";
+    } else if (poids >= 7) {
+      message = `MONSTRE VALIDÉ ! ${species.toUpperCase()} à ${poids.toFixed(2)} kg ! T’es une légende vivante !`;
+      bgColor = "#ff0066";
+    } else if (poids >= 4) {
+      message = `GROS GROS ${species.toUpperCase()} à ${poids.toFixed(2)} kg ! T’as défoncé la moyenne !`;
+      bgColor = "#ff6b00";
+    } else if (poids >= 2) {
+      message = `Très joli ${species} de ${poids.toFixed(2)} kg ! T’es chaud aujourd’hui !`;
+      bgColor = "#00d4aa";
+    } else {
+      message = `Beau ${species} de ${Math.round(poidsGram)}g ! Chaque poisson compte !`;
+    }
+
+    // Record personnel ?
+    if (poidsGram > ancienPB) {
+      localStorage.setItem(key, poidsGram.toString());
+      message += `\n\nRECORD PERSONNEL PULVÉRISÉ !\nAncien PB : ${ancienPB ? (ancienPB/1000).toFixed(2)+" kg" : "aucun"}\nNouveau : ${poids.toFixed(2)} kg !`;
+      bgColor = "#ffd700";
+    }
+
+    const pop = document.createElement('div');
+    pop.innerHTML = `<strong style="font-size:26px; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); line-height:1.4;">
+      ${message.replace(/\n\n/g, '<br><br>')}
+    </strong>`;
+    pop.style.cssText = `
+      position:fixed; top:15%; left:50%; transform:translateX(-50%);
+      background:${bgColor}; color:white; padding:30px 50px; border-radius:25px;
+      z-index:99999; box-shadow:0 30px 80px rgba(0,0,0,0.7); text-align:center;
+      max-width:90%; font-weight:bold; animation:pop 3s forwards;
+    `;
+    document.body.appendChild(pop);
+    setTimeout(() => pop.remove(), 7000);
+  }
+
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
-const firebaseConfig = {
-  apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
-  authDomain: "fisher-forceai.firebaseapp.com",
-  databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com",
-  projectId: "fisher-forceai",
-  storageBucket: "fisher-forceai.firebasestorage.app",
-  messagingSenderId: "293964630939",
-  appId: "1:293964630939:web:c96b2cb554922397e96f3e",
-  measurementId: "G-EEYWH9SES8"
-}; 
+    const firebaseConfig = {
+      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+      authDomain: "fisher-forceai.firebaseapp.com",
+      databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com",
+      projectId: "fisher-forceai",
+      storageBucket: "fisher-forceai.firebasestorage.app",
+      messagingSenderId: "293964630939",
+      appId: "1:293964630939:web:c96b2cb554922397e96f3e",
+      measurementId: "G-EEYWH9SES8"
+    }; 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
+    // EXPOSE db ET user POUR LE CLASSEMENT
+    window.db = db;
+    window.currentUser = null;
+
     auth.onAuthStateChanged(user => {
+      window.currentUser = user;
       if (user) {
         el('loginBtn').style.display = 'none';
         el('userInfo').style.display = 'flex';
