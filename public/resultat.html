@@ -21,29 +21,32 @@
     <h1>Enregistrer ta session</h1>
     <p id="spotInfo">Spot : <strong id="spotName">Spot inconnu</strong></p>
 
-    <label>
+    <label style="font-size:18px; color:#00d4aa;">
       <input type="checkbox" id="success"> J'ai pris un poisson !
     </label>
 
-    <div id="details" style="display:none;">
+    <div id="details" style="display:none; margin-top:20px;">
       <label>Espèce pêchée</label>
-      <input type="text" id="species" placeholder="Ex: brochet, perche...">
+      <input type="text" id="species" placeholder="Ex: brochet, perche, sandre..." required>
 
       <label>Leurre utilisé</label>
-      <input type="text" id="lure" placeholder="Ex: Jerkbait 11cm, Texas rig...">
+      <input type="text" id="lure" placeholder="Ex: Jerkbait 11cm, Texas rig 10g...">
 
-      <label>Poids (kg)</label>
-      <input type="number" id="weight" step="0.1" placeholder="Ex: 2.5">
+      <label>Poids (en grammes)</label>
+      <input type="number" id="weight" placeholder="Ex: 2850 (pour 2,85 kg)" step="10" min="0">
+      <small style="color:#666; text-align:left; display:block; margin-top:5px;">
+        500g = perche correcte • 3000g = beau brochet • 8000g = monstre
+      </small>
     </div>
 
-    <button id="successBtn" onclick="sendResult(true)">OUI ! Enregistrer</button>
+    <button id="successBtn" onclick="sendResult(true)">OUI ! Enregistrer la prise</button>
     <button id="failBtn" onclick="sendResult(false)">NON, bredouille</button>
   </div>
 
   <script>
     // Récupère le spot depuis l'URL
     const urlParams = new URLSearchParams(window.location.search);
-    const spot = urlParams.get('spot') || "Spot inconnu";
+    const spot = decodeURIComponent(urlParams.get('spot') || "Spot inconnu");
     document.getElementById('spotName').textContent = spot;
 
     // Affiche/masque les détails
@@ -52,28 +55,48 @@
     });
 
     function sendResult(success) {
-      const species = document.getElementById('species').value.trim();
-      const lure = document.getElementById('lure').value.trim();
-      const weight = parseFloat(document.getElementById('weight').value) || 0;
+      if (success) {
+        const species = document.getElementById('species').value.trim();
+        const lure = document.getElementById('lure').value.trim();
+        const weightInput = document.getElementById('weight').value.trim();
+        const poidsGramme = weightInput ? parseInt(weightInput, 10) : 0;
 
-      if (success && !species) {
-        alert("Choisis une espèce !");
-        return;
+        if (!species) {
+          alert("Tu as oublié l'espèce !");
+          return;
+        }
+        if (!weightInput || poidsGramme <= 0) {
+          alert("Entre un poids en grammes (ex: 2850 pour 2,85 kg) !");
+          return;
+        }
+
+        // Envoi complet vers index.html (app.js)
+        window.opener.postMessage({
+          type: 'ADD_XP',
+          success: true,
+          speciesName: species,
+          poids: poidsGramme,        // ← en grammes (ex: 2850)
+          spotName: spot,
+          lure: lure || "Inconnu"
+        }, '*');
+
+        const poidsKg = (poidsGramme / 1000).toFixed(2);
+        alert(`${species.toUpperCase()} de ${poidsKg} kg enregistré ! L'IA arrive avec un message pour toi...`);
+      } else {
+        // Bredouille
+        window.opener.postMessage({
+          type: 'ADD_XP',
+          success: false,
+          speciesName: null,
+          poids: 0,
+          spotName: spot,
+          lure: null
+        }, '*');
+        alert("Session bredouille enregistrée. Courage, la prochaine sera la bonne !");
       }
 
-      // Envoie à la page principale
-      window.opener.postMessage({
-        type: 'ADD_XP',
-        success: success,
-        speciesName: success ? species : null,
-        spotName: spot,
-        lure: lure,
-        weight: weight
-      }, '*');
-
-      const msg = success ? `Prise de ${species} enregistrée ! (${weight}kg)` : "Session bredouille enregistrée.";
-      alert(msg);
-      window.close();
+      // Ferme la popup
+      setTimeout(() => window.close(), 600);
     }
   </script>
 </body>
