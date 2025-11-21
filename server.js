@@ -174,7 +174,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
 
   if (species.includes('sandre')) {
-  list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session car je ne suis pas une spécaliste !');    
+  list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session je te donnerais de meilleurs conseils !');    
     if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages') && structure.includes('pont'))
