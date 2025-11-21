@@ -1,14 +1,13 @@
 const el = id => document.getElementById(id);
 // === VARIABLES GLOBALES ===
 let progress = { xp: 0, speciesCaught: {}, successes: 0, attempts: 0 };
-let knownSpots = new Set(); // stocke les spotKey (ex: "47200,-15500")
+let knownSpots = new Set();
 let knownSpecies = new Set();
 
 // === LIMITATION 5 CONSEILS/JOUR ===
 let dailyAdviceCount = parseInt(localStorage.getItem('dailyAdviceCount') || '0');
 let lastAdviceDate = localStorage.getItem('lastAdviceDate') || '';
 
-// RESET QUOTIDIEN
 function resetDailyCount() {
   const today = new Date().toDateString();
   if (lastAdviceDate !== today) {
@@ -26,7 +25,7 @@ let lastResultDate = localStorage.getItem('lastResultDate') || '';
 
 function resetDailyResultCount() {
   const today = new Date().toDateString();
-  if (lastResultDate !== today.uah) {
+  if (lastResultDate !== today) {
     dailyResultCount = 0;
     lastResultDate = today;
     localStorage.setItem('dailyResultCount', '0');
@@ -88,7 +87,6 @@ function updateDashboard() {
 
 // === TOUT LE CODE ===
 document.addEventListener('DOMContentLoaded', () => {
-  // Animation XP
   if (!document.getElementById('xpAnim')) {
     const s = document.createElement('style');
     s.id = 'xpAnim';
@@ -96,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(s);
   }
 
-  // === CONSEILS + XP + LIMITATION 5/JOUR ===
   el('getAdvice')?.addEventListener('click', async () => {
     if (dailyAdviceCount >= 5) {
       alert("Limite de 5 conseils par jour atteinte ! Reviens demain pour plus d'aventure.");
@@ -145,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
     renderAdvice(result);
   });
 
-  // === RÉINITIALISER ===
   el('clearBtn')?.addEventListener('click', () => {
     ['spotName','structure','targetSpecies','conditions','temperature'].forEach(id => el(id).value = '');
     el('waterType').value = 'Étang';
@@ -153,13 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
     el('voiceControls') && (el('voiceControls').style.display = 'none');
   });
 
-  // === OUVRIR POPUP ===
   window.openResultat = () => {
     const spot = el('spotName')?.value.trim() || "Spot inconnu";
     window.open(`resultat.html?spot=${encodeURIComponent(spot)}`, '_blank', 'width=500,height=700');
   };
 
-  // === RÉCEPTION DES DONNÉES DEPUIS resultat.html ===
+  // === RÉCEPTION DES RÉSULTATS + RÉACTIONS IA ULTRA VIVANTE ===
   window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
       if (dailyResultCount >= 6) {
@@ -170,12 +165,11 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('dailyResultCount', dailyResultCount.toString());
       localStorage.setItem('lastResultDate', new Date().toDateString());
 
-      const { success, speciesName, spotName, lure, poids = 0 } = e.data; // ← NOUVEAU : poids
+      const { success, speciesName, spotName, lure, poids = 0 } = e.data;
 
       if (success && speciesName && lure) {
         const input = readForm();
         const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
-
         try {
           await fetch('/api/learn', {
             method: 'POST',
@@ -188,20 +182,16 @@ document.addEventListener('DOMContentLoaded', () => {
               conditions: input.conditions || "",
               structure: input.structure || "",
               anglerName: pseudo,
-              weight: poids // envoi du poids à l'IA
+              weight: poids
             })
           });
-          console.log("Session envoyée à l'IA → apprentissage en cours");
         } catch (err) {
           console.warn("Échec envoi session IA", err);
         }
       }
 
-      if (success) {
-        awardXP(5, "Prise validée !");
-      } else {
-        awardXP(5, "Session enregistrée");
-      }
+      if (success) awardXP(5, "Prise validée !");
+      else awardXP(5, "Session enregistrée");
 
       if (spotName && !knownSpots.has(spotName)) {
         knownSpots.add(spotName);
@@ -219,12 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       progress.attempts += 1;
       if (success) progress.successes += 1;
-
       saveAll();
 
-      // === RÉACTION IA APRÈS PRISE ===
+      // === RÉACTION IA (PRISE OU BREDOUILLE) ===
       if (success && speciesName && poids > 0) {
-        showFishReaction(speciesName, poids);
+        showFishReaction(speciesName, poids, false);
+      } else if (!success) {
+        showFishReaction(null, 0, true);
       }
     }
   });
@@ -250,50 +241,79 @@ document.addEventListener('DOMContentLoaded', () => {
     el('voiceControls') && (el('voiceControls').style.display = 'block');
   }
 
-  // === NOUVELLE FONCTION : RÉACTION IA APRÈS PRISE ===
-  function showFishReaction(species, poidsGram) {
+  // === RÉACTION IA ULTRA VIVANTE (PRISE + BREDOUILLE + CHAMBRAGE) ===
+  function showFishReaction(species = null, poidsGram = 0, isBredouille = false) {
     const pseudo = localStorage.getItem('fisherPseudo') || "Pêcheur";
-    const poids = poidsGram / 1000; // en kg
-    const key = `pb_${species}`;
-    const ancienPB = parseFloat(localStorage.getItem(key)) || 0;
+    let bredouilleStreak = parseInt(localStorage.getItem('bredouilleStreak') || '0');
+    
+    if (isBredouille) {
+      bredouilleStreak++;
+      localStorage.setItem('bredouilleStreak', bredouilleStreak.toString());
+    } else {
+      bredouilleStreak = 0;
+      localStorage.setItem('bredouilleStreak', '0');
+    }
+
     let message = "";
     let bgColor = "#00d4aa";
 
-    if (poids >= 10) {
-      message = `${pseudo} TU VIENS DE SORTIR UN MONSTRE ABSOLU ! ${species.toUpperCase()} de ${poids.toFixed(2)} KG ! LA FRANCE ENTIÈRE TREMBLE !`;
-      bgColor = "#ff0066";
-    } else if (poids >= 7) {
-      message = `MONSTRE VALIDÉ ! ${species.toUpperCase()} à ${poids.toFixed(2)} kg ! T’es une légende vivante !`;
-      bgColor = "#ff0066";
-    } else if (poids >= 4) {
-      message = `GROS GROS ${species.toUpperCase()} à ${poids.toFixed(2)} kg ! T’as défoncé la moyenne !`;
-      bgColor = "#ff6b00";
-    } else if (poids >= 2) {
-      message = `Très joli ${species} de ${poids.toFixed(2)} kg ! T’es chaud aujourd’hui !`;
-      bgColor = "#00d4aa";
-    } else {
-      message = `Beau ${species} de ${Math.round(poidsGram)}g ! Chaque poisson compte !`;
-    }
+    if (!isBredouille && species && poidsGram > 0) {
+      const poids = poidsGram / 1000;
+      const key = `pb_${species}`;
+      const ancienPB = parseFloat(localStorage.getItem(key)) || 0;
 
-    // Record personnel ?
-    if (poidsGram > ancienPB) {
-      localStorage.setItem(key, poidsGram.toString());
-      message += `\n\nRECORD PERSONNEL PULVÉRISÉ !\nAncien PB : ${ancienPB ? (ancienPB/1000).toFixed(2)+" kg" : "aucun"}\nNouveau : ${poids.toFixed(2)} kg !`;
-      bgColor = "#ffd700";
+      if (poids >= 10) {
+        message = `${pseudo} TU VIENS DE SORTIR UN MONSTRE ABSOLU ! ${species.toUpperCase()} de ${poids.toFixed(2)} KG !!`;
+        bgColor = "#ff0066";
+      } else if (poids >= 7) {
+        message = `MONSTRE VALIDÉ ! ${species.toUpperCase()} à ${poids.toFixed(2)} kg ! T’es une légende !`;
+        bgColor = "#ff0066";
+      } else if (poids >= 4) {
+        message = `GROS GROS ${species} à ${poids.toFixed(2)} kg ! T’as défoncé la moyenne !`;
+        bgColor = "#ff6b00";
+      } else if (poids >= 2) {
+        message = `Très joli ${species} de ${poids.toFixed(2)} kg ! T’es chaud !`;
+      } else {
+        message = `Beau ${species} de ${poidsGram}g ! Chaque poisson compte !`;
+      }
+
+      if (poidsGram > ancienPB) {
+        localStorage.setItem(key, poidsGram.toString());
+        message += `\n\nRECORD PERSONNEL PULVÉRISÉ !\nAncien : ${ancienPB ? (ancienPB/1000).toFixed(2)+"kg" : "aucun"}\nNouveau : ${poids.toFixed(2)} kg !`;
+        bgColor = "#ffd700";
+      }
+
+    } else if (isBredouille) {
+      const messages = [
+        ["C’est pas grave, ça arrive même aux meilleurs", "La prochaine sera la bonne", "Allez, rembobine et on recommence !"],
+        ["T’as oublié d’ouvrir les yeux ?", "T’as mis de l’anti-poisson sur ton leurre ?", "Les canards se moquent de toi"],
+        ["Franchement, t’es sûr que t’as une canne ?", "T’as pensé à mettre un hameçon ?", "Là c’est du jardinage"],
+        ["OK là t’abuses. T’es NUL.", "Je doute de tes talents", "Donne-moi ta canne, je vais le faire"],
+        ["T’as battu le record du monde de bredouilles", "Même un enfant de 5 ans ferait mieux", "Je t’appelle « Monsieur Bredouille » désormais"]
+      ];
+
+      let niveau = Math.min(Math.floor(bredouilleStreak / 3), 4);
+      message = messages[niveau][Math.floor(Math.random() * messages[niveau].length)];
+
+      if (bredouilleStreak === 5) message = "5 bredouilles d’affilée… T’es en train de battre un record";
+      if (bredouilleStreak === 10) message = "10… DIX… T’as un don pour ne rien prendre";
+      if (bredouilleStreak >= 15) message = "OK je capitule. T’es le roi de la bredouille. Respect.";
+
+      bgColor = "#e74c3c";
     }
 
     const pop = document.createElement('div');
-    pop.innerHTML = `<strong style="font-size:26px; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); line-height:1.4;">
+    pop.innerHTML = `<strong style="font-size:26px; text-shadow: 2px 2px 10px black; line-height:1.5;">
       ${message.replace(/\n\n/g, '<br><br>')}
     </strong>`;
     pop.style.cssText = `
       position:fixed; top:15%; left:50%; transform:translateX(-50%);
       background:${bgColor}; color:white; padding:30px 50px; border-radius:25px;
       z-index:99999; box-shadow:0 30px 80px rgba(0,0,0,0.7); text-align:center;
-      max-width:90%; font-weight:bold; animation:pop 3s forwards;
+      max-width:90%; font-weight:bold; animation:pop 3.5s forwards;
     `;
     document.body.appendChild(pop);
-    setTimeout(() => pop.remove(), 7000);
+    setTimeout(() => pop.remove(), 8000);
   }
 
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
@@ -301,18 +321,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const firebaseConfig = {
       apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
       authDomain: "fisher-forceai.firebaseapp.com",
-      databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com",
+      databaseURL: "https://fisher-forceai-default-rtdb.firebase.io",
       projectId: "fisher-forceai",
       storageBucket: "fisher-forceai.firebasestorage.app",
       messagingSenderId: "293964630939",
       appId: "1:293964630939:web:c96b2cb554922397e96f3e",
       measurementId: "G-EEYWH9SES8"
-    }; 
+    };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // EXPOSE db ET user POUR LE CLASSEMENT
     window.db = db;
     window.currentUser = null;
 
@@ -335,25 +354,16 @@ document.addEventListener('DOMContentLoaded', () => {
           email: user.email || "",
           photoURL: user.photoURL || "",
           lastSeen: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true })
-        .then(() => console.log("Profil sync Firestore"))
-        .catch(err => console.error("Erreur profil :", err));
+        }, { merge: true });
 
-        const saveBtn = el('savePseudo');
-        if (saveBtn) {
-          saveBtn.onclick = () => {
-            const newPseudo = el('pseudoInput').value.trim();
-            if (newPseudo && newPseudo.length >= 2) {
-              localStorage.setItem('fisherPseudo', newPseudo);
-              if (userNameEl) userNameEl.textContent = newPseudo;
-              db.collection('users').doc(user.uid).update({ displayName: newPseudo })
-                .then(() => alert(`Pseudo changé : ${newPseudo} !`))
-                .catch(err => alert("Erreur : " + err.message));
-            } else {
-              alert("Pseudo trop court !");
-            }
-          };
-        }
+        el('savePseudo')?.addEventListener('click', () => {
+          const newPseudo = el('pseudoInput').value.trim();
+          if (newPseudo && newPseudo.length >= 2) {
+            localStorage.setItem('fisherPseudo', newPseudo);
+            if (userNameEl) userNameEl.textContent = newPseudo;
+            db.collection('users').doc(user.uid).update({ displayName: newPseudo });
+          }
+        });
       } else {
         el('loginBtn').style.display = 'block';
         el('userInfo').style.display = 'none';
@@ -366,7 +376,6 @@ document.addEventListener('DOMContentLoaded', () => {
     el('logoutBtn')?.addEventListener('click', () => auth.signOut());
   }
 
-  // BOUTON AMIS
   const friendsBtn = document.getElementById('friendsBtn');
   if (friendsBtn) {
     friendsBtn.addEventListener('click', () => {
@@ -374,6 +383,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === DASHBOARD INITIAL (APRÈS DOM) ===
   updateDashboard();
 });
