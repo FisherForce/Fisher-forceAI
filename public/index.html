@@ -3,8 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Fisher-Force AI —</title>
+  <title>Fisher-Force AI — La 1ère IA de pêche 100% Française</title>
   <link rel="stylesheet" href="styles.css">
+  
+  <!-- Leaflet (chargé une seule fois, au bon endroit) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <style>
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -15,16 +20,25 @@
     .level-badge { background: #ffd700; color: #000; padding: 6px 14px; border-radius: 30px; font-weight: bold; }
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-top: 12px; }
     .stat-item { background: rgba(255,255,255,0.25); padding: 10px; border-radius: 10px; }
+    .player-rank { background: #112233; margin: 12px 0; padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 16px; transition: all 0.3s; }
+    .player-rank.you { background: #00d4aa !important; color: #000; font-weight: bold; box-shadow: 0 0 20px rgba(0,212,170,0.6); }
+    .rank-num { font-size: 24px; font-weight: bold; width: 50px; text-align: center; }
+    .player-name { flex: 1; margin-left: 15px; }
+    .player-level { font-size: 12px; color: #aaa; margin-top: 2px; }
+    .player-xp { font-weight: bold; color: #ffd700; }
+    .no-players { text-align: center; color: #777; font-style: italic; margin: 30px 0; }
   </style>
-  <!-- FIREBASE SDK (compat) -->
+
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
+
 <body>
   <div class="live-badge"><span class="live-dot"></span> IA en direct : <span id="patternCount">42</span> patterns appris</div>
 
-  <!-- AUTH UNIFIÉ + PSEUDO + AMIS -->
+  <!-- AUTH + PSEUDO + AMIS -->
   <div id="authContainer" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.3);padding:10px 16px;border-radius:30px;">
     <div id="userInfo" style="display:none;color:white;font-weight:bold;align-items:center;gap:10px;">
       <input id="pseudoInput" type="text" placeholder="Ton pseudo" style="padding:6px 10px;border-radius:20px;border:none;font-size:13px;width:100px;">
@@ -60,8 +74,6 @@
 
     <section class="card output-card">
       <h2>Conseils de l'IA</h2>
-
-      <!-- DASHBOARD DE BASE -->
       <div class="dashboard">
         <h3><span class="level-badge">Débutant</span> — <span id="xp">0</span> XP</h3>
         <div class="stats-grid">
@@ -77,221 +89,31 @@
         Enregistrer un résultat
       </button>
 
-      <!-- CLASSEMENT RÉEL (utilise db de app.js) -->
+      <!-- CLASSEMENT RÉEL -->
       <div id="tab-ranking" class="tab-content">
         <h2>Classement des Pêcheurs</h2>
         <div id="ranking-list" style="margin-top:20px;">
           <p class="muted" style="text-align:center;">Chargement du classement…</p>
         </div>
-
-        <style>
-          .player-rank { background: #112233; margin: 12px 0; padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 16px; transition: all 0.3s; }
-          .player-rank.you { background: #00d4aa !important; color: #000; font-weight: bold; box-shadow: 0 0 20px rgba(0,212,170,0.6); }
-          .rank-num { font-size: 24px; font-weight: bold; width: 50px; text-align: center; }
-          .player-name { flex: 1; margin-left: 15px; }
-          .player-level { font-size: 12px; color: #aaa; margin-top: 2px; }
-          .player-xp { font-weight: bold; color: #ffd700; }
-          .no-players { text-align: center; color: #777; font-style: italic; margin: 30px 0; }
-        </style>
-
-        <!-- CLASSEMENT RÉEL (ATTEND app.js) -->
-        <script>
-          document.addEventListener('DOMContentLoaded', () => {
-            const waitForApp = () => {
-              if (window.db && typeof window.currentUser !== 'undefined') {
-                initRanking();
-              } else {
-                setTimeout(waitForApp, 100);
-              }
-            };
-            waitForApp();
-
-            function initRanking() {
-              const db = window.db;
-              const rankingList = document.getElementById('ranking-list');
-              let currentUserUid = null;
-
-              // Mise à jour de l'utilisateur connecté
-              const updateUser = () => {
-                currentUserUid = window.currentUser?.uid || null;
-                if (!currentUserUid) {
-                  rankingList.innerHTML = `<p class="no-players">Connecte-toi pour voir ton classement !</p>`;
-                }
-              };
-              updateUser();
-              setInterval(updateUser, 500);
-
-              // Écoute Firestore
-              db.collection('users')
-                .orderBy('xp', 'desc')
-                .limit(50)
-                .onSnapshot(snapshot => {
-                  const players = [];
-                  let rank = 1;
-                  let yourRank = null;
-
-                  snapshot.docs.forEach(doc => {
-                    const data = doc.data();
-                    if (data.xp >= 0 && data.displayName) {
-                      players.push({ ...data, rank: rank++ });
-                      if (data.uid === currentUserUid) yourRank = rank - 1;
-                    }
-                  });
-
-                  renderRanking(players, yourRank);
-                });
-
-              function renderRanking(players, yourRank) {
-                if (players.length === 0) {
-                  rankingList.innerHTML = `<p class="no-players">Aucun pêcheur pour l'instant… Sois le premier !</p>`;
-                  return;
-                }
-
-                const top10 = players.slice(0, 10).map(p => `
-                  <div class="player-rank ${p.uid === currentUserUid ? 'you' : ''}">
-                    <div class="rank-num">#${p.rank}</div>
-                    <div class="player-name">
-                      ${p.displayName}
-                      <div class="player-level">${getLevel(p.xp)}</div>
-                    </div>
-                    <div class="player-xp">${p.xp} XP</div>
-                  </div>
-                `).join('');
-
-                let footer = '';
-                if (yourRank && yourRank > 10) {
-                  const you = players.find(p => p.uid === currentUserUid);
-                  footer = `
-                    <div style="margin-top:25px; text-align:center; color:#00d4aa; font-weight:bold;">
-                      Ta position : #${yourRank}
-                    </div>
-                    <div class="player-rank you">
-                      <div class="rank-num">#${yourRank}</div>
-                      <div class="player-name">Toi !</div>
-                      <div class="player-xp">${you.xp} XP</div>
-                    </div>`;
-                }
-
-                rankingList.innerHTML = top10 + footer;
-              }
-
-              function getLevel(xp) {
-                if (xp < 50) return "Débutant";
-                if (xp < 200) return "Traqueur";
-                return "Maître du brochet";
-              }
-            }
-          });
-        </script>
       </div>
     </section>
   </main>
-  <!-- BOUTON CARTE -->
-<button id="openMapBtn" style="position:fixed;bottom:20px;right:20px;background:#00d4aa;color:white;border:none;padding:16px 20px;border-radius:50%;font-size:28px;box-shadow:0 8px 25px rgba(0,212,170,0.6);z-index:9998;cursor:pointer;">
-  Map
-</button>
 
-<!-- MODALE CARTE -->
-<div id="mapModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;">
-  <div style="position:relative;width:100%;height:100%;">
-    <button onclick="document.getElementById('mapModal').style.display='none'" style="position:absolute;top:15px;right:15px;background:#e74c3c;color:white;border:none;padding:12px 18px;border-radius:50%;font-size:18px;z-index:10000;cursor:pointer;">Close</button>
-    <h2 style="position:absolute;top:15px;left:50%;transform:translateX(-50%);color:white;z-index:10000;font-size:24px;text-shadow:0 2px 10px black;">Ta Carte de Pêche Secrète</h2>
-    <div id="fishingMap" style="width:100%;height:100%;"></div>
+  <!-- BOUTON CARTE (unique) -->
+  <button id="openMapBtn" style="position:fixed;bottom:20px;right:20px;background:#00d4aa;color:white;border:none;padding:16px 20px;border-radius:50%;font-size:28px;box-shadow:0 8px 25px rgba(0,212,170,0.6);z-index:9998;cursor:pointer;">
+    Map
+  </button>
+
+  <!-- MODALE CARTE (unique) -->
+  <div id="mapModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;">
+    <div style="position:relative;width:100%;height:100%;">
+      <button onclick="document.getElementById('mapModal').style.display='none'" style="position:absolute;top:15px;right:15px;background:#e74c3c;color:white;border:none;padding:12px 18px;border-radius:50%;font-size:18px;z-index:10000;cursor:pointer;">X</button>
+      <h2 style="position:absolute;top:15px;left:50%;transform:translateX(-50%);color:#00d4aa;z-index:10000;font-size:26px;text-shadow:0 2px 10px black;">Carte Mondiale FisherForce</h2>
+      <div id="fishingMap" style="width:100%;height:100%;"></div>
+    </div>
   </div>
-</div>
 
-<!-- LEAFLET CSS + JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script>
-// === OUVRIR LA CARTE ===
-document.getElementById('openMapBtn').addEventListener('click', () => {
-  document.getElementById('mapModal').style.display = 'block';
-  initMap();
-});
-
-// === INITIALISATION DE LA CARTE ===
-let map, userMarker;
-function initMap() {
-  if (map) { map.remove(); }
-
-  map = L.map('fishingMap').setView([47.2, -1.55], 10); // Centre sur La Chapelle-sur-Erdre
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
-
-  // Icônes personnalisées
-  const fishIcon = L.divIcon({
-    html: '<div style="font-size:40px;">Fish</div>',
-    className: '', iconSize: [40, 40], iconAnchor: [20, 40]
-  });
-  const missIcon = L.divIcon({
-    html: '<div style="font-size:40px;">Cross</div>',
-    className: '', iconSize: [40, 40], iconAnchor: [20, 40]
-  });
-
-  // Charge toutes les sessions depuis localStorage
-  const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
-
-  sessions.forEach(s => {
-    if (s.lat && s.lng) {
-      const icon = s.success ? fishIcon : missIcon;
-      const color = s.success ? '#00d4aa' : '#e74c3c';
-
-      L.marker([s.lat, s.lng], { icon })
-        .addTo(map)
-        .bindPopup(`
-          <div style="font-weight:bold;color:${color};text-align:center;">
-            ${s.success ? 'Poisson' : 'Bredouille'} — ${s.spot}<br>
-            ${s.species || 'Aucun'} — ${s.poids ? (s.poids/1000).toFixed(2)+'kg' : '—'}<br>
-            Leurre: ${s.lure || 'Inconnu'}<br>
-            <small>${new Date(s.date).toLocaleDateString('fr')}</small>
-          </div>
-        `);
-    }
-  });
-
-  // Géolocalisation du pêcheur
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const { latitude, longitude } = pos.coords;
-      map.setView([latitude, longitude], 13);
-      if (userMarker) userMarker.remove();
-      userMarker = L.marker([latitude, longitude], {
-        icon: L.divIcon({ html: '<div style="font-size:50px;color:#ffd700;">Person</div>', iconSize: [50,50], iconAnchor: [25,50] })
-      }).addTo(map).bindPopup("T'es là, champion !").openPopup();
-    });
-  }
-}
-
-// === SAUVEGARDE DES SESSIONS DANS app.js (à ajouter dans window.addEventListener('message')) ===
-function saveSessionToMap(success, speciesName, poids, spotName, lure) {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const session = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-        success,
-        species: speciesName,
-        poids,
-        spot: spotName,
-        lure,
-        date: new Date().toISOString()
-      };
-      const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
-      sessions.push(session);
-      localStorage.setItem('fishingSessions', JSON.stringify(sessions));
-    });
-  }
-}
-</script>
-    <!-- Leaflet CSS + JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- CARTE COMMUNAUTAIRE MONDIALE + SPOTS PUBLICS -->
+  <!-- FONCTION CARTE COMMUNAUTAIRE MONDIALE (version finale, propre et fonctionnelle) -->
   <script>
     let publicMap;
     let publicMarkers = {};
@@ -305,20 +127,20 @@ function saveSessionToMap(success, speciesName, poids, spotName, lure) {
         attribution: '© OpenStreetMap'
       }).addTo(publicMap);
 
-      // Tes sessions privées (prises + bredouilles)
+      // Tes sessions privées
       const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
       sessions.forEach(s => {
         if (s.lat && s.lng) {
-          const iconHtml = s.success ? 'Fish' : 'Cross';
+          const icon = s.success ? 'Fish' : 'Cross';
           const color = s.success ? '#00d4aa' : '#e74c3c';
           L.marker([s.lat, s.lng], {
-            icon: L.divIcon({ html: `<div style="font-size:40px;color:${color};">${iconHtml}</div>`, iconSize: [40,40], iconAnchor: [20,40] })
+            icon: L.divIcon({ html: `<div style="font-size:40px;">${icon}</div>`, iconSize: [40,40], iconAnchor: [20,40] })
           }).addTo(publicMap)
             .bindPopup(`<b style="color:${color};">${s.success ? 'Poisson' : 'Bredouille'}</b><br>${s.spot}<br>${s.species || '—'} — ${s.poids ? (s.poids/1000).toFixed(2)+'kg' : ''}<br><small>${new Date(s.date).toLocaleDateString('fr')}</small>`);
         }
       });
 
-      // Spots publics de TOUTE LA COMMUNAUTÉ
+      // Spots publics communautaires
       if (window.db) {
         window.db.collection('publicSpots').onSnapshot(snapshot => {
           snapshot.docChanges().forEach(change => {
@@ -334,7 +156,7 @@ function saveSessionToMap(success, speciesName, poids, spotName, lure) {
                   iconAnchor: [60, 50]
                 })
               }).addTo(publicMap)
-                .bindPopup(`<b style="color:#ffd700;">Spot Public</b><br><b>${data.name}</b><br>Par ${data.author || 'Anonyme'}<br>${data.createdAt ? new Date(data.createdAt.toDate()).toLocaleDateString('fr') : ''}`);
+                .bindPopup(`<b style="color:#ffd700;">Spot Public</b><br><b>${data.name}</b><br>Par ${data.author || 'Anonyme'}`);
             }
             if (change.type === "removed" && publicMarkers[change.doc.id]) {
               publicMarkers[change.doc.id].remove();
@@ -343,34 +165,26 @@ function saveSessionToMap(success, speciesName, poids, spotName, lure) {
         });
       }
 
-      // DOUBLE-CLIC = AJOUTER UN SPOT PUBLIC
-      publicMap.on('dblclick', (e) => {
+      // Double-clic = ajouter spot public
+      publicMap.on('dblclick', e => {
         if (!window.currentUser) {
           alert("Connecte-toi pour partager un spot public !");
           return;
         }
-
         const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
         const name = prompt("Nom du spot (visible par TOUT LE MONDE) :", "");
-        if (!name || name.trim().length < 2) {
-          alert("Nom trop court ou invalide !");
-          return;
-        }
+        if (!name || name.trim().length < 2) return;
 
-        const spotData = {
+        window.db.collection('publicSpots').add({
           name: name.trim(),
           lat: e.latlng.lat,
           lng: e.latlng.lng,
           author: pseudo,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-
-        window.db.collection('publicSpots').add(spotData)
-          .then(() => alert(`Spot "${name}" ajouté à la carte mondiale !`))
-          .catch(err => alert("Erreur : " + err.message));
+        }).then(() => alert(`Spot "${name}" ajouté à la carte mondiale !`));
       });
 
-      // Ta position actuelle
+      // Géolocalisation
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(pos => {
           publicMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
@@ -386,26 +200,73 @@ function saveSessionToMap(success, speciesName, poids, spotName, lure) {
       setTimeout(initPublicMap, 300);
     });
   </script>
-    <!-- ========================================= -->
-  <!--           BOUTON + MODALE CARTE           -->
-  <!-- ========================================= -->
-  <button id="openMapBtn" style="position:fixed;bottom:20px;right:20px;background:#00d4aa;color:white;border:none;padding:16px 20px;border-radius:50%;font-size:28px;box-shadow:0 8px 25px rgba(0,212,170,0.6);z-index:9998;cursor:pointer;">
-    Map
-  </button>
 
-  <div id="mapModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;">
-    <div style="position:relative;width:100%;height:100%;">
-      <button onclick="document.getElementById('mapModal').style.display='none'" style="position:absolute;top:15px;right:15px;background:#e74c3c;color:white;border:none;padding:12px 18px;border-radius:50%;font-size:18px;z-index:10000;cursor:pointer;">Close</button>
-      <h2 style="position:absolute;top:15px;left:50%;transform:translateX(-50%);color:#00d4aa;z-index:10000;font-size:26px;text-shadow:0 2px 10px black;">Carte Mondiale FisherForce</h2>
-      <div id="fishingMap" style="width:100%;height:100%;"></div>
-    </div>
-  </div>
+  <!-- Ton classement (gardé intact) -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const waitForApp = () => {
+        if (window.db && typeof window.currentUser !== 'undefined') {
+          initRanking();
+        } else {
+          setTimeout(waitForApp, 100);
+        }
+      };
+      waitForApp();
 
+      function initRanking() {
+        const db = window.db;
+        const rankingList = document.getElementById('ranking-list');
+        let currentUserUid = null;
 
-</body>
-</html>
+        const updateUser = () => {
+          currentUserUid = window.currentUser?.uid || null;
+        };
+        updateUser();
+        setInterval(updateUser, 500);
 
-  <!-- app.js (gère TOUT : Firebase, XP, classement, etc.) -->
+        db.collection('users')
+          .orderBy('xp', 'desc')
+          .limit(50)
+          .onSnapshot(snapshot => {
+            const players = [];
+            let rank = 1;
+            let yourRank = null;
+
+            snapshot.docs.forEach(doc => {
+              const data = doc.data();
+              if (data.xp >= 0 && data.displayName) {
+                players.push({ ...data, rank: rank++ });
+                if (data.uid === currentUserUid) yourRank = rank - 1;
+              }
+            });
+
+            if (players.length === 0) {
+              rankingList.innerHTML = `<p class="no-players">Aucun pêcheur pour l'instant… Sois le premier !</p>`;
+              return;
+            }
+
+            const top10 = players.slice(0, 10).map(p => `
+              <div class="player-rank ${p.uid === currentUserUid ? 'you' : ''}">
+                <div class="rank-num">#${p.rank}</div>
+                <div class="player-name">${p.displayName}<div class="player-level">${p.xp < 50 ? "Débutant" : p.xp < 200 ? "Traqueur" : "Maître du brochet"}</div></div>
+                <div class="player-xp">${p.xp} XP</div>
+              </div>
+            `).join('');
+
+            let footer = '';
+            if (yourRank && yourRank > 10) {
+              const you = players.find(p => p.uid === currentUserUid);
+              footer = `<div style="margin-top:25px;text-align:center;color:#00d4aa;font-weight:bold;">Ta position : #${yourRank}</div>
+                        <div class="player-rank you"><div class="rank-num">#${yourRank}</div><div class="player-name">Toi !</div><div class="player-xp">${you.xp} XP</div></div>`;
+            }
+
+            rankingList.innerHTML = top10 + footer;
+          });
+      }
+    });
+  </script>
+
+  <!-- app.js en dernier -->
   <script src="app.js"></script>
 </body>
 </html>
