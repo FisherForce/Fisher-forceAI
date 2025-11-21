@@ -85,6 +85,39 @@ function updateDashboard() {
     </div>`;
 }
 
+// === FONCTION CARTE : SAUVEGARDE GPS DE CHAQUE SESSION ===
+function saveSessionToMap(success, speciesName, poids, spotName, lure) {
+  if (!navigator.geolocation) {
+    console.log("Géolocalisation non supportée");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const session = {
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        success,
+        species: speciesName || null,
+        poids: poids || 0,
+        spot: spotName || "Spot inconnu",
+        lure: lure || "Inconnu",
+        date: new Date().toISOString(),
+        pseudo: localStorage.getItem('fisherPseudo') || "Anonyme"
+      };
+
+      let sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
+      sessions.push(session);
+      localStorage.setItem('fishingSessions', JSON.stringify(sessions));
+      console.log("Session géolocalisée sauvegardée !", session);
+    },
+    (err) => {
+      console.warn("Impossible d'obtenir la position GPS", err);
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
 // === TOUT LE CODE ===
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('xpAnim')) {
@@ -154,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.open(`resultat.html?spot=${encodeURIComponent(spot)}`, '_blank', 'width=500,height=700');
   };
 
-  // === RÉCEPTION DES RÉSULTATS + RÉACTIONS IA ULTRA VIVANTE ===
+  // === RÉCEPTION DES RÉSULTATS + RÉACTIONS IA + SAUVEGARDE GPS ===
   window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
       if (dailyResultCount >= 6) {
@@ -167,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const { success, speciesName, spotName, lure, poids = 0 } = e.data;
 
+      // ENVOI À L'IA
       if (success && speciesName && lure) {
         const input = readForm();
         const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
@@ -211,7 +245,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (success) progress.successes += 1;
       saveAll();
 
-      // === RÉACTION IA (PRISE OU BREDOUILLE) ===
+      // SAUVEGARDE GPS SUR LA CARTE
+      saveSessionToMap(success, speciesName || null, poids, spotName || "Spot inconnu", lure || "Inconnu");
+
+      // RÉACTION IA
       if (success && speciesName && poids > 0) {
         showFishReaction(speciesName, poids, false);
       } else if (!success) {
@@ -321,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const firebaseConfig = {
       apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
       authDomain: "fisher-forceai.firebaseapp.com",
-      databaseURL: "https://fisher-forceai-default-rtdb.firebase.io",
+      databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com",
       projectId: "fisher-forceai",
       storageBucket: "fisher-forceai.firebasestorage.app",
       messagingSenderId: "293964630939",
