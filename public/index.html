@@ -114,92 +114,144 @@
   </div>
 
   <!-- FONCTION CARTE COMMUNAUTAIRE MONDIALE (version finale, propre et fonctionnelle) -->
-  <script>
-    let publicMap;
-    let publicMarkers = {};
+<script>
+  let publicMap;
+  let publicMarkers = {};
 
-    function initPublicMap() {
-      if (publicMap) publicMap.remove();
+  // CHARGE LES SPOTS DEPUIS LOCALSTORAGE + FIREBASE
+  function loadAllPublicSpots() {
+    const allSpots = [];
 
-      publicMap = L.map('fishingMap').setView([47.2, -1.55], 10);
+    // 1. Spots du localStorage (sauvegarde locale anti-bug)
+    const localSpots = JSON.parse(localStorage.getItem('communityPublicSpots') || '[]');
+    localSpots.forEach(spot => {
+      if (spot.lat && spot.lng) allSpots.push(spot);
+    });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap'
-      }).addTo(publicMap);
-
-      // Tes sessions privées
-      const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
-      sessions.forEach(s => {
-        if (s.lat && s.lng) {
-          const icon = s.success ? 'Fish' : 'Cross';
-          const color = s.success ? '#00d4aa' : '#e74c3c';
-          L.marker([s.lat, s.lng], {
-            icon: L.divIcon({ html: `<div style="font-size:40px;">${icon}</div>`, iconSize: [40,40], iconAnchor: [20,40] })
-          }).addTo(publicMap)
-            .bindPopup(`<b style="color:${color};">${s.success ? 'Poisson' : 'Bredouille'}</b><br>${s.spot}<br>${s.species || '—'} — ${s.poids ? (s.poids/1000).toFixed(2)+'kg' : ''}<br><small>${new Date(s.date).toLocaleDateString('fr')}</small>`);
-        }
-      });
-
-      // Spots publics communautaires
-      if (window.db) {
-        window.db.collection('publicSpots').onSnapshot(snapshot => {
-          snapshot.docChanges().forEach(change => {
-            if (change.type === "added" || change.type === "modified") {
-              const data = change.doc.data();
-              const id = change.doc.id;
-              if (publicMarkers[id]) publicMarkers[id].remove();
-
-              publicMarkers[id] = L.marker([data.lat, data.lng], {
-                icon: L.divIcon({
-                  html: `<div style="background:#ffd700;color:black;padding:8px 14px;border-radius:12px;font-weight:bolder;font-size:14px;border:3px solid #000;">${data.name}</div>`,
-                  iconSize: [120, 50],
-                  iconAnchor: [60, 50]
-                })
-              }).addTo(publicMap)
-                .bindPopup(`<b style="color:#ffd700;">Spot Public</b><br><b>${data.name}</b><br>Par ${data.author || 'Anonyme'}`);
-            }
-            if (change.type === "removed" && publicMarkers[change.doc.id]) {
-              publicMarkers[change.doc.id].remove();
+    // 2. Spots de Firebase (si connecté)
+    if (window.db && window.currentUser) {
+      window.db.collection('publicSpots')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(snapshot => {
+          snapshot.docs.forEach(doc => {
+            const data = doc.data();
+            if (data.lat && data.lng) {
+              const spot = { ...data, id: doc.id };
+              if (!allSpots.find(s => s.id === spot.id || (s.lat === spot.lat && s.lng === spot.lng && s.name === spot.name))) {
+                allSpots.push(spot);
+              }
             }
           });
+          renderPublicSpots(allSpots);
         });
-      }
-
-      // Double-clic = ajouter spot public
-      publicMap.on('dblclick', e => {
-        if (!window.currentUser) {
-          alert("Connecte-toi pour partager un spot public !");
-          return;
-        }
-        const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
-        const name = prompt("Nom du spot (visible par TOUT LE MONDE) :", "");
-        if (!name || name.trim().length < 2) return;
-
-        window.db.collection('publicSpots').add({
-          name: name.trim(),
-          lat: e.latlng.lat,
-          lng: e.latlng.lng,
-          author: pseudo,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => alert(`Spot "${name}" ajouté à la carte mondiale !`));
-      });
-
-      // Géolocalisation
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          publicMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
-          L.marker([pos.coords.latitude, pos.coords.longitude], {
-            icon: L.divIcon({ html: '<div style="font-size:50px;color:#00ff00;">Person</div>', iconSize: [50,50], iconAnchor: [25,50] })
-          }).addTo(publicMap).bindPopup("<b>T'es là, légende !</b>").openPopup();
-        });
-      }
+    } else {
+      // Si pas de Firebase → on affiche quand même les spots locaux
+      renderPublicSpots(localSpots);
     }
+  }
 
-    document.getElementById('openMapBtn').addEventListener('click', () => {
-      document.getElementById('mapModal').style.display = 'block';
-      setTimeout(initPublicMap, 300);
+  // AFFICHE TOUS LES SPOTS PUBLICS (même sans connexion)
+  function renderPublicSpots(spots) {
+    spots.forEach(spot => {
+      const key = spot.id || `${spot.lat}-${spot.lng}-${spot.name}`;
+      if (publicMarkers[key]) return;
+
+      publicMarkers[key] = L.marker([spot.lat, spot.lng], {
+        icon: L.divIcon({
+          html: `<div style="background:#ffd700;color:black;padding:8px 16px;border-radius:14px;font-weight:bolder;font-size:15px;border:4px solid #000;box-shadow:0 4px 15px rgba(0,0,0,0.6);">${spot.name}</div>`,
+          iconSize: [140, 50],
+          iconAnchor: [70, 50]
+        })
+      }).addTo(publicMap)
+        .bindPopup(`
+          <div style="text-align:center;font-weight:bold;">
+            <div style="color:#ffd700;font-size:18px;">Spot Public</div>
+            <div style="font-size:20px;margin:8px 0;">${spot.name}</div>
+            <div style="color:#aaa;font-size:13px;">Par ${spot.author || 'Anonyme'}</div>
+            <div style="font-size:12px;margin-top:5px;color:#666;">
+              ${spot.createdAt ? new Date(spot.createdAt.toDate()).toLocaleDateString('fr') : 'Hors ligne'}
+            </div>
+          </div>
+        `);
     });
-  </script>
+  }
+
+  function initPublicMap() {
+    if (publicMap) publicMap.remove();
+
+    publicMap = L.map('fishingMap').setView([47.2, -1.55], 10);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(publicMap);
+
+    // Tes sessions privées (localStorage)
+    const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
+    sessions.forEach(s => {
+      if (s.lat && s.lng) {
+        const icon = s.success ? 'Fish' : 'Cross';
+        const color = s.success ? '#00d4aa' : '#e74c3c';
+        L.marker([s.lat, s.lng], {
+          icon: L.divIcon({ html: `<div style="font-size:40px;">${icon}</div>`, iconSize: [40,40], iconAnchor: [20,40] })
+        }).addTo(publicMap)
+          .bindPopup(`<b style="color:${color};">${s.success ? 'Poisson' : 'Bredouille'}</b><br>${s.spot}<br>${s.species || '—'} — ${s.poids ? (s.poids/1000).toFixed(2)+'kg' : ''}`);
+      }
+    });
+
+    // CHARGE TOUS LES SPOTS PUBLICS (local + Firebase)
+    loadAllPublicSpots();
+
+    // DOUBLE-CLIC = AJOUTER UN SPOT PUBLIC (sauvegarde DOUBLE : local + Firebase)
+    publicMap.on('dblclick', e => {
+      const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
+      const name = prompt("Nom du spot (visible par TOUT LE MONDE) :", "");
+      if (!name || name.trim().length < 3) {
+        alert("Nom trop court !");
+        return;
+      }
+
+      const newSpot = {
+        name: name.trim(),
+        lat: e.latlng.lat,
+        lng: e.latlng.lng,
+        author: pseudo,
+        createdAt: new Date()
+      };
+
+      // 1. SAUVEGARDE LOCALE (fonctionne même sans internet)
+      const localSpots = JSON.parse(localStorage.getItem('communityPublicSpots') || '[]');
+      localSpots.push(newSpot);
+      localStorage.setItem('communityPublicSpots', JSON.stringify(localSpots));
+
+      // 2. SAUVEGARDE FIREBASE (si connecté)
+      if (window.db && window.currentUser) {
+        window.db.collection('publicSpots').add({
+          ...newSpot,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(err => console.log("Firebase KO mais spot sauvé localement !"));
+      }
+
+      alert(`Spot "${name}" ajouté pour TOUT LE MONDE !`);
+      loadAllPublicSpots(); // recharge instantanément
+    });
+
+    // Géolocalisation
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        publicMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
+        L.marker([pos.coords.latitude, pos.coords.longitude], {
+          icon: L.divIcon({ html: '<div style="font-size:50px;color:#00ff00;">Person</div>', iconSize: [50,50], iconAnchor: [25,50] })
+        }).addTo(publicMap).bindPopup("<b>T'es là, légende !</b>").openPopup();
+      });
+    }
+  }
+
+  // OUVRE LA CARTE
+  document.getElementById('openMapBtn').addEventListener('click', () => {
+    document.getElementById('mapModal').style.display = 'block';
+    setTimeout(initPublicMap, 300);
+  });
+</script>
 
   <!-- Ton classement (gardé intact) -->
   <script>
