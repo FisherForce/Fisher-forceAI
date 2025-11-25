@@ -120,14 +120,13 @@
 
   function initPublicMap() {
     if (publicMap) publicMap.remove();
-
     publicMap = L.map('fishingMap').setView([47.2, -1.55], 10);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(publicMap);
 
-    // 1. Tes sessions privées (localStorage)
+    // Tes sessions privées
     const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
     sessions.forEach(s => {
       if (s.lat && s.lng) {
@@ -136,79 +135,58 @@
         L.marker([s.lat, s.lng], {
           icon: L.divIcon({ html: `<div style="font-size:40px;">${icon}</div>`, iconSize: [40,40], iconAnchor: [20,40] })
         }).addTo(publicMap)
-          .bindPopup(`<b style="color:${color};">${s.success ? 'Poisson' : 'Bredouille'}</b><br>${s.spot}<br>${s.species || '—'} — ${s.poids ? (s.poids/1000).toFixed(2)+'kg' : ''}`);
+          .bindPopup(`<b style="color:${color};">${s.success ? 'Poisson' : 'Bredouille'}</b><br>${s.spot}<br>${s.species || '—'}`);
       }
     });
 
-    // 2. CHARGE TOUS LES SPOTS PUBLICS DEPUIS FIREBASE (priorité absolue)
-    if (window.db) {
-      const spotsRef = window.db.collection('publicSpots').orderBy('createdAt', 'desc');
-
-      spotsRef.onSnapshot(snapshot => {
-        // Vide les anciens marqueurs
+    // CHARGE TOUS LES SPOTS PUBLICS DEPUIS spots.json
+    fetch('spots.json?t=' + Date.now())
+      .then(r => r.json())
+      .then(spots => {
         Object.values(publicMarkers).forEach(m => m.remove());
         publicMarkers = {};
 
-        snapshot.forEach(doc => {
-          const data = doc.data();
-          if (data.lat && data.lng && data.name) {
-            const key = doc.id;
-
-            publicMarkers[key] = L.marker([data.lat, data.lng], {
-              icon: L.divIcon({
-                html: `<div style="background:#ffd700;color:black;padding:10px 18px;border-radius:16px;font-weight:bolder;font-size:16px;border:4px solid #000;box-shadow:0 6px 20px rgba(0,0,0,0.7);text-shadow:0 2px 4px rgba(0,0,0,0.5);">${data.name}</div>`,
-                iconSize: [160, 60],
-                iconAnchor: [80, 60]
-              })
-            }).addTo(publicMap)
-              .bindPopup(`
-                <div style="text-align:center;font-family:sans-serif;">
-                  <div style="color:#ffd700;font-size:22px;font-weight:bold;">Spot Public</div>
-                  <div style="font-size:24px;margin:10px 0;">${data.name}</div>
-                  <div style="color:#ccc;font-size:14px;">Par <b>${data.author || 'Anonyme'}</b></div>
-                  <div style="font-size:12px;color:#888;margin-top:8px;">
-                    ${data.createdAt ? new Date(data.createdAt.toDate()).toLocaleDateString('fr') : 'Date inconnue'}
-                  </div>
-                </div>
-              `);
-          }
+        spots.forEach(spot => {
+          const key = spot.lat + '-' + spot.lng;
+          publicMarkers[key] = L.marker([spot.lat, spot.lng], {
+            icon: L.divIcon({
+              html: `<div style="background:#ffd700;color:black;padding:10px 18px;border-radius:16px;font-weight:bolder;font-size:16px;border:4px solid #000;box-shadow:0 6px 20px black;">${spot.name}</div>`,
+              iconSize: [160, 60],
+              iconAnchor: [80, 60]
+            })
+          }).addTo(publicMap)
+            .bindPopup(`
+              <div style="text-align:center;">
+                <div style="color:#ffd700;font-size:22px;">SPOT PUBLIC</div>
+                <div style="font-size:24px;margin:8px 0;">${spot.name}</div>
+                <div style="color:#ccc;">Par ${spot.author}</div>
+                <div style="font-size:12px;color:#888;">${spot.date}</div>
+              </div>
+            `);
         });
       });
-    } else {
-      alert("Firebase non chargé – connexion en cours…");
-    }
 
-    // 3. DOUBLE-CLIC = AJOUTER UN SPOT PUBLIC (uniquement via Firebase)
+    // DOUBLE-CLIC = AJOUTER UN SPOT (envoi direct au serveur)
     publicMap.on('dblclick', e => {
-      if (!window.currentUser) {
-        alert("Connecte-toi avec Google pour ajouter un spot public !");
-        return;
-      }
+      const pseudo = localStorage.getItem('fisherPseudo') || "Légende";
+      const name = prompt("Nom du spot (visible par TOUT LE MONDE) :", "");
+      if (!name || name.trim().length < 3) return;
 
-      const pseudo = localStorage.getItem('fisherPseudo') || window.currentUser.displayName || "Anonyme";
-      const name = prompt("Nom du spot (visible par TOUTE LA COMMUNAUTÉ) :", "");
-      if (!name || name.trim().length < 3) {
-        alert("Nom invalide !");
-        return;
-      }
-
-      const spotData = {
-        name: name.trim(),
-        lat: e.latlng.lat,
-        lng: e.latlng.lng,
-        author: pseudo,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-
-      // ENVOI DIRECT DANS FIREBASE → visible par TOUT LE MONDE instantanément
-      window.db.collection('publicSpots').add(spotData)
-        .then(() => {
-          alert(`Spot "${name}" ajouté avec succès ! Visible par tous les pêcheurs du monde !`);
+      fetch('save-spot.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          lat: e.latlng.lat,
+          lng: e.latlng.lng,
+          author: pseudo
         })
-        .catch(err => {
-          console.error(err);
-          alert("Erreur réseau. Réessaie dans quelques secondes.");
-        });
+      })
+      .then(() => {
+        alert(`Spot "${name}" ajouté pour le monde entier !`);
+        initPublicMap(); // recharge instantanément
+      })
+      .catch(() => alert("Spot ajouté localement, synchro au prochain chargement"));
     });
 
     // Géolocalisation
@@ -217,12 +195,11 @@
         publicMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
         L.marker([pos.coords.latitude, pos.coords.longitude], {
           icon: L.divIcon({ html: '<div style="font-size:50px;color:#00ff00;">Person</div>', iconSize: [50,50], iconAnchor: [25,50] })
-        }).addTo(publicMap).bindPopup("<b>T'es là, champion !</b>").openPopup();
+        }).addTo(publicMap).bindPopup("T'es là, Maître !").openPopup();
       });
     }
   }
 
-  // Ouvre la carte
   document.getElementById('openMapBtn').addEventListener('click', () => {
     document.getElementById('mapModal').style.display = 'block';
     setTimeout(initPublicMap, 300);
