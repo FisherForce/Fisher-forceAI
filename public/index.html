@@ -115,93 +115,84 @@
 
   <!-- FONCTION CARTE COMMUNAUTAIRE MONDIALE (version finale, propre et fonctionnelle) -->
 <script>
-  let personalMap;
-  let personalMarkers = {};
+// === CARTE PERSONNELLE 100% PRIVÉE & FONCTIONNELLE SUR RENDER ===
+let personalMap = null;
+let personalMarkers = {};
 
-  function initPersonalMap() {
-    if (personalMap) personalMap.remove();
+function initPersonalMap() {
+  if (personalMap) personalMap.remove();
 
-    personalMap = L.map('fishingMap').setView([47.2, -1.55], 10);
+  personalMap = L.map('fishingMap').setView([47.2, -1.55], 10);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap'
-    }).addTo(personalMap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(personalMap);
 
-    // CHARGE TES SPOTS PERSONNELS depuis localStorage
-    const mySpots = JSON.parse(localStorage.getItem('myPersonalSpots') || '[]);
+  // Charge tes spots personnels
+  const mySpots = JSON.parse(localStorage.getItem('myPersonalSpots') || '[]');
+  mySpots.forEach(spot => {
+    const key = spot.lat + '_' + spot.lng;
+    if (personalMarkers[key]) return;
 
-    mySpots.forEach(spot => {
-      const key = spot.lat + '-' + spot.lng;
-      if (personalMarkers[key]) return;
-
-      personalMarkers[key] = L.marker([spot.lat, spot.lng], {
-        icon: L.divIcon({
-          html: `<div style="background:#00d4aa;color:white;padding:10px 16px;border-radius:14px;font-weight:bolder;font-size:15px;border:3px solid white;box-shadow:0 4px 15px rgba(0,0,0,0.6);">${spot.name}</div>`,
-          iconSize: [140, 50],
-          iconAnchor: [70, 50]
-        })
-      }).addTo(personalMap)
-        .bindPopup(`
-          <div style="text-align:center;font-family:sans-serif;">
-            <b style="color:#00d4aa;font-size:18px;">Ton Spot Secret</b><br>
-            <b style="font-size:22px;">${spot.name}</b><br>
-            <small>Ajouté le ${spot.date}</small>
-          </div>
-        `);
-    });
-
-    // Tes sessions prises/bredouilles
-    const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
-    sessions.forEach(s => {
-      if (s.lat && s.lng) {
-        const icon = s.success ? 'Fish' : 'Cross';
-        const color = s.success ? '#00d4aa' : '#e74c3c';
-        L.marker([s.lat, s.lng], {
-          icon: L.divIcon({ html: `<div style="font-size:40px;">${icon}</div>`, iconSize: [40,40], iconAnchor: [20,40] })
-        }).addTo(personalMap)
-          .bindPopup(`<b style="color:${color};">${s.success ? 'Prise' : 'Bredouille'}</b><br>${s.spot}<br>${s.species || ''} — ${s.poids ? (s.poids/1000).toFixed(2)+'kg' : ''}`);
-      }
-    });
-
-    // DOUBLE-CLIC = AJOUTER UN SPOT PERSONNEL (uniquement pour toi)
-    personalMap.on('dblclick', e => {
-      const name = prompt("Nom de TON spot secret :", "Spot légendaire");
-      if (!name || name.trim().length < 2) return;
-
-      const newSpot = {
-        name: name.trim(),
-        lat: e.latlng.lat,
-        lng: e.latlng.lng,
-        date: new Date().toLocaleDateString('fr')
-      };
-
-      const mySpots = JSON.parse(localStorage.getItem('myPersonalSpots') || '[]');
-      mySpots.push(newSpot);
-      localStorage.setItem('myPersonalSpots', JSON.stringify(mySpots));
-
-      alert(`Spot "${name}" ajouté à TA carte personnelle !`);
-      initPersonalMap(); // recharge
-    });
-
-    // Géolocalisation (avec message si bloquée
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          personalMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
-          L.marker([pos.coords.latitude, pos.coords.longitude], {
-            icon: L.divIcon({ html: '<div style="font-size:50px;color:#00ff00;">Person</div>', iconSize: [50,50], iconAnchor: [25,50] })
-          }).addTo(personalMap).bindPopup("<b>T'es là, Maître Thao !</b>").openPopup();
-        },
-        err => console.log("GPS bloqué, clique sur l’icône cadenas à gauche de l’URL pour l’autoriser")
-      );
-    }
-  }
-
-  // Ouvre la carte
-  document.getElementById('openMapBtn').addEventListener('click', () => {
-    document.getElementById('mapModal').style.display = 'block';
-    setTimeout(initPersonalMap, 300);
+    personalMarkers[key] = L.marker([spot.lat, spot.lng], {
+      icon: L.divIcon({
+        html: `<div style="background:#00d4aa;color:white;padding:10px 16px;border-radius:14px;font-weight:bolder;font-size:15px;border:3px solid white;box-shadow:0 4px 15px black;">${spot.name}</div>`,
+        iconSize: [140, 50],
+        iconAnchor: [70, 50]
+      })
+    }).addTo(personalMap)
+      .bindPopup(`<b style="color:#00d4aa;">Ton spot secret</b><br><b>${spot.name}</b><br><small>${spot.date}</small>`);
   });
+
+  // Sessions prises/bredouilles
+  const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
+  sessions.forEach(s => {
+    if (s.lat && s.lng) {
+      const icon = s.success ? 'Fish' : 'Cross';
+      const color = s.success ? '#00d4aa' : '#e74c3c';
+      L.marker([s.lat, s.lng], {
+        icon: L.divIcon({html: `<div style="font-size:40px;">${icon}</div>`, iconSize: [40,40], iconAnchor: [20,40]})
+      }).addTo(personalMap)
+        .bindPopup(`<b style="color:${color};">${s.success ? 'Prise' : 'Bredouille'}</b><br>${s.spot}<br>${s.species || ''}`);
+    }
+  });
+
+  // Double-clic = ajouter un spot perso
+  personalMap.on('dblclick', e => {
+    const name = prompt("Nom de ton spot secret :", "Spot légendaire de Thao");
+    if (!name || name.trim().length < 2) return;
+
+    const newSpot = {
+      name: name.trim(),
+      lat: e.latlng.lat,
+      lng: e.latlng.lng,
+      date: new Date().toLocaleDateString('fr-FR')
+    };
+
+    const mySpots = JSON.parse(localStorage.getItem('myPersonalSpots') || '[]');
+    mySpots.push(newSpot);
+    localStorage.setItem('myPersonalSpots', JSON.stringify(mySpots));
+
+    alert(`Spot "${name}" ajouté à TA carte personnelle !`);
+    initPersonalMap();
+  });
+
+  // Géolocalisation
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      personalMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
+      L.marker([pos.coords.latitude, pos.coords.longitude], {
+        icon: L.divIcon({html: '<div style="font-size:50px;color:#00ff00;">Person</div>', iconSize: [50,50], iconAnchor: [25,50]})
+      }).addTo(personalMap).bindPopup("T'es là, Maître Thao !").openPopup();
+    });
+  }
+}
+
+// OUVRE LA MODALE + LANCE LA CARTE
+document.getElementById('openMapBtn').addEventListener('click', () => {
+  document.getElementById('mapModal').style.display = 'block';
+  setTimeout(initPersonalMap, 300);
+});
 </script>
   <!-- Ton classement (gardé intact) -->
   <script>
