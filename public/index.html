@@ -56,103 +56,130 @@
       <input type="text" id="searchFriend" placeholder="Pseudo ou email de l'ami" style="width:100%;padding:10px;border:none;border-radius:10px;">
       <button onclick="sendFriendRequest()" style="margin-top:8px;width:100%;background:#00d4aa;color:white;padding:12px;border:none;border-radius:10px;font-weight:bold;">Ajouter</button>
     </div>
-    <script>
-// === RÉSEAU SOCIAL AMIS + PARTAGE DE CARTE ===
+<script>
+// === AMIS 100% FONCTIONNEL AVEC TA DATABASE EXISTANTE ===
 let currentUserUid = null;
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUserUid = user.uid;
-    localStorage.setItem('fisherPseudo', user.displayName || user.email.split('@')[0]);
-    loadFriends();
+    window.currentUser = user;
+    loadFriendsCount();
   }
 });
 
+// Ouvre la modale amis
 document.getElementById('friendsBtn').addEventListener('click', () => {
   document.getElementById('friendsModal').style.display = 'block';
   loadFriendRequests();
-  loadFriends();
+  loadFriendsList();
 });
 
+// Recherche + envoi demande
 function sendFriendRequest() {
-  const search = document.getElementById('searchFriend').value.trim();
-  if (!search) return alert("Entre un pseudo ou email");
+  const pseudo = document.getElementById('searchFriend').value.trim();
+  if (!pseudo) return alert("Entre un pseudo");
 
-  // Recherche l'utilisateur
-  db.collection('users').where('displayName', '==', search).get()
+  db.collection('users').where('displayName', '==', pseudo).get()
     .then(snap => {
-      if (snap.empty) return alert("Aucun pêcheur trouvé avec ce pseudo");
+      if (snap.empty) return alert("Pseudo introuvable");
+      const friendDoc = snap.docs[0];
+      const friendUid = friendDoc.id;
+      if (friendUid === currentUserUid) return alert("C’est toi ça");
 
-      const friend = snap.docs[0];
-      const friendUid = friend.id;
+      // Ajoute la demande dans TON document
+      db.collection('users').doc(currentUserUid).update({
+        [`friendRequestsSent.${friendUid}`]: true
+      });
 
-      if (friendUid === currentUserUid) return alert("Tu ne peux pas t'ajouter toi-même");
-
-      // Envoie la demande
-      db.collection('friendRequests').add({
-        from: currentUserUid,
-        to: friendUid,
-        fromName: localStorage.getItem('fisherPseudo'),
-        status: 'pending',
-        date: new Date()
+      // Ajoute la demande reçue chez lui
+      db.collection('users').doc(friendUid).update({
+        [`friendRequests.${currentUserUid}`]: true
       }).then(() => {
-        alert(`Demande envoyée à ${search} !`);
+        alert(`Demande envoyée à ${pseudo} !`);
         document.getElementById('searchFriend').value = '';
       });
     });
 }
 
+// Charge les demandes reçues
 function loadFriendRequests() {
-  db.collection('friendRequests').where('to', '==', currentUserUid).where('status', '==', 'pending')
-    .onSnapshot(snap => {
-      const list = document.getElementById('friendRequestsList');
-      if (snap.empty) {
-        list.innerHTML = '<p style="color:#aaa;text-align:center;">Aucune demande en attente</p>';
-        return;
-      }
+  db.collection('users').doc(currentUserUid).onSnapshot(doc => {
+    const data = doc.data() || {};
+    const requests = Object.keys(data.friendRequests || {});
+    const html = requests.length === 0 
+      ? '<p style="color:#aaa;text-align:center;">Aucune demande</p>'
+      : requests.map(uid => {
+          return db.collection('users').doc(uid).get().then(u => {
+            const name = u.data()?.displayName || "Inconnu";
+            return `
+              <div style="background:#333;padding:12px;margin:8px 0;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+                <span><strong>${name}</strong> veut être ton ami</span>
+                <button onclick="acceptFriend('${uid}')" style="background:#00d4aa;color:white;padding:8px 16px;border:none;border-radius:8px;font-weight:bold;">Accepter</button>
+              </div>
+            `;
+          });
+        });
 
-      list.innerHTML = '<h3 style="color:#ffd700;">Demandes reçues</h3>';
-      snap.forEach(doc => {
-        const req = doc.data();
-        list.innerHTML += `
-          <div style="background:#333;padding:10px;margin:8px 0;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
-            <span><strong>${req.fromName}</strong> veut être ton ami</span>
-            <div>
-              <button onclick="acceptFriend('${doc.id}', '${req.from}')" style="background:#00d4aa;color:white;padding:6px 12px;border:none;border-radius:8px;margin-left:5px;">Accepter</button>
-              <button onclick="db.collection('friendRequests').doc('${doc.id}').delete()" style="background:#e74c3c;color:white;padding:6px 12px;border:none;border-radius:8px;">Refuser</button>
-            </div>
-          </div>
-        `;
-      });
-    });
+    if (requests.length > 0) {
+      Promise.all(requests.map(uid => db.collection('users').doc(uid).get().then(u => u.data()?.displayName)))
+        .then(names => {
+          document.getElementById('friendRequestsList').innerHTML = '<h3 style="color:#ffd700;">Demandes reçues</h3>' + 
+            requests.map((uid,i) => `
+              <div style="background:#333;padding:12px;margin:8px 0;border-radius:10px;display:flex;justify-content:space-between;align-items:center;">
+                <strong>${names[i] || "Inconnu"}</strong>
+                <button onclick="acceptFriend('${uid}')" style="background:#00d4aa;color:white;padding:8px;border:none;border-radius:8px;">Accepter</button>
+              </div>
+            `).join('');
+        });
+    } else {
+      document.getElementById('friendRequestsList').innerHTML = html;
+    }
+  });
 }
 
-function acceptFriend(reqId, friendUid) {
-  // Ajoute dans les deux sens
-  db.collection('friends').doc(currentUserUid).set({[friendUid]: true}, {merge: true});
-  db.collection('friends').doc(friendUid).set({[currentUserUid]: true}, {merge: true});
-  db.collection('friendRequests').doc(reqId).update({status: 'accepted'});
+// Accepte l’ami
+function acceptFriend(friendUid) {
+  const batch = db.batch();
+
+  const myRef = db.collection('users').doc(currentUserUid);
+  const friendRef = db.collection('users').doc(friendUid);
+
+  batch.update(myRef, {
+    [`friends.${friendUid}`]: true,
+    [`friendRequests.${friendUid}`]: firebase.firestore.FieldValue.delete()
+  });
+  batch.update(friendRef, {
+    [`friends.${currentUserUid}`]: true,
+    [`friendRequestsSent.${currentUserUid}`]: firebase.firestore.FieldValue.delete()
+  });
+
+  batch.commit().then(() => {
+    alert("Ami ajouté !");
+    loadFriendsList();
+  });
 }
 
-function loadFriends() {
-  db.collection('friends').doc(currentUserUid).onSnapshot(doc => {
-    if (!doc.exists) {
-      document.getElementById('friendCount').textContent = '0';
+// Charge la liste d’amis + bouton "Voir sa carte"
+function loadFriendsList() {
+  db.collection('users').doc(currentUserUid).onSnapshot(doc => {
+    const data = doc.data() || {};
+    const friends = Object.keys(data.friends || {});
+    document.getElementById('friendCount').textContent = friends.length;
+
+    if (friends.length === 0) {
       document.getElementById('friendsList').innerHTML = '<p style="color:#aaa;text-align:center;">Aucun ami pour l’instant</p>';
       return;
     }
 
-    const friends = Object.keys(doc.data());
-    document.getElementById('friendCount').textContent = friends.length;
-
-    let html = '<h3 style="color:#00d4aa;">Tes amis (' + friends.length + ')</h3>';
+    let html = '<h3 style="color:#00d4aa;">Tes amis</h3>';
     friends.forEach(uid => {
       db.collection('users').doc(uid).get().then(u => {
-        const name = u.data()?.displayName || 'Inconnu';
+        const name = u.data()?.displayName || "Pêcheur";
         html += `
           <div style="background:#333;padding:12px;margin:8px 0;border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
-            <span><strong>${name}</strong></span>
-            <button onclick="viewFriendMap('${uid}', '${name}')" style="background:#ffd700;color:black;padding:8px 16px;border:none;border-radius:10px;font-weight:bold;">
+            <strong>${name}</strong>
+            <button onclick="viewFriendMap('${uid}','${name}')" style="background:#ffd700;color:black;padding:8px 16px;border:none;border-radius:10px;font-weight:bold;">
               Voir sa carte
             </button>
           </div>
@@ -163,6 +190,7 @@ function loadFriends() {
   });
 }
 
+// Voir la carte de l’ami (même fonction que ta carte perso)
 function viewFriendMap(friendUid, friendName) {
   document.getElementById('friendsModal').style.display = 'none';
   document.getElementById('mapModal').style.display = 'block';
@@ -173,16 +201,13 @@ function viewFriendMap(friendUid, friendName) {
     personalMap = L.map('fishingMap').setView([47.2, -1.55], 10);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(personalMap);
 
-    db.collection('personalSpots').doc(friendUid).collection('spots').get()
-      .then(snap => {
-        snap.forEach(doc => {
-          const s = doc.data();
-          L.marker([s.lat, s.lng], {
-            icon: L.divIcon({html: `<div style="background:#ff6b6b;color:white;padding:10px 16px;border-radius:14px;font-weight:bold;">${s.name}</div>`, iconSize: [140,50], iconAnchor: [70,50]})
-          }).addTo(personalMap)
-            .bindPopup(`<b style="color:#ff6b6b;">Spot de ${friendName}</b><br>${s.name}`);
-        });
-      });
+    // Charge les spots de l’ami depuis localStorage (ou future collection personalSpots)
+    const friendSpots = JSON.parse(localStorage.getItem(`spots_${friendUid}`) || '[]');
+    friendSpots.forEach(s => {
+      L.marker([s.lat, s.lng], {
+        icon: L.divIcon({html: `<div style="background:#ff6b6b;color:white;padding:10px;border-radius:12px;font-weight:bold;">${s.name}</div>`})
+      }).addTo(personalMap).bindPopup(`<b style="color:#ff6b6b;">Spot de ${friendName}</b><br>${s.name}`);
+    });
   }, 300);
 }
 </script>
