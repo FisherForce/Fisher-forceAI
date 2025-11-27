@@ -8,12 +8,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Firebase SDK (on garde tout, même Firestore, ça ne gêne pas) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
+  <!-- Firebase (chargé UNE SEULE FOIS dans app.js → on ne le recharge plus ici) -->
   <style>
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
@@ -105,31 +100,21 @@
   <div id="mapModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:9999;">
     <div style="position:relative;width:100%;height:100%;">
       <button onclick="document.getElementById('mapModal').style.display='none'" style="position:absolute;top:15px;right:15px;background:#e74c3c;color:white;border:none;padding:12px 18px;border-radius:50%;font-size:18px;z-index:10000;cursor:pointer;">X</button>
-      <h2 id="mapTitle" style="position:absolute;top:15px;left:50 left:50%;transform:translateX(-50%);color:#00d4aa;z-index:10000;font-size:26px;text-shadow:0 2px 10px black;">Ma Carte Secrète</h2>
+      <h2 id="mapTitle" style="position:absolute;top:15px;left:50%;transform:translateX(-50%);color:#00d4aa;z-index:10000;font-size:26px;text-shadow:0 2px 10px black;">Ma Carte Secrète</h2>
       <div id="fishingMap" style="width:100%;height:100%;"></div>
     </div>
   </div>
 
-  <!-- TOUT LE CODE (SANS FIRESTORE, AVEC REALTIME DATABASE) -->
+  <!-- TOUT LE CODE FONCTIONNEL (sans doublon Firebase) -->
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
-      authDomain: "fisher-forceai.firebaseapp.com",
-      databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com",
-      projectId: "fisher-forceai",
-      storageBucket: "fisher-forceai.firebasestorage.app",
-      messagingSenderId: "293964630939",
-      appId: "1:293964630939:web:c96b2cb554922397e96f3e"
-    };
-
-    firebase.initializeApp(firebaseConfig);
+    // Firebase est chargé dans app.js → on le récupère seulement
     const auth = firebase.auth();
-    const rtdb = firebase.database();  // Realtime Database (déjà activé !)
+    const rtdb = firebase.database();
     window.auth = auth;
     window.rtdb = rtdb;
     window.currentUser = null;
 
-    // ===== AUTH =====
+    // ==== AUTHENTIFICATION ====
     auth.onAuthStateChanged(user => {
       window.currentUser = user;
       if (user) {
@@ -150,11 +135,11 @@
 
     document.getElementById('logoutBtn').onclick = () => auth.signOut();
 
-    // ===== PSEUDO =====
+    // ==== PSEUDO ====
     function loadPseudo() {
       if (!window.currentUser) return;
-      rtdb.ref('users/' + window.currentUser.uid + '/displayName').once('value', snap => {
-        const pseudo = snap.val() || '';
+      rtdb.ref('users/' + window.currentUser.uid + '/displayName').once('value', s => {
+        const pseudo = s.val() || '';
         document.getElementById('pseudoInput').value = pseudo;
         localStorage.setItem('fisherPseudo', pseudo);
       });
@@ -169,7 +154,7 @@
       }
     };
 
-    // ===== AMIS (Realtime Database) =====
+    // ==== AMIS ====
     document.getElementById('friendsBtn').onclick = () => {
       document.getElementById('friendsModal').style.display = 'block';
       loadFriends();
@@ -181,23 +166,19 @@
         const friends = snap.val() || {};
         const uids = Object.keys(friends);
         document.getElementById('friendCount').textContent = uids.length;
-
         const list = document.getElementById('friendsList');
         if (uids.length === 0) {
-          list.innerHTML = '<p style="text-align:center;color:#666;margin-top:30px;">Aucun ami pour l’instant<br>Ajoute-en un avec son pseudo exact !</p>';
+          list.innerHTML = '<p style="text-align:center;color:#666;margin-top:30px;">Aucun ami pour l’instant<br>Ajoute-en avec leur pseudo exact !</p>';
           return;
         }
-
-        list.innerHTML = `<h3 style="color:#00d4aa;text-align:center;">Tes amis (${uids.length})</h3>`;
+        list.innerHTML = `<h3 style="color:#00d4aa;text-align:center;margin-bottom:15px;">Tes amis (${uids.length})</h3>`;
         uids.forEach(uid => {
           rtdb.ref('users/' + uid + '/displayName').once('value').then(s => {
-            const name = s.val() || "Pêcheur";
+            const name = s.val() || "Pêcheur mystère";
             list.innerHTML += `
               <div style="background:#333;padding:14px;margin:8px 0;border-radius:12px;display:flex;justify-content:space-between;align-items:center;">
                 <strong style="color:white;">${name}</strong>
-                <button onclick="showFriendMap('${uid}','${name}')" style="background:#ffd700;color:black;padding:8px 16px;border:none;border-radius:10px;font-weight:bold;">
-                  Voir sa carte
-                </button>
+                <button onclick="showFriendMap('${uid}','${name}')" style="background:#ffd700;color:black;padding:8px 16px;border:none;border-radius:10px;font-weight:bold;">Voir sa carte</button>
               </div>`;
           });
         });
@@ -209,9 +190,8 @@
       if (!pseudo) return alert("Entre un pseudo");
       rtdb.ref('users').orderByChild('displayName').equalTo(pseudo).once('value', snap => {
         if (!snap.exists()) return alert("Pseudo introuvable");
-        const data = snap.val();
-        const uid = Object.keys(data)[0];
-        if (uid === window.currentUser.uid) return alert("C’est toi !");
+        const uid = Object.keys(snap.val())[0];
+        if (uid === window.currentUser.uid) return alert("C’est toi gros malin !");
         rtdb.ref('users/' + window.currentUser.uid + '/friends/' + uid).set(true);
         alert(pseudo + " ajouté à tes amis !");
         document.getElementById('searchFriend').value = '';
@@ -222,12 +202,10 @@
       document.getElementById('friendsModal').style.display = 'none';
       document.getElementById('mapModal').style.display = 'block';
       document.getElementById('mapTitle').textContent = `Carte secrète de ${name}`;
-
       setTimeout(() => {
         if (window.personalMap) window.personalMap.remove();
         window.personalMap = L.map('fishingMap').setView([47.2, -1.55], 10);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.personalMap);
-
         const spots = JSON.parse(localStorage.getItem('myPersonalSpots_' + uid) || '[]');
         spots.forEach(s => {
           L.marker([s.lat, s.lng], {
@@ -238,14 +216,16 @@
       }, 300);
     }
 
-    // ===== CARTE PERSONNELLE (inchangée) =====
+    // ==== CARTE PERSONNELLE ====
     let personalMap = null;
     function initPersonalMap() {
       if (personalMap) personalMap.remove();
       personalMap = L.map('fishingMap').setView([47.2, -1.55], 10);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(personalMap);
 
-      const mySpots = JSON.parse(localStorage.getItem('myPersonalSpots_' + (window.currentUser?.uid || '')) || '[]');
+      const uid = window.currentUser?.uid || '';
+      const mySpots = JSON.parse(localStorage.getItem('myPersonalSpots_' + uid) || '[]');
+
       mySpots.forEach(spot => {
         const marker = L.marker([spot.lat, spot.lng], {
           icon: L.divIcon({
@@ -267,16 +247,17 @@
         });
       });
 
+      // Double-clic = nouveau spot
       personalMap.on('dblclick', e => {
         const name = prompt("Nom de ton spot secret :", "Spot légendaire");
         if (!name?.trim()) return;
         const newSpot = { name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, date: new Date().toLocaleDateString('fr-FR'), catches: [] };
-        const spots = JSON.parse(localStorage.getItem('myPersonalSpots_' + (window.currentUser?.uid || '')) || '[]');
-        spots.push(newSpot);
-        localStorage.setItem('myPersonalSpots_' + (window.currentUser?.uid || ''), JSON.stringify(spots));
+        mySpots.push(newSpot);
+        localStorage.setItem('myPersonalSpots_' + uid, JSON.stringify(mySpots));
         initPersonalMap();
       });
 
+      // Géoloc (ignore l’erreur si tu as bloqué)
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(pos => {
           personalMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
@@ -297,7 +278,7 @@
         reader.onload = ev => {
           const uid = window.currentUser?.uid || '';
           const spots = JSON.parse(localStorage.getItem('myPersonalSpots_' + uid) || '[]');
-          const spot = spots.find(s => s.lat === lat && s.lng === lng);
+          const spot = spots.find(s => Math.abs(s.lat - lat) < 0.0001 && Math.abs(s.lng - lng) < 0.0001);
           if (spot) {
             spot.catches = spot.catches || [];
             spot.catches.push({ species, weight: parseFloat(weight), lure, photo: ev.target.result, date: new Date().toLocaleDateString('fr-FR') });
@@ -316,10 +297,9 @@
       document.getElementById('mapTitle').textContent = "Ma Carte Secrète";
       setTimeout(initPersonalMap, 300);
     };
-
-    // Ton classement reste dans app.js
   </script>
 
+  <!-- Ton app.js contient déjà Firebase + le classement -->
   <script src="app.js"></script>
 </body>
 </html>
