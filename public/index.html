@@ -106,15 +106,23 @@
   </div>
 
   <!-- TOUT LE CODE FONCTIONNEL (sans doublon Firebase) -->
-  <script>
-    // Firebase est chargé dans app.js → on le récupère seulement
+<script>
+  // On attend que Firebase soit complètement chargé par app.js
+  function waitForFirebase() {
+    if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+      initEverything();
+    } else {
+      setTimeout(waitForFirebase, 50);
+    }
+  }
+
+  function initEverything() {
     const auth = firebase.auth();
     const rtdb = firebase.database();
     window.auth = auth;
     window.rtdb = rtdb;
     window.currentUser = null;
 
-    // ==== AUTHENTIFICATION ====
     auth.onAuthStateChanged(user => {
       window.currentUser = user;
       if (user) {
@@ -135,7 +143,6 @@
 
     document.getElementById('logoutBtn').onclick = () => auth.signOut();
 
-    // ==== PSEUDO ====
     function loadPseudo() {
       if (!window.currentUser) return;
       rtdb.ref('users/' + window.currentUser.uid + '/displayName').once('value', s => {
@@ -154,7 +161,6 @@
       }
     };
 
-    // ==== AMIS ====
     document.getElementById('friendsBtn').onclick = () => {
       document.getElementById('friendsModal').style.display = 'block';
       loadFriends();
@@ -191,9 +197,9 @@
       rtdb.ref('users').orderByChild('displayName').equalTo(pseudo).once('value', snap => {
         if (!snap.exists()) return alert("Pseudo introuvable");
         const uid = Object.keys(snap.val())[0];
-        if (uid === window.currentUser.uid) return alert("C’est toi gros malin !");
+        if (uid === window.currentUser.uid) return alert("C’est toi !");
         rtdb.ref('users/' + window.currentUser.uid + '/friends/' + uid).set(true);
-        alert(pseudo + " ajouté à tes amis !");
+        alert(pseudo + " ajouté !");
         document.getElementById('searchFriend').value = '';
       });
     }
@@ -208,15 +214,14 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.personalMap);
         const spots = JSON.parse(localStorage.getItem('myPersonalSpots_' + uid) || '[]');
         spots.forEach(s => {
-          L.marker([s.lat, s.lng], {
-            icon: L.divIcon({html: `<div style="background:#ff4757;color:white;padding:10px 16px;border-radius:12px;font-weight:bold;">${s.name}</div>`})
-          }).addTo(window.personalMap)
-            .bindPopup(`<b style="color:#ff4757;">Spot de ${name}</b><br>${s.name}`);
+          L.marker([s.lat, s.lng], {icon: L.divIcon({html: `<div style="background:#ff4757;color:white;padding:10px 16px;border-radius:12px;font-weight:bold;">${s.name}</div>`})})
+            .addTo(window.personalMap)
+            .bindPopup(`Spot de ${name}<br>${s.name}`);
         });
       }, 300);
     }
 
-    // ==== CARTE PERSONNELLE ====
+    // Carte perso + tout le reste (inchangé)
     let personalMap = null;
     function initPersonalMap() {
       if (personalMap) personalMap.remove();
@@ -225,7 +230,6 @@
 
       const uid = window.currentUser?.uid || '';
       const mySpots = JSON.parse(localStorage.getItem('myPersonalSpots_' + uid) || '[]');
-
       mySpots.forEach(spot => {
         const marker = L.marker([spot.lat, spot.lng], {
           icon: L.divIcon({
@@ -233,7 +237,6 @@
             iconSize: [160, 60], iconAnchor: [80, 60]
           })
         }).addTo(personalMap);
-
         marker.bindPopup(() => {
           const catches = spot.catches || [];
           const html = catches.length === 0 ? '<p style="color:#aaa;">Aucune prise</p>' : catches.map(c => `
@@ -247,22 +250,20 @@
         });
       });
 
-      // Double-clic = nouveau spot
       personalMap.on('dblclick', e => {
-        const name = prompt("Nom de ton spot secret :", "Spot légendaire");
+        const name = prompt("Nom du spot ?", "Spot légendaire");
         if (!name?.trim()) return;
-        const newSpot = { name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, date: new Date().toLocaleDateString('fr-FR'), catches: [] };
+        const newSpot = { name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, catches: [] };
         mySpots.push(newSpot);
         localStorage.setItem('myPersonalSpots_' + uid, JSON.stringify(mySpots));
         initPersonalMap();
       });
 
-      // Géoloc (ignore l’erreur si tu as bloqué)
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(pos => {
           personalMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
           L.marker([pos.coords.latitude, pos.coords.longitude], {icon: L.divIcon({html: '<div style="font-size:50px;color:#00ff00;">Person</div>'})})
-            .addTo(personalMap).bindPopup("T'es là, Maître !").openPopup();
+            .addTo(personalMap).bindPopup("T'es là !").openPopup();
         });
       }
     }
@@ -271,7 +272,7 @@
       const species = prompt("Espèce", "Brochet") || "";
       const weight = prompt("Poids (kg)", "8.5") || "0";
       const lure = prompt("Leurre", "") || "";
-      const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment';
+      const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
       input.onchange = e => {
         const file = e.target.files[0];
         const reader = new FileReader();
@@ -280,7 +281,6 @@
           const spots = JSON.parse(localStorage.getItem('myPersonalSpots_' + uid) || '[]');
           const spot = spots.find(s => Math.abs(s.lat - lat) < 0.0001 && Math.abs(s.lng - lng) < 0.0001);
           if (spot) {
-            spot.catches = spot.catches || [];
             spot.catches.push({ species, weight: parseFloat(weight), lure, photo: ev.target.result, date: new Date().toLocaleDateString('fr-FR') });
             localStorage.setItem('myPersonalSpots_' + uid, JSON.stringify(spots));
             alert("Prise ajoutée !");
@@ -297,7 +297,13 @@
       document.getElementById('mapTitle').textContent = "Ma Carte Secrète";
       setTimeout(initPersonalMap, 300);
     };
-  </script>
+  }
+
+  // Lancement au chargement de la page
+  waitForFirebase();
+</script>
+
+<script src="app.js"></script>
 
   <!-- Ton app.js contient déjà Firebase + le classement -->
   <script src="app.js"></script>
