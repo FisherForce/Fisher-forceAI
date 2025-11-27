@@ -124,6 +124,11 @@ const firebaseConfig = {
   appId: "1:293964630939:web:c96b2cb554922397e96f3e",
   measurementId: "G-EEYWH9SES8"
 };
+        // OUVRE LA MODALE AMIS AU CLIC (LIGNE MANQUANTE DANS TON CODE)
+    document.getElementById('friendsBtn').onclick = () => {
+      document.getElementById('friendsModal').style.display = 'block';
+      loadFriends();
+    };
 
 
     firebase.initializeApp(firebaseConfig);
