@@ -114,14 +114,17 @@
   <!-- INITIALISATION FIREBASE + TOUTES LES FONCTIONS (AMIS + CARTE) -->
   <script>
     // CONFIG FIREBASE (METS TA VRAIE CONFIG ICI)
-    const firebaseConfig = {
-      apiKey: "AIzaSyD8a... (ta clé)",
-      authDomain: "fisher-forceai.firebaseapp.com",
-      projectId: "fisher-forceai",
-      storageBucket: "fisher-forceai.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef123456"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+  authDomain: "fisher-forceai.firebaseapp.com",
+  databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com",
+  projectId: "fisher-forceai",
+  storageBucket: "fisher-forceai.firebasestorage.app",
+  messagingSenderId: "293964630939",
+  appId: "1:293964630939:web:c96b2cb554922397e96f3e",
+  measurementId: "G-EEYWH9SES8"
+};
+
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
