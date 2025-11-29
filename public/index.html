@@ -213,18 +213,24 @@ updateChallengeDisplay();
   </div>
 </div>
 <script>
-// === PRÉVISION 7J + GÉOLOC + AFFICHAGE PARFAIT (bug corrigé) ===
-let userLat = 47.30;
+// === PRÉVISION DE TOUCHES 7 JOURS — VERSION FINALE PARFAITE (affichage corrigé 2025) ===
+let userLat = 47.30;  // La Chapelle-sur-Erdre par défaut
 let userLon = -1.55;
 
 async function getUserLocationAndForecast() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
-      pos => { userLat = pos.coords.latitude; userLon = pos.coords.longitude; fetchRealForecast(); },
-      () => fetchRealForecast(),
+      pos => {
+        userLat = pos.coords.latitude;
+        userLon = pos.coords.longitude;
+        fetchRealForecast();
+      },
+      () => fetchRealForecast(), // si refus GPS → fallback
       { timeout: 10000 }
     );
-  } else fetchRealForecast();
+  } else {
+    fetchRealForecast();
+  }
 }
 
 async function fetchRealForecast() {
@@ -236,19 +242,21 @@ async function fetchRealForecast() {
     const forecast = [];
 
     for (let i = 0; i < 7; i++) {
-      const date = new Date(); date.setDate(date.getDate() + i);
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+
       const tMax = data.daily.temperature_2m_max[i];
       const tMin = data.daily.temperature_2m_min[i];
-      const pressure = data.hourly.pressure_msl[i*24+12];
-      const wind = data.hourly.wind_speed_10m[i*24+12];
+      const pressure = data.hourly.pressure_msl[i * 24 + 12];
+      const wind = data.hourly.wind_speed_10m[i * 24 + 12];
       const precip = data.daily.precipitation_sum[i];
 
-      const waterTemp = Math.round((tMax + tMin)/2 * 0.92 + 1.8);
+      const waterTemp = Math.round((tMax + tMin) / 2 * 0.92 + 1.8);
 
       const moonPhase = getMoonPhase(date);
       const moonScore = moonPhase < 0.15 || moonPhase > 0.85 ? 1.55 : moonPhase > 0.4 && moonPhase < 0.6 ? 1.35 : 0.85;
 
-      const prevPressure = i > 0 ? data.hourly.pressure_msl[(i-1)*24+12] : pressure + 2;
+      const prevPressure = i > 0 ? data.hourly.pressure_msl[(i - 1) * 24 + 12] : pressure + 2;
       const pressureDrop = prevPressure - pressure > 3 ? 1.7 : prevPressure - pressure > 0 ? 1.35 : 0.75;
 
       const windScore = wind < 12 ? 1.4 : wind < 25 ? 1.0 : 0.65;
@@ -257,24 +265,30 @@ async function fetchRealForecast() {
       let score = 4.3 * moonScore * pressureDrop * windScore * rainScore;
       if (waterTemp >= 10 && waterTemp <= 17) score *= 1.5;
       if (waterTemp >= 12 && waterTemp <= 15) score *= 1.3;
-      score = Math.max(1.8, Math.min(9.9, score + (Math.random()*0.6 - 0.2)));
-      score = Math.round(score * 10)/10;
+      score = Math.max(1.8, Math.min(9.9, score + (Math.random() * 0.6 - 0.2)));
+      score = Math.round(score * 10) / 10;
 
       const peak = score > 8.7 ? "6-10h & 17-21h" :
-                   score > 7.5 ? "7-11h & 16-20h" :
+                   score > 7.5 ? "7-11h & 16-20h20" :
                    score > 5.5 ? "8-12h ou 17-19h" : "Calme";
 
-      forecast.push({date: date.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'}), score, peak,
-        color: score > 8.7 ? '#00ff00' : score > 7.5 ? '#00ff9d' : score > 5.5 ? '#ffd700' : '#ff4444'});
+      const color = score > 8.7 ? '#00ff00' :
+                    score > 7.5 ? '#00ff9d' :
+                    score > 5.5 ? '#ffd700' : '#ff4444';
+
+      forecast.push({ date: date.toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'}), score, peak, color });
     }
+
     renderRealForecast(forecast);
-  } catch(e) { renderRealForecastFallback(); }
+  } catch (e) {
+    renderRealForecastFallback();
+  }
 }
 
 function getMoonPhase(d) {
   const knownNewMoon = new Date('2025-01-13T00:00:00Z');
-  const daysSince = (d - knownNewMoon)/(1000*60*60*24);
-  const phase = (daysSince % 29.53059)/29.53059;
+  const daysSince = (d - knownNewMoon) / (1000 * 60 * 60 * 24);
+  const phase = (daysSince % 29.53059) / 29.53059;
   return phase < 0 ? phase + 1 : phase;
 }
 
@@ -282,33 +296,55 @@ function renderRealForecast(data) {
   const graph = document.getElementById('forecastGraph');
   graph.innerHTML = '';
 
-  data.forEach((day,i) => {
-    const height = (day.score/10)*200;
-    const bar = document.createElement('div');
-    bar.style.cssText = `position:absolute;bottom:30px;left:${i*13.5+6}%;width:11%;height:${height}px;background:${day.color};border-radius:10px 10px 0 0;box-shadow:0 6px 20px rgba(0,0,0,0.7);`;
+  data.forEach((day, i) => {
+    const height = Math.max(20, (day.score / 10) * 200);
 
+    // Barre
+    const bar = document.createElement('div');
+    bar.style.cssText = `
+      position:absolute;
+      bottom:30px;
+      left:${i * 13.5 + 6}%;
+      width:11%;
+      height:${height}px;
+      background:${day.color};
+      border-radius:10px 10px 0 0;
+      box-shadow:0 6px 20px rgba(0,0,0,0.7);
+    `;
+
+    // Score DANS la barre (plus jamais dehors)
     const scoreLabel = document.createElement('div');
     scoreLabel.textContent = day.score;
-    scoreLabel.style.cssText = `position:absolute;top:${190-height-30}px;left:50%;transform:translateX(-50%);font-size:22px;font-weight:bold;color:${day.color};text-shadow:0 0 15px black;`;
+    scoreLabel.style.cssText = `
+      position:absolute;
+      bottom:8px;
+      left:50%;
+      transform:translateX(-50%);
+      font-size:18px;
+      font-weight:bold;
+      color:white;
+      text-shadow:0 0 10px black;
+    `;
 
+    bar.appendChild(scoreLabel);
     graph.appendChild(bar);
-    graph.appendChild(scoreLabel);
 
-    // Affichage propre jour + heures de pic
-    document.getElementById('day'+i).textContent = day.date;
-    document.getElementById('peak'+i).textContent = day.peak;
+    // Jour + heures de pic
+    document.getElementById('day' + i).textContent = day.date;
+    document.getElementById('peak' + i).textContent = day.peak;
   });
 }
 
 function renderRealForecastFallback() {
-  for(let i=0;i<7;i++){
-    document.getElementById('day'+i).textContent = new Date(Date.now()+i*86400000).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric'});
-    document.getElementById('peak'+i).textContent = "??";
+  for (let i = 0; i < 7; i++) {
+    document.getElementById('day' + i).textContent = new Date(Date.now() + i * 86400000).toLocaleDateString('fr-FR', {weekday:'short', day:'numeric'});
+    document.getElementById('peak' + i).textContent = "Hors-ligne";
   }
 }
 
+// Lancement
 getUserLocationAndForecast();
-setInterval(getUserLocationAndForecast, 6*3600000);
+setInterval(getUserLocationAndForecast, 6 * 3600000); // refresh 6h
 </script>
       <!-- CLASSEMENT -->
       <div id="tab-ranking" class="tab-content">
