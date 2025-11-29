@@ -173,6 +173,115 @@ function saveScannedFish(espece, poids, longueur, photo) {
   document.getElementById('scanModal').style.display = 'none';
 }
 </script>
+      <!-- DÉFI QUOTIDIEN (arme d'addiction massive) -->
+<div id="dailyChallenge" style="margin:20px auto;padding:20px;background:linear-gradient(135deg,#8b00ff,#ff00aa);border-radius:16px;text-align:center;color:white;box-shadow:0 10px 30px rgba(139,0,255,0.4);">
+  <h3 style="margin:0 0 10px;font-size:18px;">
+    Défi du jour – <span id="challengeDate"></span>
+  </h3>
+  <p id="challengeText" style="font-size:22px;font-weight:bold;margin:10px 0;">
+    Chargement du défi...
+  </p>
+  <div id="challengeTimer" style="font-size:32px;font-weight:bold;color:#ffd700;margin:15px 0;">
+    --
+  </div>
+  <button id="claimRewardBtn" style="display:none;background:#00ff9d;color:black;padding:14px 32px;border:none;border-radius:12px;font-weight:bold;font-size:18px;">
+    RÉCUPÉRER 500 XP
+  </button>
+  <div id="challengeProof" style="margin-top:15px;"></div>
+</div>
+
+<script>
+// === DÉFI QUOTIDIEN IMPOSSIBLE À TRICHER (version 1.0 – béton armé) ===
+const challenges = [
+  {text: "Prendre un sandre >65 cm entre 6h et 9h", start:6, end:9, minLength:65, species:"sandre"},
+  {text: "Prendre un brochet >85 cm entre 17h et 20h", start:17, end:20, minLength:85, species:"brochet"},
+  {text: "Prendre une perche >40 cm avant 8h", start:0, end:8, minLength:40, species:"perche"},
+  {text: "Prendre un black-bass >45 cm entre 11h et 14h", start:11, end:14, minLength:45, species:"black-bass"},
+  {text: "Prendre un silure (n'importe quelle taille) entre 22h et 4h", start:22, end:28, minLength:0, species:"silure"},
+  {text: "Prendre 3 poissons différents dans la même session", start:0, end:24, minCount:3, species:"*"}
+];
+
+function getTodayChallenge() {
+  const today = new Date().toISOString().slice(0,10);
+  let challenge = JSON.parse(localStorage.getItem('dailyChallenge') || 'null');
+  
+  if (!challenge || challenge.date !== today) {
+    const idx = new Date().getDate() % challenges.length;
+    challenge = {date: today, data: challenges[idx], completed: false, proof: null};
+    localStorage.setItem('dailyChallenge', JSON.stringify(challenge));
+  }
+  return challenge;
+}
+
+function updateChallengeDisplay() {
+  const c = getTodayChallenge();
+  const now = new Date();
+  const hours = now.getHours() + now.getMinutes()/60;
+  
+  document.getElementById('challengeDate').textContent = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('challengeText').textContent = c.data.text;
+
+  // Timer restant
+  let remaining = "";
+  if (hours < c.data.start || hours > c.data.end+2) {
+    remaining = "Terminé pour aujourd'hui";
+  } else if (hours >= c.data.start && hours <= c.data.end) {
+    const minsLeft = Math.floor((c.data.end - hours)*60);
+    remaining = minsLeft > 0 ? `${minsLeft} min restantes` : "Dernière chance !";
+  } else {
+    remaining = "En attente...";
+  }
+  document.getElementById('challengeTimer').textContent = remaining;
+
+  // Vérifie si déjà complété
+  if (c.completed) {
+    document.getElementById('claimRewardBtn').style.display = 'none';
+    document.getElementById('challengeProof').innerHTML = `<p style="color:#00ff9d;font-weight:bold;">Défi réussi ! +500 XP</p>`;
+  }
+}
+
+// Vérifie automatiquement si le défi est réussi (à chaque nouvelle session scannée ou enregistrée)
+window.checkDailyChallenge = function(lastFish) {
+  const c = getTodayChallenge();
+  if (c.completed) return;
+
+  const now = new Date();
+  const hours = now.getHours();
+
+  let success = false;
+
+  if (c.data.minCount) {
+    // Cas "3 poissons différents"
+    const todaySessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]')
+      .filter(s => new Date(s.date).toISOString().slice(0,10) === c.date && s.success);
+    const speciesSet = new Set(todaySessions.map(s => s.species?.toLowerCase()));
+    success = speciesSet.size >= 3;
+  } else {
+    // Cas longueur + horaire
+    const inTime = hours >= c.data.start && hours <= c.data.end;
+    const goodSpecies = !c.data.species || lastFish.species?.toLowerCase().includes(c.data.species);
+    const goodSize = lastFish.longueur >= c.data.minLength;
+    success = inTime && goodSpecies && goodSize;
+  }
+
+  if (success) {
+    c.completed = true;
+    c.proof = lastFish;
+    localStorage.setItem('dailyChallenge', JSON.stringify(c));
+    
+    // +500 XP (tu ajoutes ça dans ton système XP)
+    const currentXP = parseInt(localStorage.getItem('userXP') || '0');
+    localStorage.setItem('userXP', currentXP + 500);
+
+    alert(`DÉFI QUOTIDIEN RÉUSSI ! +500 XP !`);
+    updateChallengeDisplay();
+  }
+};
+
+// Met à jour toutes les 30 secondes
+setInterval(updateChallengeDisplay, 30000);
+updateChallengeDisplay();
+</script>
 
       <!-- CLASSEMENT -->
       <div id="tab-ranking" class="tab-content">
