@@ -86,6 +86,89 @@
       <button onclick="openResultat()" style="margin:20px auto;display:block;width:90%;background:#00d4aa;color:white;border:none;padding:14px;border-radius:10px;font-weight:bold;">
         Enregistrer un résultat
       </button>
+      <!-- BOUTON SCANNER DE POISSON (arme absolue) -->
+<button id="scanFishBtn" style="margin:20px auto;display:block;width:90%;background:#ff4500;color:white;border:none;padding:18px;border-radius:14px;font-weight:bold;font-size:18px;box-shadow:0 8px 30px rgba(255,69,0,0.6);">
+  Scanner un poisson (IA)
+</button>
+
+<!-- MODALE RÉSULTAT SCANNER -->
+<div id="scanModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:99999;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:20px;width:90%;max-width:400px;text-align:center;color:white;">
+    <h2 style="color:#ff4500;margin:0 0 20px;">Analyse en cours...</h2>
+    <div id="scanPreview" style="width:100%;max-height:400px;object-fit:contain;background:black;border-radius:12px;overflow:hidden;">
+      <img id="previewImg" style="width:100%;height:100%;object-fit:contain;">
+    </div>
+    <div id="scanResult" style="margin-top:20px;font-size:18px;line-height:1.8;"></div>
+    <button onclick="document.getElementById('scanModal').style.display='none'" style="margin-top:20px;background:#333;padding:12px 30px;border:none;border-radius:10px;color:white;font-weight:bold;">
+      Fermer
+    </button>
+  </div>
+</div>
+
+<script>
+// === SCANNER DE POISSON PAR IA (arme nucléaire) ===
+document.getElementById('scanFishBtn').addEventListener('click', () => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment'; // caméra directe sur mobile
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('previewImg').src = ev.target.result;
+      document.getElementById('scanModal').style.display = 'block';
+      
+      // Simule l'IA (en vrai tu connecteras à Grok-4 ou TensorFlow.js)
+      setTimeout(() => {
+        const resultats = [
+          {esp: "Brochet", poids: 8.7, long: 96, age: 7, sante: "Excellente", trophee: 9.8},
+          {esp: "Perche", poids: 1.9, long: 48, age: 4, sante: "Parfaite", trophee: 9.2},
+          {esp: "Sandre", poids: 6.2, long: 82, age: 6, sante: "Bonne", trophee: 8.9},
+          {esp: "Black-bass", poids: 4.1, long: 52, age: 5, sante: "Excellente", trophee: 9.5},
+          {esp: "Silure", poids: 28.4, long: 192, age: 12, sante: "Monstrueuse", trophee: 10},
+        ];
+        const r = resultats[Math.floor(Math.random() * resultats.length)];
+        
+        document.getElementById('scanResult').innerHTML = `
+          <div style="background:#ff4500;padding:16px;border-radius:12px;">
+            <h3 style="margin:0;color:white;">${r.esp}</h3>
+            <p style="margin:8px 0 0;font-size:24px;font-weight:bold;">${r.poids} kg – ${r.long} cm</p>
+          </div>
+          <div style="margin-top:15px;background:rgba(255,255,255,0.1);padding:12px;border-radius:10px;">
+            Âge estimé : <strong>${r.age} ans</strong><br>
+            Santé : <strong>${r.sante}</strong><br>
+            Score trophée : <strong style="color:#ffd700;">${r.trophee}/10</strong>
+          </div>
+          <button onclick="saveScannedFish('${r.esp}',${r.poids},${r.long},'${ev.target.result}')" style="margin-top:20px;background:#00d4aa;padding:14px 30px;border:none;border-radius:12px;color:white;font-weight:bold;font-size:16px;">
+            Enregistrer ce monstre
+          </button>
+        `;
+      }, 1800);
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+});
+
+function saveScannedFish(espece, poids, longueur, photo) {
+  const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
+  sessions.push({
+    success: true,
+    species: espece,
+    poids: poids * 1000,
+    longueur: longueur,
+    spot: "Spot scanné",
+    lure: "IA Magic",
+    photo: photo,
+    date: new Date().toISOString(),
+    lat: null, lng: null
+  });
+  localStorage.setItem('fishingSessions', JSON.stringify(sessions));
+  alert(`${espece} de ${poids}kg enregistré dans ton palmarès !`);
+  document.getElementById('scanModal').style.display = 'none';
+}
+</script>
 
       <!-- CLASSEMENT -->
       <div id="tab-ranking" class="tab-content">
