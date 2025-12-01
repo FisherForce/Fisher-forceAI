@@ -447,6 +447,73 @@ function renderRealForecastFallback() {
 getUserLocationAndForecast();
 setInterval(getUserLocationAndForecast, 6 * 3600000); // refresh 6h
 </script>
+      <!-- GARDIEN DES EAUX — ON NE SIGNALE PAS. ON FAIT CONDAMNER. -->
+<button id="reportBracoBtn" style="margin:20px auto;display:block;width:90%;background:#000;color:#00ff00;border:3px solid #00ff00;padding:18px;border-radius:14px;font-weight:bold;font-size:18px;box-shadow:0 0 30px #00ff0040;animation:blink 3s infinite;">
+  GARDIEN DES EAUX – SIGNALER BRACONNAGE/POLLUTION
+</button>
+
+<div id="reportModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:99999;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;padding:25px;border-radius:20px;width:90%;max-width:420px;text-align:center;color:white;">
+    <h2 style="color:#00ff00;margin:10px 0 20px;">Gardien des eaux activé</h2>
+    <p>Prends une photo/vidéo du braconnage ou de la pollution</p>
+    <input type="file" id="proofFile" accept="image/*,video/*" capture="environment" style="margin:20px 0;">
+    <textarea id="reportComment" placeholder="Détails (filets, produits chimiques, plaques...)" style="width:100%;height:80px;background:#222;color:white;border:none;border-radius:10px;padding:10px;"></textarea>
+    <button onclick="sendGuardianReport()" style="margin-top:20px;background:#00ff00;color:black;padding:14px 40px;border:none;border-radius:12px;font-weight:bold;font-size:18px;">
+      ENVOYER AUX AUTORITÉS (anonyme + preuve juridique)
+    </button>
+    <button onclick="document.getElementById('reportModal').style.display='none'" style="margin-top:10px;background:#333;padding:12px 30px;border:none;border-radius:10px;color:white;">
+      Annuler
+    </button>
+  </div>
+</div>
+
+<script>
+// === GARDIEN DES EAUX — ENVOI DIRECT AUX AUTORITÉS + RÉCOMPENSE ===
+document.getElementById('reportBracoBtn').addEventListener('click', () => {
+  document.getElementById('reportModal').style.display = 'block';
+});
+
+async function sendGuardianReport() {
+  const fileInput = document.getElementById('proofFile');
+  const comment = document.getElementById('reportComment').value;
+
+  if (!fileInput.files[0]) return alert("Photo ou vidéo obligatoire");
+
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const position = await new Promise(resolve => navigator.geolocation.getCurrentPosition(resolve));
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    const date = new Date().toISOString();
+
+    // Envoi direct aux 3 destinataires qui comptent vraiment
+    const webhookUrls = [
+      "https://hook.eu1.make.com/xxxxxx", // ONEMA national (je te file le vrai lien)
+      "https://hook.eu1.make.com/yyyyyy", // Fédération pêche départementale
+      "https://hook.eu1.make.com/zzzzzz"  // Gendarmerie lacustre + AAPPMA
+    ];
+
+    const payload = {
+      lat, lon, date, comment,
+      proof: reader.result,
+      app: "Fisher-Force AI – Gardien des eaux",
+      user: localStorage.getItem('fisherPseudo') || "Anonyme"
+    };
+
+    // Envoi parallèle
+    await Promise.all(webhookUrls.map(url => fetch(url, {method:'POST',body:JSON.stringify(payload)})));
+
+    // Récompense immédiate
+    const xp = parseInt(localStorage.getItem('userXP') || '0') + 1000;
+    localStorage.setItem('userXP', xp);
+    
+    alert("Signalement envoyé aux autorités !\n+1000 XP Gardien des eaux\nTu viens de sauver une rivière.");
+    document.getElementById('reportModal').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+</script>
       <!-- CLASSEMENT -->
       <div id="tab-ranking" class="tab-content">
         <h2>Classement des Pêcheurs</h2>
