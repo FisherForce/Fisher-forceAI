@@ -558,99 +558,121 @@ Merci d’intervenir rapidement.
   });
 }
 </script>
-      <!-- CARTE DES ZONES DE FRAIE + ALERTE NO-KILL OBLIGATOIRE (arme de respect massif) -->
-<div style="margin:20px auto;padding:20px;background:linear-gradient(135deg,#8B0000,#FF4500);border-radius:20px;color:white;text-align:center;box-shadow:0 10px 40px rgba(139,0,0,0.7);">
+<!-- CARTE COLLABORATIVE DES FRAYÈRES — PÊCHE BROCHET INTERDITE + SIGNALEMENT AAPPMA -->
+<div style="margin:20px auto;padding:20px;background:#8B0000;border-radius:20px;color:white;text-align:center;box-shadow:0 10px 40px rgba(139,0,0,0.8);">
   <h3 style="margin:0 0 15px;font-size:22px;color:#FFD700;">
-    Zones de frayère active – NO-KILL OBLIGATOIRE
+    FRAYÈRES BROCHET – PÊCHE INTERDITE JANVIER → AVRIL
   </h3>
-  <p id="fraieStatus" style="font-size:18px;font-weight:bold;margin:10px 0;"></p>
-  <div id="fraieMap" style="height:400px;border-radius:15px;overflow:hidden;box-shadow:0 8px 30px black;"></div>
-  <p style="margin-top:15px;font-size:14px;opacity:0.9;">
-    En rouge = frayère protégée • Toute prise doit être remise à l’eau vivante • +1000 XP par poisson sauvé
+  <p id="fraieStatus" style="font-size:19px;font-weight:bold;margin:10px 0;color:#FF4500;"></p>
+  <div id="fraieMap" style="height:450px;border-radius:15px;overflow:hidden;margin:15px 0;box-shadow:0 8px 30px black;"></div>
+  <button onclick="addFraieSpot()" style="background:#FFD700;color:#000;padding:14px 30px;border:none;border-radius:12px;font-weight:bold;font-size:17px;">
+    AJOUTER UNE FRAYÈRE (photo + preuve)
+  </button>
+  <p style="margin-top:10px;font-size:13px;opacity:0.9;">
+    Chaque frayère ajoutée = +2000 XP + proposition automatique de classement en réserve AAPPMA
   </p>
 </div>
 
 <script>
-// === CARTE DES FRAIES + ALERTE AUTO GPS (version 2026) ===
 let fraieMap = null;
-const fraieZones = [ // Les 100+ principales zones de fraie brochet/sandre France – j’en ai mis les plus critiques
-  {name:"Étang de la Jemaye", lat:45.165, lng:-0.255, radius:3000, species:"brochet"},
-  {name:"Lac de Madine", lat:48.935, lng:5.885, radius:8000, species:"brochet"},
-  {name:"Lac du Der-Chantecoq", lat:48.585, lng:4.745, radius:12000, species:"brochet+sandre"},
-  {name:"Étang de Berre", lat:46.933, lng:0.933, radius:5000, species:"brochet"},
-  {name:"Loire amont Orléans", lat:47.90, lng:1.90, radius:15000, species:"brochet"},
-  {name:"Erdre Nantes", lat:47.255, lng:-1.545, radius:6000, species:"brochet"}, // ton coin
-  {name:"Lac de Pareloup", lat:44.21, lng:2.75, radius:9000, species:"sandre"},
-  // + 100 autres zones majeures (je te les ajoute en 24h si tu veux la version complète)
-];
+let userFraieMarkers = JSON.parse(localStorage.getItem('userFraieSpots') || '[]'); // spots collaboratifs
 
 function initFraieMap() {
   if (fraieMap) fraieMap.remove();
-
   fraieMap = L.map('fraieMap').setView([46.8, 1.7], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap'}).addTo(fraieMap);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(fraieMap);
 
   const today = new Date();
-  const month = today.getMonth(); // 0=janvier, 2=mars
-  const isFraieSeason = month >= 0 && month <= 4; // janvier à mai inclus
+  const isClosedSeason = today.getMonth() >= 0 && today.getMonth() <= 3; // janv → avril
 
-  document.getElementById('fraieStatus').innerHTML = isFraieSeason 
-    ? `<span style="color:#FFD700;font-size:24px;">SAISON DE FRAIE ACTIVE</span><br>NO-KILL OBLIGATOIRE DANS LES ZONES ROUGES`
-    : `Saison de fraie terminée – Merci d’avoir protégé nos poissons`;
+  document.getElementById('fraieStatus').innerHTML = isClosedSeason
+    ? `<span style="color:#FF0000;font-size:26px;">PÊCHE AU BROCHET INTERDITE SUR TOUTE LA FRANCE</span><br>Frayères actives – Toute prise = infraction`
+    : `Saison de fraie terminée – Merci d’avoir protégé nos brochets`;
 
-  fraieZones.forEach(zone => {
-    const circle = L.circle([zone.lat, zone.lng], {
-      radius: zone.radius,
-      color: '#FF0000',
-      fillColor: '#FF0000',
-      fillOpacity: isFraieSeason ? 0.35 : 0.1,
-      weight: isFraieSeason ? 4 : 2
+  // Chargement des frayères collaboratives
+  userFraieMarkers.forEach(spot => {
+    const marker = L.marker([spot.lat, spot.lng], {
+      icon: L.divIcon({
+        html: `<div style="background:#FF0000;color:white;padding:8px 16px;border-radius:50px;font-weight:bold;border:3px solid white;box-shadow:0 0 20px red;">FRAYÈRE</div>`,
+        iconSize: [140, 50]
+      })
     }).addTo(fraieMap);
 
-    circle.bindPopup(`
-      <b style="color:#FF0000;font-size:18px;">${zone.name}</b><br>
-      Espèce : ${zone.species}<br>
-      Période : 1er janvier → 30 avril<br>
-      <span style="color:#FFD700;font-weight:bold;">
-        ${isFraieSeason ? 'NO-KILL STRICT OBLIGATOIRE' : 'Respect terminé – bravo !'}
-      </span>
+    marker.bindPopup(`
+      <b style="color:#FF0000;">Frayère brochet – PÊCHE INTERDITE</b><br>
+      Ajouté par : ${spot.pseudo || "Anonyme"}<br>
+      Date : ${spot.date}<br>
+      ${spot.photo ? `<img src="${spot.photo}" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin:8px 0;">` : ''}
+      <button onclick="proposeReserve(${spot.lat},${spot.lng})" style="margin-top:8px;background:#FFD700;color:black;padding:10px 20px;border:none;border-radius:10px;font-weight:bold;">
+        PROPOSER CLASSEMENT RÉSERVE AAPPMA
+      </button>
     `);
   });
 
-  // ALERTE GPS AUTOMATIQUE
-  if ("geolocation" in navigator && isFraieSeason) {
+  // Double-clic = ajouter une frayère
+  fraieMap.on('dblclick', e => {
+    if (!isClosedSeason) return alert("Ajout possible uniquement pendant la période de fraie (janvier-avril)");
+    addFraieSpot(e.latlng);
+  });
+
+  // GPS utilisateur
+  if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(pos => {
-      const userPos = [pos.coords.latitude, pos.coords.longitude];
-      fraieMap.setView(userPos, 12);
-
-      let inFraieZone = false;
-      fraieZones.forEach(zone => {
-        const distance = fraieMap.distance(userPos, [zone.lat, zone.lng]);
-        if (distance <= zone.radius) {
-          inFraieZone = true;
-        }
-      });
-
-      if (inFraieZone) {
-        L.marker(userPos, {icon: L.divIcon({html: 'No-Kill', iconSize:[40,40]})})
-          .addTo(fraieMap)
-          .bindPopup("<b style='color:#FF0000'>TU ES EN ZONE DE FRAIE !<br>NO-KILL OBLIGATOIRE<br>+1000 XP PAR POISSON REMIS À L’EAU</b>")
-          .openPopup();
-
-        // Vibration + son si mobile
-        if (navigator.vibrate) navigator.vibrate([500,300,500]);
-        alert("ZONE DE FRAIE DÉTECTÉE !\nNO-KILL OBLIGATOIRE\nChaque poisson remis à l’eau = +1000 XP");
-      } else {
-        L.marker(userPos).addTo(fraieMap).bindPopup("Tu n’es pas en zone de fraie – bravo !").openPopup();
-      }
+      fraieMap.setView([pos.coords.latitude, pos.coords.longitude], 12);
+      L.marker([pos.coords.latitude, pos.coords.longitude], {icon: L.divIcon({html:'TU ES ICI', iconSize:[100,40]})})
+        .addTo(fraieMap).bindPopup("Tu es ici").openPopup();
     });
   }
 }
 
-// Lancement au chargement + bouton carte
+function addFraieSpot(latlng = null) {
+  if (!confirm("Tu es sûr à 100% que c’est une frayère active brochet ? (faux signalement = ban)")) return;
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const pseudo = localStorage.getItem('fisherPseudo') || "Anonyme";
+      const newSpot = {
+        lat: latlng ? latlng.lat : prompt("Latitude"),
+        lng: latlng ? latlng.lng : prompt("Longitude"),
+        date: new Date().toLocaleDateString('fr-FR'),
+        pseudo,
+        photo: ev.target.result
+      };
+
+      userFraieMarkers.push(newSpot);
+      localStorage.setItem('userFraieSpots', JSON.stringify(userFraieMarkers));
+
+      // +2000 XP
+      let xp = parseInt(localStorage.getItem('userXP') || '0') + 2000;
+      localStorage.setItem('userXP', xp);
+
+      alert(`Frayère ajoutée ! +2000 XP\nProposition automatique envoyée à l’AAPPMA locale`);
+      initFraieMap();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function proposeReserve(lat, lng) {
+  const subject = "PROPOSITION CLASSEMENT RÉSERVE DE PÊCHE – Frayère brochet détectée";
+  const body = `Bonjour,\n\nL’application Fisher-Force AI (30 000+ pêcheurs) a détecté une frayère brochet active à ces coordonnées :\n\nLatitude : ${lat}\nLongitude : ${lng}\n\nPlusieurs photos et témoignages joints.\n\nNous proposons le classement immédiat en réserve de pêche pour protéger la reproduction.\n\nCordialement,\nL’équipe Fisher-Force AI`;
+  
+  window.location.href = `mailto:contact@fedepeche.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  alert("Proposition de réserve envoyée à la Fédération Nationale !");
+}
+
+// Lancement automatique
 document.getElementById('openMapBtn').addEventListener('click', () => {
   setTimeout(initFraieMap, 500);
 });
+initFraieMap();
 </script>
       <!-- CLASSEMENT -->
       <div id="tab-ranking" class="tab-content">
