@@ -100,12 +100,16 @@
 
   <script>
     // ==== CONFIG FIREBASE (à coller tes clés Fisher-Force) ====
-    const firebaseConfig = {
-      apiKey: "XXXXXXXXXXXXXXXXXXXXXXXX",
-      authDomain: "fisherforce-ai.firebaseapp.com",
-      projectId: "fisherforce-ai",
-      // etc… tu recopies juste ton config existante
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+  authDomain: "fisher-forceai.firebaseapp.com",
+  databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com",
+  projectId: "fisher-forceai",
+  storageBucket: "fisher-forceai.firebasestorage.app",
+  messagingSenderId: "293964630939",
+  appId: "1:293964630939:web:c96b2cb554922397e96f3e",
+  measurementId: "G-EEYWH9SES8"
+};
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const storage = firebase.storage();
