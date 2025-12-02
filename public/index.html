@@ -84,9 +84,73 @@
 
       <div id="advice"><p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p></div>
 
-      <button onclick="openResultat()" style="margin:20px auto;display:block;width:90%;background:#00d4aa;color:white;border:none;padding:14px;border-radius:10px;font-weight:bold;">
-        Enregistrer un résultat
-      </button>
+<!-- BOUTON APPRENTISSAGE ULTRA-PUISSANT -->
+<button id="saveSessionBtn" style="margin:20px auto;display:block;width:90%;background:#00d4aa;color:black;padding:18px;border-radius:14px;font-weight:bold;font-size:19px;box-shadow:0 8px 30px rgba(0,212,170,0.6);">
+  ENREGISTRER SESSION → AMÉLIORER L’IA NATIONALE (+1000 XP)
+</button>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// === CONFIG FIREBASE (à mettre une seule fois dans ton index.html) ===
+const firebaseConfig = {
+  apiKey: "AIzaSyBrPTS4cWiSX6-gi-NVjQ3SJYLoAWzr8Xw",
+  authDomain: "fisher-forceai.firebaseapp.com",
+  databaseURL: "https://fisher-forceai-default-rtdb.firebaseio.com",
+  projectId: "fisher-forceai",
+  storageBucket: "fisher-forceai.firebasestorage.app",
+  messagingSenderId: "293964630939",
+  appId: "1:293964630939:web:c96b2cb554922397e96f3e",
+  measurementId: "G-EEYWH9SES8"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+document.getElementById('saveSessionBtn').addEventListener('click', async () => {
+  if (!navigator.geolocation) return alert("GPS nécessaire");
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    // Récupère les dernières infos (espèce, leurre, touches, etc.)
+    const espece = prompt("Espèce pêchée ?", "Brochet") || "Inconnu";
+    const poids = parseFloat(prompt("Poids (kg) ?", "6.8")) || 0;
+    const leurre = prompt("Leurre utilisé ?", "Big Bandit vert fluo") || "Inconnu";
+    const touches = confirm("Touches ce jour-là ? (OK = oui)") ? "Oui" : "Non";
+
+    const sessionData = {
+      espece,
+      poids,
+      leurre,
+      touches: touches === "Oui",
+      lat: lat.toFixed(6),
+      lon: lon.toFixed(6),
+      date: new Date().toISOString(),
+      pseudo: localStorage.getItem('fisherPseudo') || "Anonyme",
+      version: "2026"
+    };
+
+    try {
+      await db.collection("sessions2026").add(sessionData);
+      
+      // +1000 XP
+      let xp = parseInt(localStorage.getItem('userXP') || '0') + 1000;
+      localStorage.setItem('userXP', xp);
+
+      // Compteur collectif
+      if (touches === "Oui" && espece === "Brochet") {
+        if (typeof addSavedBrochet === 'function') addSavedBrochet();
+      }
+
+      alert(`Session enregistrée !\nL’IA nationale est maintenant plus intelligente grâce à toi.\n+1000 XP`);
+    } catch (e) {
+      alert("Erreur envoi – vérifie ta connexion");
+    }
+  });
+});
+</script>
 
       <!-- DÉFI QUOTIDIEN (arme d'addiction massive) -->
 <div id="dailyChallenge" style="margin:20px auto;padding:20px;background:linear-gradient(135deg,#8b00ff,#ff00aa);border-radius:16px;text-align:center;color:white;box-shadow:0 10px 30px rgba(139,0,255,0.4);">
