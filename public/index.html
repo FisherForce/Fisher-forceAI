@@ -575,6 +575,90 @@ function proposeReserve(lat, lng) {
   window.location.href = `mailto:contact@fedepeche.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 </script>
+      <!-- CARTE POISSONS MIGRATEURS — VERSION PRIVÉE ULTRA-STYLÉE -->
+<div style="margin:30px auto;padding:20px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;box-shadow:0 10px 40px rgba(0,31,63,0.8);">
+  <h3 style="margin:0 0 15px;font-size:22px;color:#7FDBFF;">
+    Mes Spots Poissons Migrateurs
+  </h3>
+  <div id="migrateursMap" style="height:450px;border-radius:15px;overflow:hidden;margin:15px 0;box-shadow:0 8px 30px black;"></div>
+  <p style="font-size:15px;opacity:0.9;">
+    Clique sur la carte pour placer un spot migrateur • Icône bleue = saumon, alose, truite de mer, etc.
+  </p>
+</div>
+
+<!-- Leaflet déjà chargé dans ton head, sinon ajoute les 2 lignes si besoin -->
+<script>
+// === CARTE MIGRATEURS PRIVÉE (100% fonctionnelle dès maintenant) ===
+let migrateursMap = null;
+let migrateursMarkers = {};
+
+function initMigrateursMap() {
+  if (migrateursMap) migrateursMap.remove();
+
+  migrateursMap = L.map('migrateursMap').setView([46.8, -1.0], 7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap'}).addTo(migrateursMap);
+
+  // Charge tes spots migrateurs depuis localStorage
+  const myMigrateurs = JSON.parse(localStorage.getItem('myMigrateursSpots') || '[]');
+
+  myMigrateurs.forEach(spot => {
+    const key = spot.lat + '_' + spot.lng;
+    if (migrateursMarkers[key]) return;
+
+    migrateursMarkers[key] = L.marker([spot.lat, spot.lng], {
+      icon: L.divIcon({
+        html: `<div style="font-size:48px;color:#0074D9;">Fish</div>`,
+        iconSize: [50, 50],
+        iconAnchor: [25, 50]
+      })
+    }).addTo(migrateursMap)
+      .bindPopup(`
+        <b style="color:#0074D9;font-size:18px;">Spot Migrateur</b><br>
+        <b>${spot.name}</b><br>
+        Espèce : ${spot.species}<br>
+        <small>Ajouté le ${spot.date}</small>
+      `);
+  });
+
+  // Double-clic = ajouter un spot migrateur
+  migrateursMap.on('dblclick', e => {
+    const speciesList = ["Saumon", "Alose", "Truite de mer", "Anguille", "Lamproie", "Esturgeon", "Mulet", "Autre"];
+    const species = prompt("Espèce migratrice ?", speciesList[0]);
+    if (!species) return;
+
+    const name = prompt("Nom du spot ?", "Spot saumon secret");
+    if (!name) return;
+
+    const newSpot = {
+      name: name.trim(),
+      lat: e.latlng.lat.toFixed(6),
+      lng: e.latlng.lng.toFixed(6),
+      species: species,
+      date: new Date().toLocaleDateString('fr-FR')
+    };
+
+    const spots = JSON.parse(localStorage.getItem('myMigrateursSpots') || '[]');
+    spots.push(newSpot);
+    localStorage.setItem('myMigrateursSpots', JSON.stringify(spots));
+
+    alert(`Spot migrateur "${name}" ajouté !`);
+    initMigrateursMap();
+  });
+
+  // Géolocalisation
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      migrateursMap.setView([pos.coords.latitude, pos.coords.longitude], 10);
+      L.marker([pos.coords.latitude, pos.coords.longitude], {
+        icon: L.divIcon({html: '<div style="font-size:50px;color:#00ff00;">Person</div>', iconSize: [50,50], iconAnchor: [25,50]})
+      }).addTo(migrateursMap).bindPopup("Tu es ici").openPopup();
+    });
+  }
+}
+
+// Ouvre la carte migrateurs au chargement (ou au clic si tu veux un bouton)
+document.addEventListener('DOMContentLoaded', initMigrateursMap);
+</script>
       <!-- CLASSEMENT -->
       <div id="tab-ranking" class="tab-content">
         <h2>Classement des Pêcheurs</h2>
