@@ -1,14 +1,14 @@
 const el = id => document.getElementById(id);
-
 // === VARIABLES GLOBALES ===
 let progress = { xp: 0, speciesCaught: {}, successes: 0, attempts: 0 };
 let knownSpots = new Set();
 let knownSpecies = new Set();
+let currentUser = null; // Maintenant utilisé pour FisherForce OU Google
+let jwtToken = localStorage.getItem('jwt') || null;
 
 // === LIMITATION 5 CONSEILS/JOUR ===
 let dailyAdviceCount = parseInt(localStorage.getItem('dailyAdviceCount') || '0');
 let lastAdviceDate = localStorage.getItem('lastAdviceDate') || '';
-
 function resetDailyCount() {
   const today = new Date().toDateString();
   if (lastAdviceDate !== today) {
@@ -23,7 +23,6 @@ resetDailyCount();
 // === LIMITATION 6 RÉSULTATS/JOUR ===
 let dailyResultCount = parseInt(localStorage.getItem('dailyResultCount') || '0');
 let lastResultDate = localStorage.getItem('lastResultDate') || '';
-
 function resetDailyResultCount() {
   const today = new Date().toDateString();
   if (lastResultDate !== today) {
@@ -52,7 +51,6 @@ function awardXP(amount, message) {
   saveAll();
   showXPPop(`+${amount} XP ! ${message}`);
 }
-
 function showXPPop(text) {
   const pop = document.createElement('div');
   pop.innerHTML = `<strong style="font-size:30px;">${text}</strong>`;
@@ -60,7 +58,6 @@ function showXPPop(text) {
   document.body.appendChild(pop);
   setTimeout(() => pop.remove(), 1800);
 }
-
 function saveAll() {
   localStorage.setItem('fisherXP', JSON.stringify(progress));
   localStorage.setItem('knownSpots', JSON.stringify([...knownSpots]));
@@ -68,13 +65,10 @@ function saveAll() {
   updateDashboard();
 }
 
-// === DASHBOARD LIVE (SÉCURISÉ) ===
+// === DASHBOARD LIVE ===
 function updateDashboard() {
   const dashboard = document.querySelector('.dashboard');
-  if (!dashboard) {
-    console.warn("Dashboard non trouvé dans le DOM. Attente...");
-    return;
-  }
+  if (!dashboard) return;
   const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
   const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
   dashboard.innerHTML = `
@@ -86,40 +80,81 @@ function updateDashboard() {
     </div>`;
 }
 
-// === FONCTION CARTE : SAUVEGARDE GPS DE CHAQUE SESSION ===
+// === SAUVEGARDE SESSION GPS ===
 function saveSessionToMap(success, speciesName, poids, spotName, lure) {
-  if (!navigator.geolocation) {
-    console.log("Géolocalisation non supportée");
-    return;
-  }
-
+  if (!navigator.geolocation) return;
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const session = {
         lat: pos.coords.latitude,
         lng: pos.coords.longitude,
-        success,
-        species: speciesName || null,
-        poids: poids || 0,
-        spot: spotName || "Spot inconnu",
-        lure: lure || "Inconnu",
+        success, species: speciesName || null, poids: poids || 0,
+        spot: spotName || "Spot inconnu", lure: lure || "Inconnu",
         date: new Date().toISOString(),
-        pseudo: localStorage.getItem('fisherPseudo') || "Anonyme"
+        pseudo: currentUser?.pseudo || localStorage.getItem('fisherPseudo') || "Anonyme"
       };
-
       let sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
       sessions.push(session);
       localStorage.setItem('fishingSessions', JSON.stringify(sessions));
-      console.log("Session géolocalisée sauvegardée !", session);
     },
-    (err) => {
-      console.warn("Impossible d'obtenir la position GPS", err);
-    },
-    { enableHighAccuracy: true, timeout: 10000 }
+    () => {}, { enableHighAccuracy: true, timeout: 10000 }
   );
 }
 
-// === TOUT LE CODE ===
+// =================== SYSTÈME COMPTES FISHERFORCE (SANS FIREBASE) ===================
+async function registerFisherForce(pseudo, password, photoFile) {
+  const form = new FormData();
+  form.append('pseudo', pseudo);
+  form.append('password', password);
+  if (photoFile) form.append('photo', photoFile);
+
+  const res = await fetch('/api/register', { method: 'POST', body: form });
+  const data = await res.json();
+  if (data.success) {
+    alert("Compte FisherForce créé ! Connecte-toi maintenant.");
+  } else {
+    alert(data.error || "Erreur création compte");
+  }
+}
+
+async function loginFisherForce(pseudo, password) {
+  const res = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pseudo, password })
+  });
+  const data = await res.json();
+  if (data.token) {
+    jwtToken = data.token;
+    localStorage.setItem('jwt', jwtToken);
+    currentUser = { pseudo: data.user.pseudo, photo: data.user.photo };
+    localStorage.setItem('fisherPseudo', data.user.pseudo);
+    updateUserUI();
+    alert(`Bienvenue ${data.user.pseudo} !`);
+  } else {
+    alert(data.error || "Connexion échouée");
+  }
+}
+
+function logoutFisherForce() {
+  jwtToken = null;
+  localStorage.removeItem('jwt');
+  currentUser = null;
+  updateUserUI();
+}
+
+// Mise à jour UI selon connexion
+function updateUserUI() {
+  const loggedIn = !!jwtToken || !!window.currentUser;
+  el('loginBtn') && (el('loginBtn').style.display = loggedIn ? 'none' : 'block');
+  el('userInfo') && (el('userInfo').style.display = loggedIn ? 'flex' : 'none');
+  if (loggedIn) {
+    const pseudo = currentUser?.pseudo || localStorage.getItem('fisherPseudo') || "Pêcheur";
+    el('userName') && (el('userName').textContent = pseudo);
+  }
+}
+
+// =================== DOM LOADED ===================
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('xpAnim')) {
     const s = document.createElement('style');
@@ -127,6 +162,35 @@ document.addEventListener('DOMContentLoaded', () => {
     s.textContent = '@keyframes pop{0%{transform:scale(0) translateX(-50%)}40%{transform:scale(1.7) translateX(-50%)}100%{transform:scale(1) translateX(-50%);opacity:0}}';
     document.head.appendChild(s);
   }
+
+  // Vérifie si déjà connecté FisherForce
+  if (jwtToken) {
+    // Optionnel : vérifier token valide
+    currentUser = { pseudo: localStorage.getItem('fisherPseudo') };
+    updateUserUI();
+  }
+
+  // === FORMULAIRES CONNEXION FISHERFORCE (ajoute ça dans ton HTML) ===
+  // Tu peux ajouter ce HTML dans index.html :
+  /*
+  <div id="ffLogin" style="margin:20px;padding:20px;background:#111;border-radius:15px;">
+    <input id="ffPseudo" placeholder="Pseudo FisherForce"><br><br>
+    <input id="ffPass" type="password" placeholder="Mot de passe"><br><br>
+    <input id="ffPhoto" type="file" accept="image/*"><br><br>
+    <button onclick="registerFisherForce(el('ffPseudo').value, el('ffPass').value, el('ffPhoto').files[0])">Créer compte</button>
+    <button onclick="loginFisherForce(el('ffPseudo').value, el('ffPass').value)">Connexion FisherForce</button>
+    <button onclick="logoutFisherForce()">Déconnexion</button>
+  </div>
+  */
+
+  // === GOOGLE LOGIN (garde l’ancien si tu veux) ===
+  if (typeof firebase !== 'undefined') {
+    // Ton code Google existant reste intact (je ne le touche pas)
+    // Il fonctionne en parallèle du système FisherForce
+  }
+
+  updateDashboard();
+});
 
   el('getAdvice')?.addEventListener('click', async () => {
     if (dailyAdviceCount >= 5) {
