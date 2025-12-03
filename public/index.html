@@ -36,6 +36,30 @@
 <body>
   <div class="live-badge"><span class="live-dot"></span> IA en direct : <span id="patternCount">42</span> patterns appris</div>
 
+  <!-- UI COMPTES FISHERFORCE (no Firebase) -->
+<div id="registerForm" style="display:none;">
+  <input id="regPseudo" placeholder="Pseudo unique">
+  <input id="regPass" type="password" placeholder="Mot de passe">
+  <input id="regPhoto" type="file" accept="image/*">
+  <button onclick="registerUser()">Créer compte FisherForce</button>
+</div>
+
+<div id="loginForm" style="display:none;">
+  <input id="logPseudo" placeholder="Pseudo">
+  <input id="logPass" type="password" placeholder="Mot de passe">
+  <button onclick="loginUser()">Connexion FisherForce</button>
+</div>
+
+<div id="friendsSection" style="display:none;">
+  <input id="friendPseudo" placeholder="Ajouter un ami">
+  <button onclick="addFriendToUser()">Ajouter</button>
+  <div id="friendsList"></div>
+</div>
+
+<!-- Map mondiale spots publics -->
+<div id="worldMap" style="height:500px;"></div>
+<div id="ranking" style="margin:20px;"></div>
+
   <!-- AUTH + PSEUDO -->
   <div id="authContainer" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.3);padding:10px 16px;border-radius:30px;">
     <div id="userInfo" style="display:none;color:white;font-weight:bold;align-items:center;gap:10px;">
