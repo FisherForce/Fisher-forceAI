@@ -36,7 +36,6 @@
 <body>
   <div class="live-badge"><span class="live-dot"></span> IA en direct : <span id="patternCount">42</span> patterns appris</div>
 
-
   <!-- AUTH + PSEUDO -->
   <div id="authContainer" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.3);padding:10px 16px;border-radius:30px;">
     <div id="userInfo" style="display:none;color:white;font-weight:bold;align-items:center;gap:10px;">
@@ -53,17 +52,6 @@
       <h1>Fisher-Force AI</h1>
       <p class="tagline">La 1ère IA de pêche 100% Française</p>
     </div>
-<!-- BOUTON CONNEXION DISCRET (remplace ton ancien gros bloc) -->
-<div style="position:fixed;top:15px;right:15px;z-index:9999;">
-  <button id="openAuthBtn" 
-          style="background:#00ff9d;color:black;padding:12px 24px;border:none;border-radius:50px;font-weight:bold;font-size:16px;box-shadow:0 8px 30px rgba(0,255,157,0.4);">
-    Connexion / Inscription
-  </button>
-  
-  <button id="logoutBtn" style="display:none;background:#e74c3c;color:white;padding:12px 20px;border:none;border-radius:50px;font-weight:bold;margin-left:10px;">
-    Déconnexion
-  </button>
-</div>
   </header>
 
 
@@ -791,76 +779,6 @@ document.addEventListener('DOMContentLoaded', initMigrateursMap);
       setTimeout(initPersonalMap, 300);
     });
   </script>
-  <!-- POP-UP CONNEXION FISHERFORCE (cachée au départ) -->
-<div id="authModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.93);z-index:99999;align-items:center;justify-content:center;">
-  <div style="background:linear-gradient(135deg,#001122,#003366);padding:40px;border-radius:30px;max-width:480px;width:90%;box-shadow:0 20px 80px rgba(0,255,157,0.3);position:relative;">
-    
-    <button onclick="document.getElementById('authModal').style.display='none'" 
-            style="position:absolute;top:15px;right:15px;background:none;border:none;color:#00ff9d;font-size:32px;cursor:pointer;">
-      ×
-    </button>
-    
-    <h2 style="text-align:center;color:#00ff9d;margin:0 0 30px;font-size:32px;">FISHERFORCE ELITE</h2>
-    
-    <input id="ffPseudo" placeholder="Pseudo unique (ex: ThaoLeKing44)" 
-           style="width:100%;padding:18px;margin:15px 0;border:none;border-radius:15px;background:#112233;color:white;font-size:18px;">
-    
-    <input id="ffPass" type="password" placeholder="Mot de passe" 
-           style="width:100%;padding:18px;margin:15px 0;border:none;border-radius:15px;background:#112233;color:white;font-size:18px;">
-    
-    <input id="ffPhoto" type="file" accept="image/*" 
-           style="width:100%;padding:15px;margin:20px 0;color:#00ff9d;background:#112233;border-radius:15px;">
-    
-    <div style="text-align:center;">
-      <button onclick="registerFisherForce(el('ffPseudo').value, el('ffPass').value, el('ffPhoto').files[0])" 
-              style="background:#00ff9d;color:black;padding:18px 50px;border:none;border-radius:50px;font-weight:bold;font-size:19px;margin:10px;">
-        CRÉER COMPTE ÉLITE
-      </button>
-    </div>
-    
-    <button onclick="loginFisherForce(el('ffPseudo').value, el('ffPass').value)" 
-            style="width:100%;background:#0066ff;color:white;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:19px;margin:15px 0;">
-      CONNEXION FISHERFORCE
-    </button>
-    
-    <p style="text-align:center;color:#888;font-size:14px;margin-top:25px;">
-      Seuls les vrais pêcheurs entrent ici.
-    </p>
-  </div>
-</div>
-
-<script>
-// === OUVERTURE / FERMETURE POP-UP + AFFICHAGE BOUTON DÉCONNEXION ===
-document.getElementById('openAuthBtn').addEventListener('click', () => {
-  document.getElementById('authModal').style.display = 'flex';
-});
-
-function updateAuthButtons() {
-  const loggedIn = !!localStorage.getItem('jwt');
-  document.getElementById('openAuthBtn').style.display = loggedIn ? 'none' : 'block';
-  document.getElementById('logoutBtn').style.display = loggedIn ? 'block' : 'none';
-  
-  if (loggedIn) {
-    const pseudo = localStorage.getItem('fisherPseudo') || "Elite";
-    document.getElementById('logoutBtn').innerHTML = `Déconnexion ${pseudo}`;
-  }
-}
-
-function logoutFisherForce() {
-  localStorage.removeItem('jwt');
-  jwtToken = null;
-  currentUser = null;
-  updateAuthButtons();
-  alert("Déconnecté. À bientôt sur l’eau !");
-}
-
-// Au chargement
-document.addEventListener('DOMContentLoaded', updateAuthButtons);
-
-// Après chaque login/register
-// (dans tes fonctions loginFisherForce et registerFisherForce, ajoute à la fin :)
-updateAuthButtons();
-document.getElementById('authModal').style.display = 'none';
 
   <!-- CLASSEMENT + DATE DANS LES CONSEILS (dans app.js) -->
   <script src="app.js"></script>
