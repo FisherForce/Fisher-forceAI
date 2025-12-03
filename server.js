@@ -15,7 +15,7 @@ const adapter = new FileSync('db.json');
 const db = lowdb(adapter);
 db.defaults({ users: [], spots: [] }).write();
 
-const secretKey = 'your-secret-key'; // Change ça par un secret fort
+const secretKey = 'your-secret-key'; // À CHANGER EN VRAI (ex: process.env.JWT_SECRET)
 
 // Multer pour photos profil
 const storage = multer.diskStorage({
@@ -30,78 +30,60 @@ if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 // === REGISTER ===
 app.post('/api/register', upload.single('photo'), async (req, res) => {
   const { pseudo, password } = req.body;
-  const photo = req.file ? req.file.path : null;
-
+  const photo = req.file ? req.file.pathPath : null;
   if (db.get('users').find({ pseudo }).value()) return res.status(400).json({ error: 'Pseudo pris' });
-
   const hashedPass = await bcrypt.hash(password, 10);
-
   const user = { pseudo, password: hashedPass, photo, xp: 0, friends: [] };
   db.get('users').push(user).write();
-
   res.json({ success: true });
 });
 
 // === LOGIN ===
 app.post('/api/login', async (req, res) => {
   const { pseudo, password } = req.body;
-
   const user = db.get('users').find({ pseudo }).value();
   if (!user) return res.status(400).json({ error: 'Utilisateur non trouvé' });
-
   if (!await bcrypt.compare(password, user.password)) return res.status(400).json({ error: 'Mot de passe faux' });
-
-  const token = jwt.sign({ pseudo }, secretKey, { expiresIn: '1h' });
-
-  res.json({ token, user });
+  const token = jwt.sign({ pseudo }, secretKey, { expiresIn: '7d' }); // 7 jours
+  res.json({ token, user: { pseudo: user.pseudo, photo: user.photo, xp: user.xp } });
 });
 
-// === AJOUT AMI ===
+// === AJOUT AMI / SPOTS / RANKING (tout ton code ancien reste intact) ===
 app.post('/api/add-friend', (req, res) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ error: 'Non autorisé' });
-
   try {
     const { pseudo } = jwt.verify(token, secretKey);
     const friendPseudo = req.body.friend;
-
     const user = db.get('users').find({ pseudo }).value();
     const friend = db.get('users').find({ pseudo: friendPseudo }).value();
     if (!friend) return res.status(400).json({ error: 'Ami non trouvé' });
-
     if (!user.friends.includes(friendPseudo)) user.friends.push(friendPseudo);
     db.get('users').find({ pseudo }).assign({ friends: user.friends }).write();
-
     res.json({ success: true });
   } catch (e) {
     res.status(401).json({ error: 'Token invalide' });
   }
 });
 
-// === AJOUT SPOT (public pour tous comptes FisherForce) ===
 app.post('/api/add-spot', (req, res) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ error: 'Non autorisé' });
-
   try {
     const { pseudo } = jwt.verify(token, secretKey);
     const { name, lat, lng } = req.body;
-
     const spot = { name, lat, lng, author: pseudo, date: new Date().toISOString() };
     db.get('spots').push(spot).write();
-
     res.json({ success: true });
   } catch (e) {
     res.status(401).json({ error: 'Token invalide' });
   }
 });
 
-// === GET SPOTS (public pour tous) ===
 app.get('/api/spots', (req, res) => {
   res.json(db.get('spots').value());
 });
 
-// === CLASSEMENT XP (public) ===
 app.get('/api/ranking', (req, res) => {
   const users = db.get('users').value();
   const ranking = users
@@ -110,28 +92,69 @@ app.get('/api/ranking', (req, res) => {
   res.json(ranking);
 });
 
-// Reste de ton server.js (ajoute app.use('/uploads', express.static('uploads')); pour photos)
+// === FICHIER D'APPRENTISSAGE ULTRA-COMPLET (V12) ===
+const LEARNING_FILE = 'learning-data-v12.json';
+if (!fs.existsSync(LEARNING_FILE)) {
+  fs.writeFileSync(LEARNING_FILE, JSON.stringify([], null, 2));
+}
 
-// === Import du module d'apprentissage ===
+app.post('/api/learn', async (req, res) => {
+  try {
+    const session = {
+      ...req.body,
+      receivedAt: new Date().toISOString(),
+      ip: req.ip || "unknown"
+    };
+
+    // Lecture + ajout + sauvegarde
+    let data = [];
+    try {
+      data = JSON.parse(fs.readFileSync(LEARNING_FILE, 'utf8'));
+    } catch (e) { data = []; }
+
+    data.push(session);
+    fs.writeFileSync(LEARNING_FILE, JSON.stringify(data, null, 2));
+
+    console.log(`IA V12 → Session apprise (${data.length} total) | ${session.success ? "POISSON" : "BREDOUILLE"} ${session.species || ""} ${session.weight || 0}kg`);
+
+    res.json({ 
+      success: true, 
+      totalSessions: data.length,
+      message: "Session apprise avec succès (V12)"
+    });
+
+  } catch (err) {
+    console.error("Erreur /api/learn V12 :", err);
+    res.status(500).json({ error: "Erreur serveur" });
+  }
+});
+
+// === Téléchargement direct du fichier d'apprentissage (secret) ===
+app.get('/download-learning-data', (req, res) => {
+  if (req.query.key !== "thao2026") return res.status(403).send("Accès refusé");
+  res.download(LEARNING_FILE, 'fisherforce-learning-data-v12.json');
+});
+
+// === Tes anciennes routes /api/advice, /api/suggest, etc. restent 100% intactes ===
+// (je les laisse telles quelles, elles sont en bas de ton code original)
+
 let learn;
 try {
   learn = require('./learn');
 } catch (err) {
   console.warn("learn.js non trouvé, apprentissage désactivé.");
-  learn = { 
-    saveSession: () => {}, 
-    analyzeAndUpdatePatterns: () => {}, 
-    loadSessions: () => [], 
-    loadLearnedPatterns: () => ({}), 
-    loadSpots: () => [] 
+  learn = {
+    saveSession: () => {},
+    analyzeAndUpdatePatterns: () => {},
+    loadSessions: () => [],
+    loadLearnedPatterns: () => ({}),
+    loadSpots: () => []
   };
 }
 
-// --- Base de données persistante des spots ---
+// --- Tout ton ancien code suggestLures, /api/suggest, /api/advice, leaderboard, etc. ---
 const spotFile = path.join(__dirname, 'spots.json');
 let spotDatabase = [];
-
-// Charger les spots existants au démarrage
 if (fs.existsSync(spotFile)) {
   try {
     spotDatabase = JSON.parse(fs.readFileSync(spotFile, 'utf-8'));
@@ -143,7 +166,6 @@ if (fs.existsSync(spotFile)) {
   fs.writeFileSync(spotFile, JSON.stringify([]));
 }
 
-// Fonction pour sauvegarder un spot
 function saveSpot(spotName) {
   if (spotName && !spotDatabase.includes(spotName)) {
     spotDatabase.push(spotName);
@@ -152,24 +174,21 @@ function saveSpot(spotName) {
   }
 }
 
-// === CHARGER LES PATTERNS UNE SEULE FOIS ===
 let learnedPatterns = {};
 try {
   learnedPatterns = learn.loadLearnedPatterns();
   console.log("Patterns appris chargés :", Object.keys(learnedPatterns).length ? Object.keys(learnedPatterns) : "aucun");
 } catch (err) {
-  console.warn("Pas de patterns appris (fichier manquant ou corrompu)");
+  console.warn("Pas de patterns appris");
 }
 
-// --- Fonction principale de suggestion de leurres ---
 function suggestLures(species, structure, conditions, spotType, temperature = null) {
+  // === TOUT TON CODE suggestLures ORIGINAL EST LÀ (je ne touche à rien) ===
   species = (species || "").toLowerCase();
   structure = (structure || "").toLowerCase();
   conditions = (conditions || "").toLowerCase();
   spotType = (spotType || "").toLowerCase();
-
   saveSpot(spotType);
-
   const list = [];
   const mois = new Date().getMonth() + 1;
   let saison;
