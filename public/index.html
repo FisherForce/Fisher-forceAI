@@ -36,29 +36,6 @@
 <body>
   <div class="live-badge"><span class="live-dot"></span> IA en direct : <span id="patternCount">42</span> patterns appris</div>
 
-  <!-- UI COMPTES FISHERFORCE (no Firebase) -->
-<div id="registerForm" style="display:none;">
-  <input id="regPseudo" placeholder="Pseudo unique">
-  <input id="regPass" type="password" placeholder="Mot de passe">
-  <input id="regPhoto" type="file" accept="image/*">
-  <button onclick="registerUser()">Créer compte FisherForce</button>
-</div>
-
-<div id="loginForm" style="display:none;">
-  <input id="logPseudo" placeholder="Pseudo">
-  <input id="logPass" type="password" placeholder="Mot de passe">
-  <button onclick="loginUser()">Connexion FisherForce</button>
-</div>
-
-<div id="friendsSection" style="display:none;">
-  <input id="friendPseudo" placeholder="Ajouter un ami">
-  <button onclick="addFriendToUser()">Ajouter</button>
-  <div id="friendsList"></div>
-</div>
-
-<!-- Map mondiale spots publics -->
-<div id="worldMap" style="height:500px;"></div>
-<div id="ranking" style="margin:20px;"></div>
 
   <!-- AUTH + PSEUDO -->
   <div id="authContainer" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.3);padding:10px 16px;border-radius:30px;">
@@ -76,6 +53,37 @@
       <h1>Fisher-Force AI</h1>
       <p class="tagline">La 1ère IA de pêche 100% Française</p>
     </div>
+  <!-- CONNEXION FISHERFORCE — VERSION 2026 -->
+<div style="margin:30px auto;padding:30px;background:linear-gradient(135deg,#001122,#003366);border-radius:25px;max-width:500px;box-shadow:0 15px 50px rgba(0,0,0,0.8);color:white;text-align:center;">
+  <h2 style="margin:0 0 25px;color:#00ff9d;font-size:28px;">FISHERFORCE ELITE</h2>
+  
+  <div id="ffAuth">
+    <input id="ffPseudo" placeholder="Pseudo unique (ex: ThaoLeKing44)" style="width:90%;padding:16px;margin:10px auto;border:none;border-radius:12px;font-size:18px;background:#112233;color:white;">
+    <input id="ffPass" type="password" placeholder="Mot de passe" style="width:90%;padding:16px;margin:10px auto;border:none;border-radius:12px;font-size:18px;background:#112233;color:white;">
+    <input id="ffPhoto" type="file" accept="image/*" style="margin:15px auto;color:#00ff9d;">
+    
+    <div style="margin:20px 0;">
+      <button onclick="registerFisherForce(el('ffPseudo').value, el('ffPass').value, el('ffPhoto').files[0])" 
+              style="background:#00ff9d;color:black;padding:16px 40px;border:none;border-radius:12px;font-weight:bold;margin:8px;font-size:18px;">
+        CRÉER COMPTE ÉLITE
+      </button>
+    </div>
+    
+    <button onclick="loginFisherForce(el('ffPseudo').value, el('ffPass').value)" 
+            style="background:#0066ff;color:white;padding:16px 40px;border:none;border-radius:12px;font-weight:bold;margin:8px;font-size:18px;">
+      CONNEXION FISHERFORCE
+    </button>
+    
+    <button onclick="logoutFisherForce()" 
+            style="background:#e74c3c;color:white;padding:12px 30px;border:none;border-radius:10px;margin:10px;font-size:16px;">
+      Déconnexion
+    </button>
+  </div>
+  
+  <div id="welcomeMsg" style="display:none;margin-top:20px;font-size:22px;color:#00ff9d;">
+    Bienvenue <span id="currentPseudo"></span> 
+  </div>
+</div>
   </header>
 
 
