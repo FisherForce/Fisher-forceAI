@@ -734,7 +734,7 @@ document.addEventListener('DOMContentLoaded', initMigrateursMap);
 
       // Double-clic = nouveau spot
       personalMap.on('dblclick', e => {
-        const name = prompt("Nom de ton nouveau spot secret :", "Spot du Maître Thao");
+        const name = prompt("Nom de ton nouveau spot secret :", "Spot de fou ");
         if (!name || name.trim().length < 2) return;
         const newSpot = {name: name.trim(), lat: e.latlng.lat, lng: e.latlng.lng, date: new Date().toLocaleDateString('fr-FR'), catches: []};
         const spots = JSON.parse(localStorage.getItem('myPersonalSpots') || '[]');
