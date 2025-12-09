@@ -75,7 +75,13 @@ function updateDashboard() {
     console.warn("Dashboard non trouvé dans le DOM. Attente...");
     return;
   }
-  const level = progress.xp < 50 ? "Débutant 👼" : progress.xp < 200 ? "Traqueur 🚶‍♀️‍➡️" : progress.xp < 400 ? "Maître du brochet🥷" : progress.xp < 555 ? "FisherForce 💪" : progress.xp < 666 ? "Bar de Légende 🐟" : progress.xp < 899 ? "Triton l’Expert 🦈" : progress.xp < 1000 ? "Guide de pêche 🦞" ;
+const level = progress.xp < 50 ? "Débutant 👼" :
+              progress.xp < 200 ? "Traqueur 🚶‍♀️‍➡️" :
+              progress.xp < 400 ? "Maître du brochet 🥷" :
+              progress.xp < 555 ? "FisherForce 💪" :
+              progress.xp < 666 ? "Bar de Légende 🐟" :
+              progress.xp < 899 ? "Triton l’Expert 🦈" :
+              progress.xp < 1000 ? "Guide de pêche 🦞" : "Légende Vivante 🌟"; 
   const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
   dashboard.innerHTML = `
     <h3><span class="level-badge">${level}</span> — <span id="xp">${progress.xp}</span> XP</h3>
