@@ -57,7 +57,7 @@
 
   <main class="container main-grid">
     <section class="card input-card">
-<!-- BOUTON MÉTÉO AUTO + ESPÈCE DYNAMIQUE (version finale 2026) -->
+<!-- BOUTON MÉTÉO AUTO + ESPÈCE + SPOT + STRUCTURE DYNAMIQUES (version ultime 2026) -->
 <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     MÉTÉO + CONSEIL IA EN DIRECT
@@ -73,6 +73,22 @@
     <option value="Chevesne">Chevesne</option>
   </select>
   
+  <select id="spotTypeSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
+    <option value="Étang">Étang</option>
+    <option value="Rivière">Rivière</option>
+    <option value="Canal">Canal</option>
+    <option value="Lac">Lac</option>
+  </select>
+  
+  <select id="structureSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
+    <option value="Herbiers">Herbiers</option>
+    <option value="Bois morts">Bois morts</option>
+    <option value="Rochers">Rochers</option>
+    <option value="Pont">Pont</option>
+    <option value="Mixte">Mixte</option>
+    <option value="Aucun">Aucun</option>
+  </select>
+  
   <button id="weatherAdviceBtn" style="width:85%;background:#00ff9d;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
     ANALYSER MÉTÉO + MEILLEUR LEURRE
   </button>
@@ -81,11 +97,11 @@
 </div>
 
 <script>
-// === MÉTÉO AUTO + ESPÈCE 100% DYNAMIQUE (version ultime) ===
+// === MÉTÉO AUTO + ESPÈCE / SPOT / STRUCTURE 100% DYNAMIQUES (version ultime) ===
 document.getElementById('weatherAdviceBtn').addEventListener('click', async () => {
   const resultDiv = document.getElementById('weatherResult');
   resultDiv.style.display = 'block';
-  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Localisation + météo en cours…</p>`;
+  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Détection position + météo en cours…</p>`;
 
   if (!navigator.geolocation) {
     resultDiv.innerHTML = "Géolocalisation non supportée";
@@ -96,6 +112,8 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
     const species = document.getElementById('targetSpeciesSelect').value;
+    const spotType = document.getElementById('spotTypeSelect').value;
+    const structure = document.getElementById('structureSelect').value;
 
     try {
       const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover,pressure_msl,is_day&timezone=Europe/Paris`);
@@ -116,15 +134,15 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
       else conditionsText = "soleil";
       if (!jour) conditionsText += " nuit";
 
-      // Appel à ton IA existante
+      // Appel à ton IA avec tout dynamique
       const adviceRes = await fetch('/api/advice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           targetSpecies: species,
-          structure: "mixte",
+          structure: structure,
           conditions: conditionsText,
-          spotType: "étang",
+          spotType: spotType,
           temperature: temp
         })
       });
@@ -137,9 +155,7 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
         </div>
         <div style="background:#001f3f;padding:22px;border-radius:15px;margin:15px 0;font-size:21px;line-height:1.6;">
           <b style="color:#FFD700;">MEILLEUR LEURRE MAINTENANT :</b><br>
-          <span style="color:#00ff9d;font-size:26px;font-weight:bold;">${conseil.lures?.[0] || "Jerkbait 12cm naturel"}</span><br>
-          ${conseil.lures?.[1] ? `<i style="color:#aaa;">${conseil.lures[1]}</i><br>` : ''}
-          ${conseil.lures?.[2] ? `<i style="color:#aaa;">${conseil.lures[2]}</i>` : ''}
+          ${conseil.lures.map(l => `<span style="color:#00ff9d;font-size:26px;font-weight:bold;">${l}</span><br>`).join('')}
         </div>
         <p style="color:#888;font-size:14px;margin-top:20px;">
           IA FisherForce — mise à jour toutes les 10 min • Précision 98,7 %
