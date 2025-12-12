@@ -17,7 +17,8 @@ const urlsToCache = [
   '/server.js',
   '/sessions.json',
   '/spots.json',
-  '/suggestLures.js'
+  '/suggestLures.js',
+  '/privacy.html',
   // Ajoute ici tes autres fichiers importants (images, sons, etc.)
 ];
 
