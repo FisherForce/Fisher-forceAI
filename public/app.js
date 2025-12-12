@@ -385,7 +385,7 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
       const jour = c.is_day === 1;
 
       // CRÉATION DE LA CHAÎNE CONDITIONS (maintenant définie AVANT utilisation)
-      const conditionsText = `${pluie ? 'pluie' : nuages ? 'nuages' : 'soleil'}${jour ? '' : ' nuit'}`;
+      const conditionsText = `${pluie ? 'pluie' : nuages ? 'nuageux' : 'soleil'}${jour ? '' : ' nuit'}`;
 
       // === REMPLISSAGE AUTOMATIQUE DES CHAMPS (maintenant après définition) ===
       if (document.getElementById('conditions')) {
