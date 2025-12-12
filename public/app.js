@@ -79,8 +79,14 @@ const level = progress.xp < 50 ? "Débutant 👼" :
               progress.xp < 200 ? "Traqueur 🚶‍♀️‍➡️" :
               progress.xp < 400 ? "Maître du brochet 🥷" :
               progress.xp < 555 ? "FisherForce 💪" :
-              progress.xp < 666 ? "Bar de Légende 🐟" :
-              progress.xp < 1000 ? "Guide de pêche 🦞" : "Légende Vivante 🌟"; 
+              progress.xp < 666 ? "Ami des poissons 🐟" :
+              progress.xp < 1000 ? "Guide de pêche 🦞" :
+              progress.xp < 1500 ? "Compétiteur 🥽" : 
+              progress.xp < 2000 ? "Spécialiste 🤖" :
+              progress.xp < 3000 ? " Bar de légende 👾" :  
+              progress.xp < 4000 ? " Visionnaire 🦅" :
+              progress.xp < 5000 ? " Perche divine 🐠" :
+              progress.xp < 10000 ? "Goat 🐊" : "Légende Vivante 🌟"; 
   const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
   dashboard.innerHTML = `
     <h3><span class="level-badge">${level}</span> — <span id="xp">${progress.xp}</span> XP</h3>
