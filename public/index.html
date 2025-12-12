@@ -856,6 +856,11 @@ document.addEventListener('DOMContentLoaded', initMigrateursMap);
       setTimeout(initPersonalMap, 300);
     });
   </script>
+  <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+</script>
 
   <!-- CLASSEMENT + DATE DANS LES CONSEILS (dans app.js) -->
   <script src="app.js"></script>
