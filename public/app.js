@@ -80,7 +80,6 @@ const level = progress.xp < 50 ? "Débutant 👼" :
               progress.xp < 400 ? "Maître du brochet 🥷" :
               progress.xp < 555 ? "FisherForce 💪" :
               progress.xp < 666 ? "Bar de Légende 🐟" :
-              progress.xp < 899 ? "Triton l’Expert 🦈" :
               progress.xp < 1000 ? "Guide de pêche 🦞" : "Légende Vivante 🌟"; 
   const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
   dashboard.innerHTML = `
@@ -400,7 +399,7 @@ document.getElementById('temperature').value = temp;
         body: JSON.stringify({
           targetSpecies: "Brochet", // tu peux le rendre dynamique plus tard
           structure: "mixte",
-          conditions: `${pluie ? 'pluie' : nuages ? 'nuageux' : 'soleil'}${jour ? '' : ' nuit'}`,
+          conditions: `${pluie ? 'pluie' : nuages ? 'nuages' : 'soleil'}${jour ? '' : ' nuit'}`,
           spotType: "étang",
           temperature: temp
         })
