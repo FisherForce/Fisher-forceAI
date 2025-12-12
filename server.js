@@ -208,11 +208,11 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   // Cas ultra-ciblés
   if (species.includes('perche')) {
   list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
-    if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
+    if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
       list.push('Dropshot — Animation lente proche des structures');
     if (saison === "hiver" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Ned Rig — Animation lente sur le fond dans les contre-courants');
-    if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuage'))
+    if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuageux'))
       list.push('Cuillère N°2 — Récupération lente juste sous la surface');
     if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Leurre souple 5cm Brun — Récupération lente juste sous la surface');
@@ -226,13 +226,13 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Leurre souple de 5cm— Dandine dans les bois morts ');
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Cuillère N°2 argentée puis Leurre souple de 5cm puis crank puis micro-leurre — Animation juste sous la surface');
-    if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
+    if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
       list.push('Leurre souple de 7 à 8cm coloris gardon — Récupération rapide avec pauses');
-    if (saison === "été" && spotType === "étang" && conditions.includes('nuages'))
+    if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
       list.push('Leurre souple de 4 à 6cm — Récupération rapide avec pauses');
     if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Leurre souple de 4 à 6cm en dropshot — Récupération lente et dandine proche des obstacles');
-    if (saison === "automne" && spotType === "étang" && conditions.includes('nuages') && structure.includes('branch'))
+    if (saison === "automne" && spotType === "étang" && conditions.includes('nuageux') && structure.includes('branch'))
       list.push('Leurre souple pailleté de 5cm en Ned Rig— Ramène très lentement sur le fond');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Leurre souple de 4 à 6cm ou Crankbait — Récupération rapide avec des pauses proche des obstacles');
@@ -246,15 +246,15 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
 
   if (species.includes('brochet')) {
   list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
-    if (saison === "été" && spotType === "étang" && conditions.includes('nuages'))
+    if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
       list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
-    if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
+    if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
       list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Leurres souples de 6cm — Quand il y a du soleil les brochets visent les petites proies');
     if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Propbait — Récupération rapide avec des pauses proche des obstacles');
-    if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuages'))
+    if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuageux'))
       list.push('Jerk-Minnow de 12 à 15cm — Twitchs courts avec des pauses en surface, envoie des coups de jerk comme si la cnne était un fouet');
     if (saison === "printemps" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Cuillère N°4 — Récupération lente en surface');
@@ -264,9 +264,9 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Frog — Récupération par a coups avec pauses dans les trouées , attention faut ferrer super fort');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('soleil'))
       list.push('Shad de 16cm — Récupération lente');
-    if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
+    if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
       list.push('Lipless ou spintail ou lame vibrante — Récupération lente ou dandine en verticale');
-    if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages'))
+    if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux'))
       list.push('Swimbait de 15cm — Récupération lente en surface');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
       list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d\'eau');
@@ -276,7 +276,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
 
   if (species.includes('bass')) {
   list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');    
-    if (saison === "hiver" && spotType === "étang" && conditions.includes('nuages'))
+    if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
       list.push('Ned Rig ou ver manié — Récupération lente ou dandine en verticale');
     if (saison === "printemps" && spotType === "étang" && conditions.includes('vent'))
       list.push('Spinner-bait — Récupération lente sous la surface');
@@ -288,7 +288,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Worm marron — Dandine dans les branches et les herbiers ');
     if (saison === "été" && spotType === "canal" && conditions.includes('soleil') && structure.includes('bois'))
       list.push('Worm marron — Dandine dans les branches et les herbiers, envoie un vrai ferrage sans trop d\'emballer ');
-    if (saison === "été" && spotType === "rivière" && conditions.includes('nuages'))
+    if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
       list.push('Écrevisses en punching — Dans les herbiers');
   }
 
@@ -304,7 +304,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session je te donnerais de meilleurs conseils !');    
     if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
-    if (saison === "automne" && spotType === "rivière" && conditions.includes('nuages') && structure.includes('pont'))
+    if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
   }
   if (species.includes('aspe')) {
