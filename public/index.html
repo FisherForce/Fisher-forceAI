@@ -27,10 +27,6 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <link rel="manifest" href="manifest.json">
-<link rel="icon" href="logo.jpg" type="image/jpeg">
-<link rel="apple-touch-icon" href="/logo.jpg">
-<meta name="theme-color" content="#00ff9d">
 
   <style>
     @keyframes pulse {0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
@@ -52,6 +48,15 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <!-- PWA INSTALLABLE SUR MOBILE (logo + icône garantie) -->
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/logo.jpg" type="image/jpeg" sizes="any">
+<link rel="apple-touch-icon" href="/logo.jpg">
+<link rel="apple-touch-icon-precomposed" href="/logo.jpg">
+<meta name="theme-color" content="#00ff9d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 </head>
 
 <body>
@@ -877,6 +882,23 @@ document.addEventListener('DOMContentLoaded', initMigrateursMap);
   <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js');
+}
+</script>
+  <script>
+// Force l'enregistrement du service worker + manifest
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(() => {
+    console.log('SW enregistré – logo PWA OK');
+  }).catch(err => console.log('SW erreur', err));
+}
+
+// Force le reload du manifest sur mobile
+if ('applicationCache' in window === false && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    if (navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('PWA installée – logo devrait s\'afficher');
+    }
+  });
 }
 </script>
 
