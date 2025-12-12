@@ -757,6 +757,90 @@ function proposeReserve(lat, lng) {
 
 <!-- Leaflet déjà chargé dans ton head, sinon ajoute les 2 lignes si besoin -->
 <script>
+  <!-- CARTE POISSONS MIGRATEURS + ENVOI AUTO FNPF -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;box-shadow:0 12px 40px rgba(0,116,217,0.7);">
+  <h3 style="margin:0 0 20px;color:#7FDBFF;font-size:24px;">
+    SIGNALER UN POISSON MIGRATEUR PÊCHÉ
+  </h3>
+  <p style="font-size:16px;margin:15px 0;">
+    Double-clique sur la carte pour placer ton saumon, alose, truite de mer, anguille ou lamproie<br>
+    Un signalement automatique sera envoyé à la Fédération Nationale de Pêche
+  </p>
+  <div id="migrateursMap" style="height:480px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<script>
+// === CARTE MIGRATEURS + ENVOI AUTO FNPF ===
+let migrateursMap = null;
+
+function initMigrateursMap() {
+  if (migrateursMap) migrateursMap.remove();
+
+  migrateursMap = L.map('migrateursMap').setView([46.8, 1.7], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(migrateursMap);
+
+  // Double-clic = placer un migrateur
+  migrateursMap.on('dblclick', e => {
+    const speciesList = ["Saumon", "Alose", "Truite de mer", "Anguille", "Lamproie"];
+    const species = prompt("Espèce migratrice pêchée ?", speciesList[0]);
+    if (!species || !speciesList.map(s => s.toLowerCase()).includes(species.toLowerCase())) {
+      alert("Espèce non reconnue – choisis parmi : Saumon, Alose, Truite de mer, Anguille, Lamproie");
+      return;
+    }
+
+    const lat = e.latlng.lat.toFixed(6);
+    const lon = e.latlng.lng.toFixed(6);
+    const date = new Date().toLocaleString('fr-FR');
+
+    // Marqueur sur la carte
+    L.marker([lat, lon], {
+      icon: L.divIcon({
+        html: `<div style="background:#0074D9;color:white;padding:8px 16px;border-radius:50px;font-weight:bold;border:3px solid white;box-shadow:0 0 20px #0074D9;">${species[0]}</div>`,
+        iconSize: [100, 50]
+      })
+    }).addTo(migrateursMap)
+      .bindPopup(`<b style="color:#0074D9;">${species}</b><br>${date}<br>GPS : ${lat}, ${lon}<br>Signalement envoyé à la FNPF`);
+
+    // ENVOI AUTOMATIQUE À LA FÉDÉRATION NATIONALE DE PÊCHE
+    const subject = `SIGNALEMENT POISSON MIGRATEUR - ${species.toUpperCase()} - FisherForce AI`;
+    const body = `
+SIGNALEMENT AUTOMATIQUE FISHERFORCE AI (30 000+ pêcheurs)
+
+Espèce : ${species}
+Date/Heure : ${date}
+Coordonnées GPS précises : ${lat}, ${lon}
+Lien carte : https://www.google.com/maps?q=${lat},${lon}
+
+Ce poisson migrateur a été pêché et signalé par un utilisateur FisherForce AI dans le cadre de la protection des espèces migratrices.
+
+Merci de votre vigilance.
+
+Cordialement,
+L’équipe FisherForce AI
+https://fisherforce.ai
+    `.trim();
+
+    const mailto = `mailto:contact@federationpeche.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailto, '_blank');
+
+    // Récompense
+    awardXP(1500, `Signalement migrateur ${species} – +1500 XP Protecteur des migrateurs`);
+    alert(`Signalement ${species} envoyé à la Fédération Nationale de Pêche !\n+1500 XP\nTu protèges les migrateurs !`);
+  });
+
+  // Géoloc utilisateur
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      migrateursMap.setView([pos.coords.latitude, pos.coords.longitude], 10);
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initMigrateursMap);
+</script>
 // === CARTE MIGRATEURS PRIVÉE (100% fonctionnelle dès maintenant) ===
 let migrateursMap = null;
 let migrateursMarkers = {};
