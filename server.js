@@ -323,20 +323,39 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       
 
   // --- Conseils généraux ---
+// === CONSEILS GÉNÉRAUX UNIQUES PAR JOUR (côté serveur) ===
 if (list.length === 0) {
-  const defaults = [
-    'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère taille N°2. Enregistre ta session pour faire progresser l\'IA !',
-    'Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer ! Dis-moi ensuite si tu as eu un poisson pour faire progresser l\'IA !',
-    'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l\'attend pas. Enregistre ta session pour faire progresser l\'IA !',
-    'Essaie un grub blanc, en linéaire lent, ça peut être sympa, enregistre ta session pour me faire progresser !',
-    'Essaie un petit worm très rigide, sur le fond et gratte : ça peut rapporter de belles surprises, enregistre ta session pour me faire progresser !',
-    'Essaie une écrevisse, laisse tomber sur le fond et donne des à-coups, enregistre ta session pour me faire progresser !',
-    'Essaie un petit leurre souple de 6cm au mileu de la rivière tu je suis sure que tu aura quelque chose ',
-    'Tu est obligé de prendre un poisson au jerk-minnow !',
-    'Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !',
-
-  ];
-  list.push(defaults[Math.floor(Math.random() * defaults.length)]);
+  const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+  
+  // Clé unique pour ce jour + IP (ou user-agent si anonyme)
+  const userKey = req.ip || req.headers['user-agent'] || 'anonyme';
+  const cacheKey = `conseil_du_jour_${today}_${userKey}`;
+  
+  let conseilDuJour = req.app.locals[cacheKey]; // mémoire en RAM du serveur
+  
+  if (!conseilDuJour) {
+    const defaults = [
+      "Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère taille N°2. Enregistre ta session pour faire progresser l'IA !",
+      "Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer !",
+      "Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l'attend pas.",
+      "Essaie un grub blanc, en linéaire lent, ça peut être sympa.",
+      "Essaie un petit worm très rigide, sur le fond et gratte : ça peut rapporter de belles surprises.",
+      "Essaie une écrevisse, laisse tomber sur le fond et donne des à-coups.",
+      "Essaie un petit leurre souple de 6cm au milieu de la rivière, tu es sûr de prendre quelque chose.",
+      "Tu es obligé de prendre un poisson au jerk-minnow !",
+      "Essaie un micro-spinnerbait là où il y a une sortie d'eau chaude, 100% tu prends une perche !",
+      "Essaie un big bait, même si c'est pas la saison, des fois ça paye gros.",
+      "Pêche en power fishing : change de leurre toutes les 10 min jusqu'à ce que ça morde.",
+      "Ramène très lentement, les poissons sont lents aujourd'hui.",
+      "Accélère la récupération, les poissons chassent activement.",
+      "Concentre-toi sur les bordures, les carnassiers y sont posés."
+    ];
+    
+    conseilDuJour = defaults[Math.floor(Math.random() * defaults.length)];
+    req.app.locals[cacheKey] = conseilDuJour; // stocké jusqu'au redémarrage serveur
+  }
+  
+  list.push(conseilDuJour);
 }
   // --- Profondeur selon température ---
   const depthAdvice = [];
