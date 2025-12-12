@@ -19,6 +19,7 @@ const urlsToCache = [
   '/spots.json',
   '/suggestLures.js',
   '/privacy.html',
+  '/logo.jpg',
   // Ajoute ici tes autres fichiers importants (images, sons, etc.)
 ];
 
