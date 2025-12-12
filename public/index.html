@@ -209,6 +209,39 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
         Enregistrer un résultat
       </button>
 
+      <!-- SYSTÈME DE QUÊTES XP RÉEL (2026) -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#1a0033,#330066);border-radius:20px;color:white;max-width:600px;box-shadow:0 12px 40px rgba(102,0,204,0.6);">
+  <h3 style="text-align:center;color:#cc00ff;margin:0 0 20px;font-size:24px;">
+    QUÊTES DU JOUR – GAGNE DE L’XP RÉEL
+  </h3>
+  
+  <div id="dailyQuests">
+    <div class="quest" id="quest1">
+      <p><strong>1. Prendre une photo de ton spot</strong> → +200 XP</p>
+      <button onclick="completeQuest(1, 200)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
+    
+    <div class="quest" id="quest2">
+      <p><strong>2. Utiliser la météo auto</strong> → +150 XP</p>
+      <button onclick="completeQuest(2, 150)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
+    
+    <div class="quest" id="quest3">
+      <p><strong>3. Enregistrer une session (prise ou bredouille)</strong> → +300 XP</p>
+      <button onclick="completeQuest(3, 300)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
+    
+    <div class="quest" id="quest4">
+      <p><strong>4. Remettre un brochet à l’eau</strong> → +500 XP</p>
+      <button onclick="completeQuest(4, 500)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
+  </div>
+  
+  <p style="text-align:center;color:#aaa;font-size:14px;margin-top:20px;">
+    Quêtes réinitialisées tous les jours à minuit
+  </p>
+</div>
+
       <!-- DÉFI QUOTIDIEN (arme d'addiction massive) -->
 <div id="dailyChallenge" style="margin:20px auto;padding:20px;background:linear-gradient(135deg,#8b00ff,#ff00aa);border-radius:16px;text-align:center;color:white;box-shadow:0 10px 30px rgba(139,0,255,0.4);">
   <h3 style="margin:0 0 10px;font-size:18px;">
@@ -229,11 +262,16 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
 <script>
 // === DÉFI QUOTIDIEN IMPOSSIBLE À TRICHER (version 1.0 – béton armé) ===
 const challenges = [
-  {text: "Prendre un sandre >65 cm entre 6h et 9h", start:6, end:9, minLength:65, species:"sandre"},
-  {text: "Prendre un brochet >85 cm entre 17h et 20h", start:17, end:20, minLength:85, species:"brochet"},
-  {text: "Prendre une perche >40 cm avant 8h", start:0, end:8, minLength:40, species:"perche"},
-  {text: "Prendre un black-bass >45 cm entre 11h et 14h", start:11, end:14, minLength:45, species:"black-bass"},
-  {text: "Prendre un silure (n'importe quelle taille) entre 22h et 4h", start:22, end:28, minLength:0, species:"silure"},
+  {text: "Prendre un sandre de plus de 65 cm entre 6h et 9h", start:6, end:9, minLength:65, species:"sandre"},
+  {text: "Prendre un brochet de plus de 85 cm entre 17h et 20h", start:17, end:20, minLength:85, species:"brochet"},
+  {text: "Prendre un brochet métré entre 10h et 20h", start:10, end:20, minLength:85, species:"brochet"},
+  {text: "Prendre une perche de plus de 45 cm entre 9h et 10h", start:9, end:10, minLength:45, species:"perche"},
+  {text: "Prendre un brochet >85 cm entre 17h et 20h", start:17, end:20, minLength:85, species:"brochet"},  
+  {text: "Prendre un bass avant 8h", start:0, end:8, minLength:0, species:"bass"},
+  {text: "Prendre 3 poissons différents en 14h à 15h ", start:15, end:15, minCount:3, species:"*"}
+  {text: "Prendre un sandre de plus de 85 cm entre 11h et 12h", start:11, end:12, minLength:85, species:"sandre"},  
+  {text: "Prendre un black-bass de plus de 45 cm entre 11h et 14h", start:11, end:14, minLength:45, species:"black-bass"},
+  {text: "Prendre un silure en étang privé (n'importe quelle taille) entre 22h et 4h", start:22, end:28, minLength:0, species:"silure"},
   {text: "Prendre 3 poissons différents dans la même session", start:0, end:24, minCount:3, species:"*"}
 ];
 
