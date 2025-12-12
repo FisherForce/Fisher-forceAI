@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(pop);
     setTimeout(() => pop.remove(), 8000);
   }
-  // === MÉTÉO AUTO + CONSEIL LEURRE IA (2025 — 98 % précision) ===
+// === MÉTÉO AUTO + CONSEIL LEURRE IA (VERSION CORRIGÉE ET PARFAITE) ===
 document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () => {
   el('weatherResult').style.display = 'block';
   el('weatherResult').innerHTML = `<p style="color:#00d4aa;font-size:18px;">Détection position + météo en cours…</p>`;
@@ -377,29 +377,32 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
       const meteo = await res.json();
       const c = meteo.current;
 
-      // Analyse météo
       const temp = Math.round(c.temperature_2m);
       const vent = Math.round(c.wind_speed_10m);
       const pluie = c.precipitation > 0.5;
       const nuages = c.cloud_cover > 70;
       const pression = Math.round(c.pressure_msl);
       const jour = c.is_day === 1;
- 
-      // === REMPLISSAGE AUTOMATIQUE DES CHAMPS FORMULAIRE ===
-document.getElementById('conditions').value = conditionsText; // "pluie", "nuageux", "soleil"
-document.getElementById('temperature').value = temp;
 
-// Optionnel : affiche aussi le vent/pression si tu veux
-// el('structure').value = "mixte"; // ou laisse vide
+      // CRÉATION DE LA CHAÎNE CONDITIONS (maintenant définie AVANT utilisation)
+      const conditionsText = `${pluie ? 'pluie' : nuages ? 'nuages' : 'soleil'}${jour ? '' : ' nuit'}`;
 
-      // Envoi au serveur pour conseil IA (ton suggestLures existant)
+      // === REMPLISSAGE AUTOMATIQUE DES CHAMPS (maintenant après définition) ===
+      if (document.getElementById('conditions')) {
+        document.getElementById('conditions').value = conditionsText;
+      }
+      if (document.getElementById('temperature')) {
+        document.getElementById('temperature').value = temp;
+      }
+
+      // Envoi au serveur avec les bonnes valeurs
       const serverRes = await fetch('/api/advice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          targetSpecies: "Brochet", // tu peux le rendre dynamique plus tard
+          targetSpecies: "Brochet",
           structure: "mixte",
-          conditions: `${pluie ? 'pluie' : nuages ? 'nuages' : 'soleil'}${jour ? '' : ' nuit'}`,
+          conditions: conditionsText,  // maintenant cohérent
           spotType: "étang",
           temperature: temp
         })
@@ -420,6 +423,7 @@ document.getElementById('temperature').value = temp;
           IA FisherForce — mise à jour toutes les 10 min
         </p>
       `;
+
     } catch (e) {
       el('weatherResult').innerHTML = "Erreur réseau — réessaie dans 10s";
     }
@@ -428,13 +432,12 @@ document.getElementById('temperature').value = temp;
   });
 });
 
-// Refresh auto toutes les 10 minutes
+// Refresh auto
 setInterval(() => {
   if (document.getElementById('weatherResult')?.style.display === 'block') {
     document.getElementById('weatherAdviceBtn').click();
   }
 }, 600000);
-
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
     const firebaseConfig = {
