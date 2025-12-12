@@ -241,6 +241,42 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
     Quêtes réinitialisées tous les jours à minuit
   </p>
 </div>
+      <script>
+// === QUÊTES XP RÉEL (version corrigée) ===
+const today = new Date().toDateString();
+let completedQuests = JSON.parse(localStorage.getItem('completedQuests_' + today) || '[]');
+
+function completeQuest(questId, xpReward) {
+  if (completedQuests.includes(questId)) {
+    alert("Quête déjà accomplie aujourd'hui !");
+    return;
+  }
+
+  completedQuests.push(questId);
+  localStorage.setItem('completedQuests_' + today, JSON.stringify(completedQuests));
+
+  // XP réel
+  progress.xp += xpReward;
+  localStorage.setItem('fisherXP', JSON.stringify(progress));
+  awardXP(xpReward, "Quête accomplie !");
+  updateDashboard();
+
+  // Désactive le bouton
+  event.target.disabled = true;
+  event.target.textContent = "Accomplie ✓";
+  event.target.style.background = "#006600";
+}
+
+// Charge les quêtes déjà faites
+completedQuests.forEach(id => {
+  const btn = document.querySelector(`.quest:nth-child(${id}) button`);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Accomplie ✓";
+    btn.style.background = "#006600";
+  }
+});
+</script>
 
       <!-- DÉFI QUOTIDIEN (arme d'addiction massive) -->
 <div id="dailyChallenge" style="margin:20px auto;padding:20px;background:linear-gradient(135deg,#8b00ff,#ff00aa);border-radius:16px;text-align:center;color:white;box-shadow:0 10px 30px rgba(139,0,255,0.4);">
