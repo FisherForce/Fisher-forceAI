@@ -385,6 +385,13 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
       const nuages = c.cloud_cover > 70;
       const pression = Math.round(c.pressure_msl);
       const jour = c.is_day === 1;
+ 
+      // === REMPLISSAGE AUTOMATIQUE DES CHAMPS FORMULAIRE ===
+document.getElementById('conditions').value = conditionsText; // "pluie", "nuageux", "soleil"
+document.getElementById('temperature').value = temp;
+
+// Optionnel : affiche aussi le vent/pression si tu veux
+// el('structure').value = "mixte"; // ou laisse vide
 
       // Envoi au serveur pour conseil IA (ton suggestLures existant)
       const serverRes = await fetch('/api/advice', {
