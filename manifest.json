@@ -1,0 +1,24 @@
+{
+  "name": "FisherForce AI",
+  "short_name": "FisherForce",
+  "description": "L’IA qui te dit quoi pêcher, où et quand",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#001122",
+  "theme_color": "#00ff9d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "logo.jpg",
+      "sizes": "774x1168",
+      "type": "image/jpg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "Capture d'écran 2024-11-15 183807.png",
+      "sizes": "548x412",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
