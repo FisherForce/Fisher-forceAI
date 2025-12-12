@@ -439,6 +439,54 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
     el('weatherResult').innerHTML = "Active la localisation pour un conseil 100% précis";
   });
 });
+  // === SYSTÈME DE QUÊTES XP RÉEL (automatique + tableau de bord) ===
+const today = new Date().toDateString();
+const completedQuests = JSON.parse(localStorage.getItem('completedQuests') || '{}');
+
+function completeQuest(questId, xpReward) {
+  if (completedQuests[today]?.includes(questId)) {
+    alert("Quête déjà accomplie aujourd'hui !");
+    return;
+  }
+
+  // Ajoute la quête accomplie
+  if (!completedQuests[today]) completedQuests[today] = [];
+  completedQuests[today].push(questId);
+  localStorage.setItem('completedQuests', JSON.stringify(completedQuests));
+
+  // Donne l’XP réel
+  awardXP(xpReward, `Quête accomplie ! +${xpReward} XP`);
+
+  // Désactive le bouton
+  const btn = document.querySelector(`#quest${questId} button`);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Accomplie ✓";
+    btn.style.background = "#006600";
+  }
+}
+
+// Vérifie les quêtes déjà accomplies au chargement
+function checkCompletedQuests() {
+  if (completedQuests[today]) {
+    completedQuests[today].forEach(id => {
+      const btn = document.querySelector(`#quest${id} button`);
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Accomplie ✓";
+        btn.style.background = "#006600";
+      }
+    });
+  }
+}
+
+// Reset quotidien (à minuit)
+if (localStorage.getItem('lastQuestDay') !== today) {
+  localStorage.setItem('lastQuestDay', today);
+}
+
+// Lance au chargement
+document.addEventListener('DOMContentLoaded', checkCompletedQuests);
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
     const firebaseConfig = {
