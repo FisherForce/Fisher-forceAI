@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(pop);
     setTimeout(() => pop.remove(), 8000);
   }
-// === MÉTÉO AUTO + CONSEIL LEURRE IA (VERSION CORRIGÉE ET PARFAITE) ===
+// === MÉTÉO AUTO + CONSEIL LEURRE IA (VERSION 100% COMPATIBLE CAS ULTRA-CIBLÉS) ===
 document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () => {
   el('weatherResult').style.display = 'block';
   el('weatherResult').innerHTML = `<p style="color:#00d4aa;font-size:18px;">Détection position + météo en cours…</p>`;
@@ -384,10 +384,17 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
       const pression = Math.round(c.pressure_msl);
       const jour = c.is_day === 1;
 
-      // CRÉATION DE LA CHAÎNE CONDITIONS (maintenant définie AVANT utilisation)
-      const conditionsText = `${pluie ? 'pluie' : nuages ? 'nuageux' : 'soleil'}${jour ? '' : ' nuit'}`;
+      // NORMALISATION PARFAITE POUR MATCHER TON SERVER.JS
+      let conditionsText = "";
+      if (pluie) conditionsText += "pluie ";
+      if (nuages) conditionsText += "nuages ";  // "nuages" pour matcher tes includes('nuages')
+      if (!pluie && !nuages) conditionsText += "clair ";  // ou "soleil" si tu préfères
+      if (vent > 30) conditionsText += "vent fort ";
+      if (!jour) conditionsText += "nuit ";
 
-      // === REMPLISSAGE AUTOMATIQUE DES CHAMPS (maintenant après définition) ===
+      conditionsText = conditionsText.trim();  // ex: "pluie nuages" ou "clair vent fort nuit"
+
+      // REMPLISSAGE CHAMPS FORMULAIRE
       if (document.getElementById('conditions')) {
         document.getElementById('conditions').value = conditionsText;
       }
@@ -395,14 +402,14 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
         document.getElementById('temperature').value = temp;
       }
 
-      // Envoi au serveur avec les bonnes valeurs
+      // ENVOI AU SERVEUR (maintenant 100% compatible cas ultra-ciblés)
       const serverRes = await fetch('/api/advice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           targetSpecies: "Brochet",
           structure: "mixte",
-          conditions: conditionsText,  // maintenant cohérent
+          conditions: conditionsText,
           spotType: "étang",
           temperature: temp
         })
@@ -418,9 +425,10 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
           <b>MEILLEUR LEURRE MAINTENANT :</b><br>
           ${conseil.lures?.[0] || "Jerkbait 12cm naturel"}<br>
           <i>${conseil.lures?.[1] || ""}</i>
+          <i>${conseil.lures?.[2] || ""}</i>
         </div>
         <p style="color:#888;font-size:14px;margin-top:20px;">
-          IA FisherForce — mise à jour toutes les 10 min
+          Conditions envoyées à l'IA : "${conditionsText}"
         </p>
       `;
 
@@ -431,13 +439,6 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
     el('weatherResult').innerHTML = "Active la localisation pour un conseil 100% précis";
   });
 });
-
-// Refresh auto
-setInterval(() => {
-  if (document.getElementById('weatherResult')?.style.display === 'block') {
-    document.getElementById('weatherAdviceBtn').click();
-  }
-}, 600000);
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
     const firebaseConfig = {
