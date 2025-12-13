@@ -432,6 +432,41 @@ app.get('/api/leaderboard', (req, res) => {
   }
 });
 
+const tf = require('@tensorflow/tfjs-node');
+
+// === Fonction d'entraînement simple (appelée périodiquement) ===
+async function trainModel() {
+  const data = JSON.parse(fs.readFileSync(LEARNING_FILE, 'utf8'));
+  const xs = []; // Inputs : [temp, vent, pression, saisonCode (0-3), pluie (0/1), nuages (0/1)]
+  const ys = []; // Outputs : succès (1/0) par leurre (one-hot encoded, ex: 15 lures = 15 classes)
+
+  data.forEach(s => {
+    const saisonCode = ['hiver', 'printemps', 'été', 'automne'].indexOf(s.saison) || 0;
+    xs.push([s.temperature_air, s.wind, s.pressure, saisonCode, s.precipitation > 0.5 ? 1 : 0, s.cloud > 70 ? 1 : 0]);
+    ys.push(s.success ? 1 : 0); // Simplifié ; pour lures spécifiques, one-hot
+  });
+
+  const xsTensor = tf.tensor2d(xs);
+  const ysTensor = tf.tensor1d(ys);
+
+  const model = tf.sequential();
+  model.add(tf.layers.dense({units: 16, activation: 'relu', inputShape: [6]}));
+  model.add(tf.layers.dense({units: 1, activation: 'sigmoid'}));
+
+  model.compile({optimizer: 'adam', loss: 'binaryCrossentropy', metrics: ['accuracy']});
+
+  await model.fit(xsTensor, ysTensor, {epochs: 50});
+
+  await model.save('file://./models/fisher_model');
+  console.log("Modèle entraîné et sauvegardé");
+}
+
+// Appelle ça tous les jours ou à chaque 100 sessions
+app.post('/api/train', (req, res) => {
+  trainModel();
+  res.json({ success: true });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
