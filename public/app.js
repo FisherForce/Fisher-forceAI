@@ -494,29 +494,7 @@ if (localStorage.getItem('lastQuestDay') !== today) {
 // Lance au chargement
 document.addEventListener('DOMContentLoaded', checkCompletedQuests);
 
-  // === APPRENTISSAGE DES BREDOUILLES (blacklist lures qui ont échoué) ===
-let failedLures = JSON.parse(localStorage.getItem('failedLures') || '{}');
-let lastAdvice = null; // Stocke le dernier conseil donné
 
-// === Dans ton 'getAdvice' (après fetch serverRes) ===
-const conseil = await serverRes.json();
-lastAdvice = conseil.lures; // Stocke les lures conseillés
-
-// === Dans ton window.addEventListener('message') quand bredouille ===
-if (!success) {
-  if (lastAdvice) {
-    const key = `${speciesName || 'general'}_${spotType}_${structure}_${conditions}_${saison}`; // Clé unique
-    failedLures[key] = (failedLures[key] || []).concat(lastAdvice); // Ajoute les lures qui ont échoué
-    localStorage.setItem('failedLures', JSON.stringify(failedLures));
-    lastAdvice = null; // Reset
-  }
-}
-
-// === Dans ton renderAdvice (avant d'afficher les lures) ===
-data.lures = data.lures.filter(lure => {
-  const key = `${targetSpecies}_${waterType}_${structure}_${conditions}_${saison}`;
-  return !failedLures[key] || !failedLures[key].includes(lure); // Filtre les failed
-});
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
     const firebaseConfig = {
