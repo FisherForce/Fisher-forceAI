@@ -365,26 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => pop.remove(), 8000);
   }
 
-// === BLACKLIST LEURRES EN CAS DE BREDOUILLE (amélioration IA 2026) ===
-function blacklistLureOnFailure(lure, conditions, structure, spotType, temperature, species) {
-  const key = `failed_lures_${species.toLowerCase()}`;
-  let failedLures = JSON.parse(localStorage.getItem(key) || '{}');
-  
-  const conditionKey = `${conditions}_${structure}_${spotType}_${temperature}`;
-  
-  if (!failedLures[conditionKey]) failedLures[conditionKey] = [];
-  if (!failedLures[conditionKey].includes(lure)) {
-    failedLures[conditionKey].push(lure);
-    localStorage.setItem(key, JSON.stringify(failedLures));
-    console.log(`Lurre "${lure}" blacklisté pour ${conditionKey}`);
-  }
-}
 
-// Dans ton window.addEventListener('message', e => { ... }) – ajoute après if (!success)
-if (!success && lure) {
-  const input = readForm();
-  blacklistLureOnFailure(lure, input.conditions, input.structure, input.waterType, input.temperature, speciesName);
-}
   
 // === MÉTÉO AUTO + CONSEIL LEURRE IA (VERSION 100% COMPATIBLE CAS ULTRA-CIBLÉS) ===
 document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () => {
