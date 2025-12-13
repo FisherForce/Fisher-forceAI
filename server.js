@@ -196,6 +196,12 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   else if ([3, 4, 5].includes(mois)) saison = "printemps";
   else if ([6, 7, 8].includes(mois)) saison = "été";
   else saison = "automne";
+  
+  // === AJOUT SAISONNALITÉ + TEMPÉRATURE PRÉCISE ===
+  if (temperature !== null) {
+    if (temperature < 10) saison += " froid"; // Ajout froid pour hiver/ printemps froid
+    else if (temperature > 20) saison += " chaud"; // Été chaud
+  }
 
   // === UTILISER LES PATTERNS APPRENTIS (déjà chargés en haut) ===
   const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
