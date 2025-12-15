@@ -95,10 +95,11 @@
 
   <main class="container main-grid">
     <section class="card input-card">
-<!-- BOUTON MÉTÉO AUTO + ESPÈCE + SPOT + STRUCTURE DYNAMIQUES (version ultime 2026) -->
+<!-- BOUTON MÉTÉO AUTO + ESPÈCE + SPOT + STRUCTURE (EXCLUSIF PREMIUM) -->
 <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     MÉTÉO + CONSEIL IA EN DIRECT
+    <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
   </h3>
   
   <select id="targetSpeciesSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
@@ -127,7 +128,7 @@
     <option value="Aucun">Aucun</option>
   </select>
   
-  <button id="weatherAdviceBtn" style="width:85%;background:#00ff9d;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block; "onclick="if(requireSubscription('premium', 'Scanner spot IA')) { lancerScannerSpotIA(); }">
+  <button id="weatherAdviceBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
     ANALYSER MÉTÉO + MEILLEUR LEURRE
   </button>
   
@@ -135,8 +136,14 @@
 </div>
 
 <script>
-// === MÉTÉO AUTO + ESPÈCE / SPOT / STRUCTURE 100% DYNAMIQUES (version ultime) ===
+// === MÉTÉO AUTO + ESPÈCE / SPOT / STRUCTURE (EXCLUSIF PREMIUM) ===
 document.getElementById('weatherAdviceBtn').addEventListener('click', async () => {
+  // VÉRIFICATION ABONNEMENT PREMIUM
+  if (!requireSubscription('premium', 'Météo + Conseil IA en direct')) {
+    return; // Arrête tout si pas Premium
+  }
+
+  // Si Premium → exécution normale
   const resultDiv = document.getElementById('weatherResult');
   resultDiv.style.display = 'block';
   resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Détection position + météo en cours…</p>`;
@@ -165,14 +172,12 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
       const pression = Math.round(c.pressure_msl);
       const jour = c.is_day === 1;
 
-      // Conditions textuelles pour ton IA
       let conditionsText = "";
       if (pluie) conditionsText = "pluie";
       else if (nuages) conditionsText = "nuageux";
       else conditionsText = "soleil";
       if (!jour) conditionsText += " nuit";
 
-      // Appel à ton IA avec tout dynamique
       const adviceRes = await fetch('/api/advice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -200,9 +205,7 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
         </p>
       `;
 
-      // Auto-refresh toutes les 10 min
       setTimeout(() => document.getElementById('weatherAdviceBtn').click(), 600000);
-
     } catch (e) {
       resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
     }
