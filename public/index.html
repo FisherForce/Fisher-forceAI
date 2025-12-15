@@ -139,17 +139,19 @@
 <script>
 // === MÉTÉO AUTO + ESPÈCE / SPOT / STRUCTURE (EXCLUSIF PREMIUM – BLOQUÉ À 100 %) ===
 document.getElementById('weatherAdviceBtn').addEventListener('click', async (e) => {
-  e.preventDefault(); // bloque tout
+  e.preventDefault();
+  e.stopPropagation();
 
-  // VÉRIFICATION PREMIUM AU DÉBUT
+  const resultDiv = document.getElementById('weatherResult');
+  resultDiv.style.display = 'none';
+  resultDiv.innerHTML = '';
+
+  // VÉRIFICATION PREMIUM
   if (!requireSubscription('premium', 'Météo + Conseil IA en direct')) {
-    document.getElementById('weatherResult').style.display = 'none';
-    document.getElementById('weatherResult').innerHTML = '';
-    return; // ARRÊTE TOUT IMMÉDIATEMENT
+    return; // ARRÊTE TOUT
   }
 
   // Si Premium → exécution
-  const resultDiv = document.getElementById('weatherResult');
   resultDiv.style.display = 'block';
   resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Détection position + météo en cours…</p>`;
 
