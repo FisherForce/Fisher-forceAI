@@ -568,3 +568,92 @@ document.addEventListener('DOMContentLoaded', checkCompletedQuests);
   updateDashboard();
 });
 
+// === SYSTÈME D'ABONNEMENT FISHERFORCE AI (Gratuit / Inter / Premium) ===
+const subscriptionLevels = {
+  free: "Gratuit",
+  inter: "Intermédiaire",
+  premium: "Premium"
+};
+
+let currentSubscription = "free"; // par défaut
+
+// Liste des codes secrets (tu les modifies/ajoutes toi-même ici)
+const secretCodes = {
+  "THAO2026": "premium",
+  "INTER44": "inter",
+  "PREMIUM85": "premium",
+  "GARDIEN44": "premium",
+  "MAITREPECHE": "premium"
+  // Ajoute autant que tu veux ici
+};
+
+// Chargement abonnement au démarrage
+function loadSubscription() {
+  const saved = localStorage.getItem('fisherSubscription');
+  if (saved && subscriptionLevels[saved]) {
+    currentSubscription = saved;
+  } else {
+    currentSubscription = "free";
+  }
+  updateSubscriptionUI();
+}
+
+// Sauvegarde abonnement
+function setSubscription(level) {
+  currentSubscription = level;
+  localStorage.setItem('fisherSubscription', level);
+
+  // Si Firebase connecté → sauvegarde aussi sur Firestore
+  if (window.currentUser && window.db) {
+    window.db.collection('users').doc(window.currentUser.uid).update({
+      subscription: level,
+      subscriptionDate: new Date().toISOString()
+    });
+  }
+
+  updateSubscriptionUI();
+  alert(`Abonnement passé en ${subscriptionLevels[level]} ! Toutes les fonctions sont débloquées.`);
+}
+
+// UI abonnement (badge + niveau)
+function updateSubscriptionUI() {
+  const badge = document.getElementById('subscriptionBadge');
+  if (badge) {
+    badge.textContent = subscriptionLevels[currentSubscription];
+    badge.style.background = currentSubscription === "premium" ? "linear-gradient(45deg,#ffd700,#ff6b00)" :
+                            currentSubscription === "inter" ? "#00d4aa" : "#888888";
+  }
+}
+
+// Pop-up changement abonnement
+function showSubscriptionUpgrade() {
+  const code = prompt(`Ton abonnement actuel : ${subscriptionLevels[currentSubscription]}\n\nEntre un code pour passer à Intermédiaire ou Premium :`);
+
+  if (!code) return;
+
+  const level = secretCodes[code.trim().toUpperCase()];
+  if (level) {
+    setSubscription(level);
+  } else {
+    alert("Code invalide – réessaie ou reste en Gratuit pour l’instant.");
+  }
+}
+
+// Fonction pour bloquer les fonctions premium/inter
+function requireSubscription(minLevel, featureName) {
+  if (currentSubscription === "premium") return true;
+  if (minLevel === "inter" && currentSubscription === "inter") return true;
+
+  alert(`La fonction "${featureName}" est réservée aux abonnés ${minLevel === "inter" ? "Intermédiaire" : "Premium"}.\n\nClique sur "Passer à Premium" pour entrer un code.`);
+  showSubscriptionUpgrade();
+  return false;
+}
+
+// Exemple d'utilisation sur un bouton premium
+// <button onclick="if(requireSubscription('premium', 'Scanner spot IA')) { lancerScannerSpot(); }">Scanner spot IA (Premium)</button>
+
+// Chargement au démarrage
+document.addEventListener('DOMContentLoaded', () => {
+  loadSubscription();
+});
+
