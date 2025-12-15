@@ -95,7 +95,7 @@
 
   <main class="container main-grid">
     <section class="card input-card">
-<!-- BOUTON MÉTÉO AUTO + ESPÈCE + SPOT + STRUCTURE (EXCLUSIF PREMIUM) -->
+<!-- BOUTON MÉTÉO AUTO + ESPÈCE + SPOT + STRUCTURE (EXCLUSIF PREMIUM – VERSION CORRIGÉE) -->
 <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     MÉTÉO + CONSEIL IA EN DIRECT
@@ -136,11 +136,12 @@
 </div>
 
 <script>
-// === MÉTÉO AUTO + ESPÈCE / SPOT / STRUCTURE (EXCLUSIF PREMIUM) ===
+// === MÉTÉO AUTO + ESPÈCE / SPOT / STRUCTURE (EXCLUSIF PREMIUM – CORRIGÉ) ===
 document.getElementById('weatherAdviceBtn').addEventListener('click', async () => {
-  // VÉRIFICATION ABONNEMENT PREMIUM
+  // VÉRIFICATION PREMIUM AVANT TOUT
   if (!requireSubscription('premium', 'Météo + Conseil IA en direct')) {
-    return; // Arrête tout si pas Premium
+    document.getElementById('weatherResult').style.display = 'none'; // cache le résultat si pas premium
+    return; // ARRÊTE TOUT si pas Premium
   }
 
   // Si Premium → exécution normale
