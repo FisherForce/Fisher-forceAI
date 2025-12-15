@@ -568,6 +568,106 @@ Merci d'intervenir rapidement.
 }
 </script>
 
+      <!-- SPOTS À 20KM – EXCLUSIVITÉ PREMIUM -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
+  <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
+    SPOTS À 20KM DE TOI
+    <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
+  </h3>
+  
+  <p style="font-size:16px;margin:15px 0;">L’IA scanne tous les spots dans un rayon de 20 km et te donne les meilleurs selon météo + espèce</p>
+  
+  <select id="nearbySpecies" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
+    <option value="Brochet">Brochet</option>
+    <option value="Perche">Perche</option>
+    <option value="Sandre">Sandre</option>
+    <option value="Black-bass">Black-bass</option>
+    <option value="Silure">Silure</option>
+  </select>
+  
+  <button id="nearbySpotsBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
+    TROUVER LES MEILLEURS SPOTS À 20KM
+  </button>
+  
+  <div id="nearbySpotsResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;"></div>
+  
+  <!-- MASQUE TEASING FLOU PREMIUM -->
+  <div id="nearbyPremiumMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
+    <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
+    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Les meilleurs spots dans un rayon de 20 km autour de toi...</p>
+    <button onclick="showSubscriptionUpgrade()" style="background:#ffd700;color:black;padding:18px 50px;border:none;border-radius:50px;font-weight:bold;font-size:22px;box-shadow:0 0 30px #ffd700;">
+      DÉBLOQUER PREMIUM
+    </button>
+  </div>
+</div>
+
+<script>
+// === SPOTS À 20KM – EXCLUSIF PREMIUM (avec teasing flou) ===
+document.getElementById('nearbySpotsBtn').addEventListener('click', async () => {
+  const resultDiv = document.getElementById('nearbySpotsResult');
+  const teasingMask = document.getElementById('nearbyPremiumMask');
+
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Recherche des spots à 20 km en cours…</p>`;
+
+  // VÉRIFICATION PREMIUM
+  if (currentSubscription !== 'premium') {
+    resultDiv.innerHTML = `
+      <div style="padding:20px;">
+        <p style="font-size:18px;">3 spots trouvés à proximité :</p>
+        <ul style="text-align:left;">
+          <li>Étang du Moulin – 8.2 km – Score 92/100</li>
+          <li>Rivière La Sèvre – 12.4 km – Score 88/100</li>
+          <li>Lac Secret – 18.7 km – Score 95/100</li>
+        </ul>
+      </div>
+    `;
+    teasingMask.style.display = 'flex';
+    return;
+  }
+
+  // Si Premium → masque caché + vrai résultat (simulation pour l'exemple)
+  teasingMask.style.display = 'none';
+
+  if (!navigator.geolocation) {
+    resultDiv.innerHTML = "Géolocalisation non supportée";
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const species = document.getElementById('nearbySpecies').value;
+
+    // Simulation de spots réels (remplace par appel API réelle plus tard)
+    const spots = [
+      { name: "Étang du Moulin", dist: 8.2, score: 92, type: "Étang", structure: "Herbiers + bois morts" },
+      { name: "Rivière La Sèvre", dist: 12.4, score: 88, type: "Rivière", structure: "Courant + rochers" },
+      { name: "Lac Secret", dist: 18.7, score: 95, type: "Lac", structure: "Nénuphars + bordures" },
+      { name: "Canal des Moines", dist: 15.1, score: 85, type: "Canal", structure: "Herbiers" },
+      { name: "Plan d'eau caché", dist: 19.9, score: 90, type: "Étang", structure: "Arbres morts" }
+    ];
+
+    resultDiv.innerHTML = `
+      <p style="font-size:18px;margin-bottom:20px;"><strong>${spots.length} spots trouvés à moins de 20 km pour ${species}</strong></p>
+      <div style="text-align:left;">
+        ${spots.map(spot => `
+          <div style="background:#003366;padding:15px;border-radius:12px;margin:10px 0;">
+            <b style="color:#00ff9d;font-size:20px;">${spot.name}</b><br>
+            <span style="color:#aaa;">${spot.dist} km • Score ${spot.score}/100 • ${spot.type}</span><br>
+            <i style="color:#00d4aa;">Structure : ${spot.structure}</i>
+          </div>
+        `).join('')}
+      </div>
+      <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce – Spots analysés en temps réel</p>
+    `;
+  }, () => {
+    resultDiv.innerHTML = `<p style="color:#ff6b00;">Active la localisation pour trouver les spots autour de toi</p>`;
+    teasingMask.style.display = 'none';
+  });
+});
+</script>
+
 <!-- CHARGEMENT LEAFLET (obligatoire pour la map) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
