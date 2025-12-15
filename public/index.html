@@ -95,8 +95,8 @@
 
   <main class="container main-grid">
     <section class="card input-card">
-<!-- MÉTÉO AUTO + MASQUE PREMIUM (Gratuit = résultat caché) -->
-<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;">
+<!-- MÉTÉO AUTO + TEASING FLOU PREMIUM (résultat visible en flou si gratuit) -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     MÉTÉO + CONSEIL IA EN DIRECT
     <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
@@ -132,37 +132,28 @@
     ANALYSER MÉTÉO + MEILLEUR LEURRE
   </button>
   
-  <!-- RÉSULTAT MÉTÉO (toujours calculé, mais caché si gratuit) -->
-  <div id="weatherResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;"></div>
+  <!-- RÉSULTAT MÉTÉO -->
+  <div id="weatherResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;">
+  </div>
   
-  <!-- MASQUE PREMIUM (s'affiche si gratuit) -->
-  <div id="premiumMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;">
-    <h2 style="color:#ffd700;font-size:28px;margin-bottom:20px;">Exclusivité Premium</h2>
-    <p style="font-size:18px;max-width:80%;">Cette fonction est réservée aux abonnés Premium.</p>
-    <button onclick="showSubscriptionUpgrade()" style="background:#ffd700;color:black;padding:16px 40px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin-top:20px;">
-      Passer à Premium
+  <!-- MASQUE TEASING FLOU (s'affiche si gratuit) -->
+  <div id="premiumTeasingMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">
+    <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
+    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Le meilleur leurre en direct selon la météo réelle à ton spot...</p>
+    <button onclick="showSubscriptionUpgrade()" style="background:#ffd700;color:black;padding:18px 50px;border:none;border-radius:50px;font-weight:bold;font-size:22px;box-shadow:0 0 30px #ffd700;">
+      DÉBLOQUER PREMIUM
     </button>
   </div>
 </div>
 
 <script>
-// === MÉTÉO AUTO + MASQUE PREMIUM (Gratuit = résultat caché derrière masque) ===
+// === MÉTÉO AUTO + TEASING FLOU PREMIUM ===
 document.getElementById('weatherAdviceBtn').addEventListener('click', async () => {
   const resultDiv = document.getElementById('weatherResult');
-  const mask = document.getElementById('premiumMask');
+  const teasingMask = document.getElementById('premiumTeasingMask');
 
   resultDiv.style.display = 'block';
   resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Détection position + météo en cours…</p>`;
-
-  // Vérification abonnement
-  if (currentSubscription !== 'premium') {
-    resultDiv.innerHTML = '';
-    mask.style.display = 'flex';
-    return;
-  }
-
-  // Si Premium → masque caché + exécution normale
-  mask.style.display = 'none';
 
   if (!navigator.geolocation) {
     resultDiv.innerHTML = "Géolocalisation non supportée";
@@ -221,14 +212,21 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
         </p>
       `;
 
+      // TEASING FLOU SI GRATUIT
+      if (currentSubscription !== 'premium') {
+        teasingMask.style.display = 'flex';
+      } else {
+        teasingMask.style.display = 'none';
+      }
+
       setTimeout(() => document.getElementById('weatherAdviceBtn').click(), 600000);
     } catch (e) {
       resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
-      mask.style.display = 'none';
+      teasingMask.style.display = 'none';
     }
   }, () => {
     resultDiv.innerHTML = `<p style="color:#ff6b00;">Active la localisation pour un conseil ultra-précis</p>`;
-    mask.style.display = 'none';
+    teasingMask.style.display = 'none';
   });
 });
 </script>
