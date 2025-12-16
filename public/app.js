@@ -656,3 +656,104 @@ function requireSubscription(minLevel, featureName) {
 document.addEventListener('DOMContentLoaded', () => {
   loadSubscription();
 });
+// === STATISTIQUES PERSONNELLES AVANCÉES (basées sur XP, conseils, poissons map) ===
+function updateStatsAfterAdvice(adviceData) {
+  let stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
+  
+  // Conseils demandés
+  stats.totalAdvice = (stats.totalAdvice || 0) + 1;
+  stats.adviceBySpecies = stats.adviceBySpecies || {};
+  stats.adviceBySpecies[adviceData.species] = (stats.adviceBySpecies[adviceData.species] || 0) + 1;
+
+  // Leurres conseillés (on garde le premier comme "favori")
+  stats.favoriteLures = stats.favoriteLures || {};
+  const mainLure = adviceData.lures[0] || "Inconnu";
+  stats.favoriteLures[mainLure] = (stats.favoriteLures[mainLure] || 0) + 1;
+
+  localStorage.setItem('fisherAdvancedStats', JSON.stringify(stats));
+}
+
+function updateStatsAfterFishOnMap(species) {
+  let stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
+  
+  stats.totalFishOnMap = (stats.totalFishOnMap || 0) + 1;
+  stats.fishOnMapBySpecies = stats.fishOnMapBySpecies || {};
+  stats.fishOnMapBySpecies[species] = (stats.fishOnMapBySpecies[species] || 0) + 1;
+
+  localStorage.setItem('fisherAdvancedStats', JSON.stringify(stats));
+}
+
+function showAdvancedStats() {
+  if (currentSubscription !== 'premium') {
+    requireSubscription('premium', 'Statistiques avancées');
+    return;
+  }
+
+  const stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
+  const xp = progress.xp || 0;
+
+  // Top espèce conseil
+  let topSpecies = "Aucune";
+  let topSpeciesCount = 0;
+  if (stats.adviceBySpecies) {
+    for (const [species, count] of Object.entries(stats.adviceBySpecies)) {
+      if (count > topSpeciesCount) {
+        topSpecies = species;
+        topSpeciesCount = count;
+      }
+    }
+  }
+
+  // Top leurre
+  let topLure = "Aucun";
+  let topLureCount = 0;
+  if (stats.favoriteLures) {
+    for (const [lure, count] of Object.entries(stats.favoriteLures)) {
+      if (count > topLureCount) {
+        topLure = lure;
+        topLureCount = count;
+      }
+    }
+  }
+
+  // Top poisson map
+  let topFishMap = "Aucun";
+  let topFishMapCount = 0;
+  if (stats.fishOnMapBySpecies) {
+    for (const [species, count] of Object.entries(stats.fishOnMapBySpecies)) {
+      if (count > topFishMapCount) {
+        topFishMap = species;
+        topFishMapCount = count;
+      }
+    }
+  }
+
+  const display = document.getElementById('advancedStatsDisplay');
+  display.style.display = 'block';
+  display.innerHTML = `
+    <div style="background:#003366;padding:20px;border-radius:15px;text-align:left;">
+      <h4 style="color:#ffd700;text-align:center;margin-bottom:20px;">Tes stats Premium</h4>
+      
+      <p><strong>XP total :</strong> ${xp} points</p>
+      <p><strong>Conseils demandés :</strong> ${stats.totalAdvice || 0}</p>
+      <p><strong>Espèce la plus demandée :</strong> ${topSpecies} (${topSpeciesCount})</p>
+      <p><strong>Leurre le plus conseillé :</strong> ${topLure} (${topLureCount})</p>
+      <p><strong>Poissons placés sur la map :</strong> ${stats.totalFishOnMap || 0}</p>
+      <p><strong>Espèce la plus placée sur map :</strong> ${topFishMap} (${topFishMapCount})</p>
+      
+      <p style="color:#00ff9d;text-align:center;margin-top:30px;font-size:18px;font-weight:bold;">
+        Tu es un vrai traqueur ! Continue comme ça 🔥
+      </p>
+    </div>
+  `;
+}
+
+// Appelle ces fonctions aux bons endroits :
+// Après un conseil IA :
+updateStatsAfterAdvice({
+  species: species,
+  lures: conseil.lures
+});
+
+// Après placement poisson sur map :
+updateStatsAfterFishOnMap(speciesName);
