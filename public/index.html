@@ -568,19 +568,27 @@ Merci d'intervenir rapidement.
 }
 </script>
 
-<!-- ANALYSE CARTE SPOT PÊCHE – EXCLUSIVITÉ PREMIUM (marqueurs eau + score + groupage 10m) -->
+      <!-- ANALYSE CARTE SPOT PÊCHE – SCORE BASÉ SUR MÉTÉO + ESPÈCE (Premium) -->
 <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     ANALYSE CARTE SPOT PÊCHE
     <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
   </h3>
   
-  <p style="font-size:16px;margin:15px 0;">Déplace/zoom la carte puis clique "Analyser" – l’IA détecte l’eau et calcule le score spot</p>
+  <p style="font-size:16px;margin:15px 0;">Choisis ton espèce, déplace/zoom la carte puis clique "Analyser"</p>
+  
+  <select id="spotSpeciesSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
+    <option value="Brochet">Brochet</option>
+    <option value="Perche">Perche</option>
+    <option value="Sandre">Sandre</option>
+    <option value="Black-bass">Black-bass</option>
+    <option value="Silure">Silure</option>
+  </select>
   
   <div id="spotMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
   
   <button id="analyzeSpotBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
-    ANALYSER LA CARTE (Détecter eau + score spot)
+    ANALYSER LA CARTE (Eau + score météo/espèce)
   </button>
   
   <div id="spotAnalysisResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;"></div>
@@ -588,7 +596,7 @@ Merci d'intervenir rapidement.
   <!-- MASQUE TEASING FLOU PREMIUM -->
   <div id="spotPremiumMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
     <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
-    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Analyse complète de la carte avec marqueurs eau + score spot précis...</p>
+    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Analyse complète avec score basé sur météo + espèce...</p>
     <button onclick="showSubscriptionUpgrade()" style="background:#ffd700;color:black;padding:18px 50px;border:none;border-radius:50px;font-weight:bold;font-size:22px;box-shadow:0 0 30px #ffd700;">
       DÉBLOQUER PREMIUM
     </button>
@@ -599,7 +607,7 @@ Merci d'intervenir rapidement.
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <script>
-// === CARTE LEAFLET + ANALYSE EAU/SPOTS + SCORE + GROUPAGE 10M (EXCLUSIF PREMIUM) ===
+// === CARTE LEAFLET + ANALYSE EAU + SCORE MÉTÉO/ESPÈCE (EXCLUSIF PREMIUM) ===
 let spotMap = null;
 let waterLayerGroup = L.layerGroup();
 
@@ -620,16 +628,15 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
   const teasingMask = document.getElementById('spotPremiumMask');
 
   resultDiv.style.display = 'block';
-  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Analyse de la carte en cours…</p>`;
+  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Analyse eau + météo en cours…</p>`;
 
   // VÉRIFICATION PREMIUM
   if (currentSubscription !== 'premium') {
     resultDiv.innerHTML = `
       <div style="padding:20px;">
         <p style="font-size:18px;">Analyse simulée :</p>
-        <p><strong>4 zones d'eau détectées</strong><br>
-        Score moyen spot : 92/100<br>
-        Potentiel brochet élevé</p>
+        <p><strong>Score spot : 94/100</strong><br>
+        Eau détectée + conditions idéales pour le brochet</p>
       </div>
     `;
     teasingMask.style.display = 'flex';
@@ -639,105 +646,80 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
   // Si Premium → masque caché + analyse réelle
   teasingMask.style.display = 'none';
 
-  // Nettoie les anciens marqueurs
   waterLayerGroup.clearLayers();
 
   const bounds = spotMap.getBounds();
   const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
+  const species = document.getElementById('spotSpeciesSelect').value;
 
   try {
+    // MÉTÉO AUTO (centre de la carte)
+    const center = spotMap.getCenter();
+    const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${center.lat}&longitude=${center.lng}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover,pressure_msl,is_day&timezone=Europe/Paris`);
+    const meteoData = await meteoRes.json();
+    const c = meteoData.current;
+
+    const temp = Math.round(c.temperature_2m);
+    const vent = Math.round(c.wind_speed_10m);
+    const pluie = c.precipitation > 0.5;
+    const nuages = c.cloud_cover > 70;
+    const nuit = c.is_day === 0;
+
+    // ANALYSE EAU
     const query = `[out:json][timeout:25];(way["natural"="water"](${bbox});relation["natural"="water"](${bbox});way["waterway"](${bbox});relation["waterway"](${bbox}););out body;>;out skel qt;`;
     const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
     const data = await res.json();
 
     const waterFeatures = data.elements.filter(el => el.type === 'way' || el.type === 'relation');
 
-    // GROUPAGE DES FEATURES PROCHES (10m)
-    const groupedFeatures = groupWaterFeatures(waterFeatures, 0.00009); // 0.00009° ≈ 10m
+    // Affichage marqueurs eau
+    waterFeatures.forEach(feature => {
+      if (feature.geometry) {
+        const coords = feature.geometry.map(p => [p.lat, p.lon]);
+        L.polyline(coords, {color: '#00d4ff', weight: 4, opacity: 0.8}).addTo(waterLayerGroup);
+      }
+    });
 
-    if (groupedFeatures.length > 0) {
-      groupedFeatures.forEach(group => {
-        if (group.length > 0) {
-          const firstFeature = group[0];
-          if (firstFeature.geometry) {
-            const coords = firstFeature.geometry.map(p => [p.lat, p.lon]);
-            L.polyline(coords, {color: '#00d4ff', weight: 4, opacity: 0.8}).addTo(waterLayerGroup);
-          }
-        }
-      });
+    // CALCUL SCORE SPOT RÉEL (météo + espèce)
+    let score = 70; // base
 
-      // Score spot aléatoire réaliste (70-98) – tu peux l'améliorer avec météo + espèce
-      const score = Math.floor(Math.random() * 29) + 70;
-
-      resultDiv.innerHTML = `
-        <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
-          <b style="color:#00ff9d;font-size:22px;">Analyse complète Premium</b><br>
-          <span style="font-size:18px;">${groupedFeatures.length} plans/cours d'eau groupés détectés (seuils 10m)</span><br>
-          <b style="color:#ffd700;font-size:24px;margin:15px 0;display:block;">Score spot global : ${score}/100</b>
-          <i style="color:#aaa;">Potentiel élevé – eau présente + structures favorables</i>
-        </div>
-        <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce – Analyse Overpass OSM avec groupage 10m</p>
-      `;
-    } else {
-      resultDiv.innerHTML = `<p style="color:#e74c3c;font-size:19px;">Aucune eau détectée sur la zone visible. Déplace ou zoom la carte.</p>`;
+    // Bonus météo par espèce
+    if (species === "Brochet") {
+      if (pluie || nuages) score += 15;
+      if (temp < 15) score += 10;
+      if (vent > 20) score += 5;
+    } else if (species === "Perche") {
+      if (!pluie && !nuages) score += 15; // soleil
+      if (vent < 15) score += 10;
+    } else if (species === "Sandre") {
+      if (nuit) score += 20;
+      if (temp < 12) score += 15;
+    } else if (species === "Black-bass") {
+      if (temp > 20) score += 20;
+      if (!pluie) score += 10;
+    } else if (species === "Silure") {
+      if (nuit && temp > 18) score += 25;
     }
+
+    // Bonus eau détectée
+    if (waterFeatures.length > 0) score += 15;
+
+    score = Math.min(100, score);
+
+    resultDiv.innerHTML = `
+      <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
+        <b style="color:#00ff9d;font-size:22px;">Analyse Premium complète</b><br>
+        <span style="font-size:18px;">${waterFeatures.length} zones d'eau détectées</span><br>
+        <b style="color:#ffd700;font-size:28px;margin:15px 0;display:block;">Score ${species} : ${score}/100</b>
+        <i style="color:#aaa;">Conditions actuelles : ${temp}°C • ${vent} km/h • ${pluie ? 'Pluie' : nuages ? 'Nuageux' : 'Soleil'}${nuit ? ' • Nuit' : ''}</i>
+      </div>
+      <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce — Score basé sur météo réelle + espèce</p>
+    `;
   } catch (e) {
     resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
     teasingMask.style.display = 'none';
   }
 });
-
-// Fonction de groupage des features proches (10m ≈ 0.00009°)
-function groupWaterFeatures(features, maxDist) {
-  const groups = [];
-  const visited = new Set();
-
-  for (let i = 0; i < features.length; i++) {
-    if (visited.has(i)) continue;
-
-    const group = [features[i]];
-    visited.add(i);
-
-    const centroid1 = getCentroid(features[i]);
-
-    for (let j = i + 1; j < features.length; j++) {
-      if (visited.has(j)) continue;
-
-      const centroid2 = getCentroid(features[j]);
-
-      const dist = getDistance(centroid1.lat, centroid1.lng, centroid2.lat, centroid2.lng);
-      if (dist <= maxDist) {
-        group.push(features[j]);
-        visited.add(j);
-      }
-    }
-
-    groups.push(group);
-  }
-
-  return groups;
-}
-
-// Calcul centroid simple (moyenne lat/lon)
-function getCentroid(feature) {
-  if (!feature.geometry || feature.geometry.length === 0) return { lat: 0, lng: 0 };
-  let lat = 0, lng = 0;
-  feature.geometry.forEach(p => {
-    lat += p.lat;
-    lng += p.lon;
-  });
-  return { lat: lat / feature.geometry.length, lng: lng / feature.geometry.length };
-}
-
-// Distance approximative en degrés (pour 10m)
-function getDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c * 1000; // mètres
-}
 
 // Init carte
 document.addEventListener('DOMContentLoaded', initSpotMap);
