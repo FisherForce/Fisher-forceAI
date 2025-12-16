@@ -569,32 +569,44 @@ Merci d'intervenir rapidement.
 </script>
 
 <!-- BOUTON ANALYSE CARTE LEAFLET POUR DÉTECTER EAU / SPOTS (Premium) -->
-<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);">
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     ANALYSE CARTE SPOT PÊCHE
+    <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
   </h3>
-  
+ 
   <p style="font-size:16px;margin:15px 0;">L’IA analyse la carte visible pour détecter l’eau et spots potentiels</p>
-  
+ 
   <div id="spotMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
-  
-  <button id="analyzeSpotBtn" style="width:85%;background:#00ff9d;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
+ 
+  <button id="analyzeSpotBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
     ANALYSER LA CARTE (Détecter eau / spots)
   </button>
-  
-  <div id="spotAnalysisResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;"></div>
+ 
+  <div id="spotAnalysisResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;"></div>
+
+  <!-- MASQUE TEASING FLOU PREMIUM -->
+  <div id="spotPremiumMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
+    <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
+    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Marqueurs sur les spots d'eau détectés + analyse détaillée...</p>
+    <button onclick="showSubscriptionUpgrade()" style="background:#ffd700;color:black;padding:18px 50px;border:none;border-radius:50px;font-weight:bold;font-size:22px;box-shadow:0 0 30px #ffd700;">
+      DÉBLOQUER PREMIUM
+    </button>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <script>
-// === CARTE LEAFLET + ANALYSE EAU / SPOTS POTENTIELS ===
+// === CARTE LEAFLET + ANALYSE EAU / SPOTS + MARQUEURS + MASQUE PREMIUM ===
 let spotMap = null;
+let waterMarkersGroup = L.layerGroup();
 
 function initSpotMap() {
   spotMap = L.map('spotMap').setView([46.8, 1.7], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(spotMap);
+  waterMarkersGroup.addTo(spotMap);
 
   // Géoloc auto
   if (navigator.geolocation) {
@@ -606,8 +618,27 @@ function initSpotMap() {
 
 document.getElementById('analyzeSpotBtn').addEventListener('click', async () => {
   const resultDiv = document.getElementById('spotAnalysisResult');
+  const teasingMask = document.getElementById('spotPremiumMask');
+
   resultDiv.style.display = 'block';
   resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Analyse de la carte en cours…</p>`;
+
+  // VÉRIFICATION PREMIUM
+  if (currentSubscription !== 'premium') {
+    resultDiv.innerHTML = `
+      <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
+        <b style="color:#00ff9d;">Potentiel spot pêche détecté !</b><br>
+        <span style="font-size:18px;">Zones d'eau trouvées sur la carte visible.</span><br>
+        <i style="color:#aaa;">Marqueurs placés en Premium</i>
+      </div>
+    `;
+    teasingMask.style.display = 'flex';
+    return;
+  }
+
+  // Si Premium → masque caché + marqueurs
+  teasingMask.style.display = 'none';
+  waterMarkersGroup.clearLayers();
 
   // Récupère les bounds visibles de la carte
   const bounds = spotMap.getBounds();
@@ -615,18 +646,35 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
 
   try {
     // Requête Overpass API pour détecter eau (natural=water, waterway=*)
-    const query = `[out:json];(way["natural"="water"](${bbox});node["natural"="water"](${bbox});relation["natural"="water"](${bbox});way["waterway"](${bbox});node["waterway"](${bbox});relation["waterway"](${bbox}););out body;`;
+    const query = `[out:json];(way["natural"="water"](${bbox});node["natural"="water"](${bbox});relation["natural"="water"](${bbox});way["waterway"](${bbox});node["waterway"](${bbox});relation["waterway"](${bbox}););out center;`;
     const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
     const data = await res.json();
 
-    const waterFeatures = data.elements.length;
+    const waterFeatures = data.elements;
+    let spotCount = 0;
 
-    if (waterFeatures > 0) {
+    waterFeatures.forEach(feature => {
+      if (feature.lat && feature.lon) {
+        // MARQUEUR ROND BLEU FLUO
+        L.circleMarker([feature.lat, feature.lon], {
+          radius: 14,
+          color: '#00d4ff',
+          fillColor: '#00ff9d',
+          fillOpacity: 0.9,
+          weight: 4
+        }).addTo(waterMarkersGroup)
+          .bindPopup(`<b style="color:#00ff9d;">Spot potentiel détecté !</b><br>Eau présente ici`);
+
+        spotCount++;
+      }
+    });
+
+    if (spotCount > 0) {
       resultDiv.innerHTML = `
         <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
           <b style="color:#00ff9d;">Potentiel spot pêche détecté !</b><br>
-          <span style="font-size:18px;">${waterFeatures} zones d'eau détectées sur la carte visible.</span><br>
-          <i style="color:#aaa;">Il y a probablement un bon spot près de toi (étang, rivière, lac).</i><br>
+          <span style="font-size:18px;">${spotCount} zone(s) d'eau détectées sur la carte visible.</span><br>
+          <i style="color:#aaa;">Marqueurs bleus placés sur chaque spot</i><br>
           <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce – Analyse Overpass OSM</p>
         </div>
       `;
