@@ -568,7 +568,7 @@ Merci d'intervenir rapidement.
 }
 </script>
 
-      <!-- ANALYSE CARTE SPOT PÊCHE – SCORE BASÉ SUR MÉTÉO + ESPÈCE (Premium) -->
+<!-- ANALYSE CARTE SPOT PÊCHE – SCORE MÉTÉO/ESPÈCE + BOUTON ALLER AU SPOT (Premium) -->
 <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     ANALYSE CARTE SPOT PÊCHE
@@ -588,7 +588,7 @@ Merci d'intervenir rapidement.
   <div id="spotMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
   
   <button id="analyzeSpotBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
-    ANALYSER LA CARTE (Eau + score météo/espèce)
+    ANALYSER LA CARTE (Eau + score + navigation)
   </button>
   
   <div id="spotAnalysisResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;"></div>
@@ -596,7 +596,7 @@ Merci d'intervenir rapidement.
   <!-- MASQUE TEASING FLOU PREMIUM -->
   <div id="spotPremiumMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
     <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
-    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Analyse complète avec score basé sur météo + espèce...</p>
+    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Analyse complète avec score météo/espèce + navigation GPS...</p>
     <button onclick="showSubscriptionUpgrade()" style="background:#ffd700;color:black;padding:18px 50px;border:none;border-radius:50px;font-weight:bold;font-size:22px;box-shadow:0 0 30px #ffd700;">
       DÉBLOQUER PREMIUM
     </button>
@@ -607,14 +607,14 @@ Merci d'intervenir rapidement.
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <script>
-// === CARTE LEAFLET + ANALYSE EAU + SCORE MÉTÉO/ESPÈCE (EXCLUSIF PREMIUM) ===
+// === CARTE LEAFLET + ANALYSE EAU + SCORE MÉTÉO/ESPÈCE + BOUTON ALLER AU SPOT ===
 let spotMap = null;
-let waterLayerGroup = L.layerGroup();
+let waterMarkersGroup = L.layerGroup();
 
 function initSpotMap() {
   spotMap = L.map('spotMap').setView([46.8, 1.7], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(spotMap);
-  waterLayerGroup.addTo(spotMap);
+  waterMarkersGroup.addTo(spotMap);
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
@@ -636,7 +636,7 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
       <div style="padding:20px;">
         <p style="font-size:18px;">Analyse simulée :</p>
         <p><strong>Score spot : 94/100</strong><br>
-        Eau détectée + conditions idéales pour le brochet</p>
+        5 spots détectés avec navigation GPS</p>
       </div>
     `;
     teasingMask.style.display = 'flex';
@@ -646,14 +646,14 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
   // Si Premium → masque caché + analyse réelle
   teasingMask.style.display = 'none';
 
-  waterLayerGroup.clearLayers();
+  waterMarkersGroup.clearLayers();
 
   const bounds = spotMap.getBounds();
   const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
   const species = document.getElementById('spotSpeciesSelect').value;
 
   try {
-    // MÉTÉO AUTO (centre de la carte)
+    // MÉTÉO AUTO (centre carte)
     const center = spotMap.getCenter();
     const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${center.lat}&longitude=${center.lng}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover,pressure_msl,is_day&timezone=Europe/Paris`);
     const meteoData = await meteoRes.json();
@@ -672,46 +672,68 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
 
     const waterFeatures = data.elements.filter(el => el.type === 'way' || el.type === 'relation');
 
-    // Affichage marqueurs eau
+    let spotCount = 0;
+
     waterFeatures.forEach(feature => {
-      if (feature.geometry) {
-        const coords = feature.geometry.map(p => [p.lat, p.lon]);
-        L.polyline(coords, {color: '#00d4ff', weight: 4, opacity: 0.8}).addTo(waterLayerGroup);
+      if (feature.geometry && feature.geometry.length > 0) {
+        // Centroïde
+        let latSum = 0, lngSum = 0;
+        feature.geometry.forEach(p => {
+          latSum += p.lat;
+          lngSum += p.lon;
+        });
+        const centerLat = latSum / feature.geometry.length;
+        const centerLng = lngSum / feature.geometry.length;
+
+        // Marqueur + bouton Google Maps
+        L.circleMarker([centerLat, centerLng], {
+          radius: 12,
+          color: '#00d4ff',
+          fillColor: '#00ff9d',
+          fillOpacity: 0.9,
+          weight: 3
+        }).addTo(waterMarkersGroup)
+          .bindPopup(`
+            <b style="color:#00ff9d;">Spot potentiel détecté</b><br>
+            Eau présente<br>
+            <button onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${centerLat},${centerLng}', '_blank')" style="margin-top:10px;background:#00ff9d;color:black;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">
+              ALLER AU SPOT (Google Maps)
+            </button>
+          `);
+
+        spotCount++;
       }
     });
 
-    // CALCUL SCORE SPOT RÉEL (météo + espèce)
-    let score = 70; // base
+    // CALCUL SCORE RÉEL (météo + espèce)
+    let score = 60; // base
 
-    // Bonus météo par espèce
     if (species === "Brochet") {
-      if (pluie || nuages) score += 15;
-      if (temp < 15) score += 10;
-      if (vent > 20) score += 5;
+      if (pluie || nuages) score += 20;
+      if (temp < 18) score += 15;
+      if (vent > 15) score += 10;
     } else if (species === "Perche") {
-      if (!pluie && !nuages) score += 15; // soleil
-      if (vent < 15) score += 10;
+      if (!pluie && !nuages) score += 20;
+      if (vent < 20) score += 15;
     } else if (species === "Sandre") {
-      if (nuit) score += 20;
-      if (temp < 12) score += 15;
+      if (nuit) score += 25;
+      if (temp < 15) score += 15;
     } else if (species === "Black-bass") {
-      if (temp > 20) score += 20;
+      if (temp > 20) score += 25;
       if (!pluie) score += 10;
     } else if (species === "Silure") {
-      if (nuit && temp > 18) score += 25;
+      if (nuit && temp > 18) score += 30;
     }
 
-    // Bonus eau détectée
-    if (waterFeatures.length > 0) score += 15;
-
+    if (spotCount > 0) score += 20;
     score = Math.min(100, score);
 
     resultDiv.innerHTML = `
       <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
         <b style="color:#00ff9d;font-size:22px;">Analyse Premium complète</b><br>
-        <span style="font-size:18px;">${waterFeatures.length} zones d'eau détectées</span><br>
+        <span style="font-size:18px;">${spotCount} spots potentiels détectés</span><br>
         <b style="color:#ffd700;font-size:28px;margin:15px 0;display:block;">Score ${species} : ${score}/100</b>
-        <i style="color:#aaa;">Conditions actuelles : ${temp}°C • ${vent} km/h • ${pluie ? 'Pluie' : nuages ? 'Nuageux' : 'Soleil'}${nuit ? ' • Nuit' : ''}</i>
+        <i style="color:#aaa;">Conditions : ${temp}°C • ${vent} km/h • ${pluie ? 'Pluie' : nuages ? 'Nuageux' : 'Soleil'}${nuit ? ' • Nuit' : ''}</i>
       </div>
       <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce — Score basé sur météo réelle + espèce</p>
     `;
@@ -724,7 +746,6 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
 // Init carte
 document.addEventListener('DOMContentLoaded', initSpotMap);
 </script>
-<!-- CHARGEMENT LEAFLET (obligatoire pour la map) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
