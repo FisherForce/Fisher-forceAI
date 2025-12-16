@@ -568,19 +568,19 @@ Merci d'intervenir rapidement.
 }
 </script>
 
-<!-- ANALYSE CARTE SPOT PÊCHE – DÉTECTION EAU SIMPLE + MARQUEURS (Premium) -->
+<!-- ANALYSE CARTE SPOT PÊCHE – POINTS BLEUS FLUO SUR SPOTS EAU (Premium) -->
 <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     ANALYSE CARTE SPOT PÊCHE
     <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
   </h3>
   
-  <p style="font-size:16px;margin:15px 0;">Déplace/zoom sur une rivière, étang ou lac puis clique "Analyser" – l’IA place des marqueurs sur l’eau détectée</p>
+  <p style="font-size:16px;margin:15px 0;">Déplace/zoom sur une rivière, étang ou lac puis clique "Analyser" – l’IA place des points sur les spots d’eau</p>
   
   <div id="spotMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
   
   <button id="analyzeSpotBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
-    ANALYSER LA CARTE (Détecter eau + marqueurs)
+    ANALYSER LA CARTE (Détecter eau + points spots)
   </button>
   
   <div id="spotAnalysisResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;"></div>
@@ -588,7 +588,7 @@ Merci d'intervenir rapidement.
   <!-- MASQUE TEASING FLOU PREMIUM -->
   <div id="spotPremiumMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
     <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
-    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Analyse complète avec marqueurs sur les spots potentiels...</p>
+    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Analyse complète avec points sur les spots potentiels...</p>
     <button onclick="showSubscriptionUpgrade()" style="background:#ffd700;color:black;padding:18px 50px;border:none;border-radius:50px;font-weight:bold;font-size:22px;box-shadow:0 0 30px #ffd700;">
       DÉBLOQUER PREMIUM
     </button>
@@ -599,7 +599,7 @@ Merci d'intervenir rapidement.
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <script>
-// === CARTE LEAFLET + DÉTECTION EAU SIMPLE + MARQUEURS POINTS (EXCLUSIF PREMIUM) ===
+// === CARTE LEAFLET + DÉTECTION EAU + POINTS BLEUS FLUO SUR SPOTS ===
 let spotMap = null;
 let waterMarkersGroup = L.layerGroup();
 
@@ -628,7 +628,7 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
       <div style="padding:20px;">
         <p style="font-size:18px;">Analyse simulée :</p>
         <p><strong>Spot potentiel détecté !</strong><br>
-        Eau présente sur la carte</p>
+        Points placés sur l'eau</p>
       </div>
     `;
     teasingMask.style.display = 'flex';
@@ -642,7 +642,6 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
   const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
 
   try {
-    // Query simple et fiable (celle qui marchait au début)
     const query = `[out:json][timeout:30];
     (
       way["natural"="water"](${bbox});
@@ -660,15 +659,16 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
 
     waterFeatures.forEach(feature => {
       if (feature.lat && feature.lon) {
-        // Marqueur bleu fluo sur le centre
+        // GROS POINT BLEU FLUO avec glow
         L.circleMarker([feature.lat, feature.lon], {
-          radius: 12,
+          radius: 15,
           color: '#00d4ff',
           fillColor: '#00ff9d',
           fillOpacity: 0.9,
-          weight: 3
+          weight: 4,
+          opacity: 1
         }).addTo(waterMarkersGroup)
-          .bindPopup(`<b style="color:#00ff9d;">Spot potentiel détecté !</b><br>Eau présente ici`);
+          .bindPopup(`<b style="color:#00ff9d;font-size:18px;">Spot potentiel détecté !</b><br>Eau présente ici`);
 
         spotCount++;
       }
@@ -678,12 +678,12 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
       resultDiv.innerHTML = `
         <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
           <b style="color:#00ff9d;font-size:22px;">Spot potentiel détecté !</b><br>
-          <span style="font-size:18px;">${spotCount} zone(s) d'eau trouvée(s) sur la carte</span><br>
-          <i style="color:#aaa;">Marqueurs placés – potentiel pêche élevé</i>
+          <span style="font-size:18px;">${spotCount} point(s) placé(s) sur l'eau détectée</span><br>
+          <i style="color:#aaa;">Potentiel pêche élevé – clique sur un point pour plus d'infos</i>
         </div>
       `;
     } else {
-      resultDiv.innerHTML = `<p style="color:#ff6b00;font-size:19px;">Aucune eau détectée.<br>Zoome plus ou déplace-toi sur une rivière, étang ou lac visible.</p>`;
+      resultDiv.innerHTML = `<p style="color:#ff6b00;font-size:19px;">Aucune eau détectée.<br>Zoome plus ou déplace-toi sur une rivière, étang ou lac visible sur la carte.</p>`;
     }
   } catch (e) {
     resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
