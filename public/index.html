@@ -568,7 +568,7 @@ Merci d'intervenir rapidement.
 }
 </script>
 
-<!-- ANALYSE CARTE SPOT PÊCHE – EXCLUSIVITÉ PREMIUM (marqueurs eau + score) -->
+<!-- ANALYSE CARTE SPOT PÊCHE – EXCLUSIVITÉ PREMIUM (marqueurs eau + score + groupage 10m) -->
 <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     ANALYSE CARTE SPOT PÊCHE
@@ -599,7 +599,7 @@ Merci d'intervenir rapidement.
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
 <script>
-// === CARTE LEAFLET + ANALYSE EAU/SPOTS + SCORE (EXCLUSIF PREMIUM) ===
+// === CARTE LEAFLET + ANALYSE EAU/SPOTS + SCORE + GROUPAGE 10M (EXCLUSIF PREMIUM) ===
 let spotMap = null;
 let waterLayerGroup = L.layerGroup();
 
@@ -652,11 +652,17 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
 
     const waterFeatures = data.elements.filter(el => el.type === 'way' || el.type === 'relation');
 
-    if (waterFeatures.length > 0) {
-      waterFeatures.forEach(feature => {
-        if (feature.geometry) {
-          const coords = feature.geometry.map(p => [p.lat, p.lon]);
-          L.polyline(coords, {color: '#00d4ff', weight: 4, opacity: 0.8}).addTo(waterLayerGroup);
+    // GROUPAGE DES FEATURES PROCHES (10m)
+    const groupedFeatures = groupWaterFeatures(waterFeatures, 0.00009); // 0.00009° ≈ 10m
+
+    if (groupedFeatures.length > 0) {
+      groupedFeatures.forEach(group => {
+        if (group.length > 0) {
+          const firstFeature = group[0];
+          if (firstFeature.geometry) {
+            const coords = firstFeature.geometry.map(p => [p.lat, p.lon]);
+            L.polyline(coords, {color: '#00d4ff', weight: 4, opacity: 0.8}).addTo(waterLayerGroup);
+          }
         }
       });
 
@@ -666,11 +672,11 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
       resultDiv.innerHTML = `
         <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
           <b style="color:#00ff9d;font-size:22px;">Analyse complète Premium</b><br>
-          <span style="font-size:18px;">${waterFeatures.length} zones d'eau détectées sur la carte visible</span><br>
+          <span style="font-size:18px;">${groupedFeatures.length} plans/cours d'eau groupés détectés (seuils 10m)</span><br>
           <b style="color:#ffd700;font-size:24px;margin:15px 0;display:block;">Score spot global : ${score}/100</b>
           <i style="color:#aaa;">Potentiel élevé – eau présente + structures favorables</i>
         </div>
-        <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce – Analyse Overpass OSM en temps réel</p>
+        <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce – Analyse Overpass OSM avec groupage 10m</p>
       `;
     } else {
       resultDiv.innerHTML = `<p style="color:#e74c3c;font-size:19px;">Aucune eau détectée sur la zone visible. Déplace ou zoom la carte.</p>`;
@@ -681,10 +687,61 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
   }
 });
 
+// Fonction de groupage des features proches (10m ≈ 0.00009°)
+function groupWaterFeatures(features, maxDist) {
+  const groups = [];
+  const visited = new Set();
+
+  for (let i = 0; i < features.length; i++) {
+    if (visited.has(i)) continue;
+
+    const group = [features[i]];
+    visited.add(i);
+
+    const centroid1 = getCentroid(features[i]);
+
+    for (let j = i + 1; j < features.length; j++) {
+      if (visited.has(j)) continue;
+
+      const centroid2 = getCentroid(features[j]);
+
+      const dist = getDistance(centroid1.lat, centroid1.lng, centroid2.lat, centroid2.lng);
+      if (dist <= maxDist) {
+        group.push(features[j]);
+        visited.add(j);
+      }
+    }
+
+    groups.push(group);
+  }
+
+  return groups;
+}
+
+// Calcul centroid simple (moyenne lat/lon)
+function getCentroid(feature) {
+  if (!feature.geometry || feature.geometry.length === 0) return { lat: 0, lng: 0 };
+  let lat = 0, lng = 0;
+  feature.geometry.forEach(p => {
+    lat += p.lat;
+    lng += p.lon;
+  });
+  return { lat: lat / feature.geometry.length, lng: lng / feature.geometry.length };
+}
+
+// Distance approximative en degrés (pour 10m)
+function getDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c * 1000; // mètres
+}
+
 // Init carte
 document.addEventListener('DOMContentLoaded', initSpotMap);
 </script>
-
 <!-- CHARGEMENT LEAFLET (obligatoire pour la map) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
