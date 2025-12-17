@@ -235,6 +235,16 @@ document.addEventListener('DOMContentLoaded', () => {
           console.warn("Échec envoi session IA", err);
         }
       }
+      if (success && currentLure) { // currentLure = le leurre que l'utilisateur a utilisé
+  learnFromSuccessfulCatch(
+    currentSpecies, 
+    currentLure, 
+    currentConditions, 
+    currentStructure, 
+    currentSpotType, 
+    currentTemp
+  );
+}
 
       if (success) awardXP(5, "Prise validée !");
       else awardXP(5, "Session enregistrée");
