@@ -1,14 +1,11 @@
 const el = id => document.getElementById(id);
-
 // === VARIABLES GLOBALES ===
 let progress = { xp: 0, speciesCaught: {}, successes: 0, attempts: 0 };
 let knownSpots = new Set();
 let knownSpecies = new Set();
-
 // === LIMITATION 5 CONSEILS/JOUR ===
 let dailyAdviceCount = parseInt(localStorage.getItem('dailyAdviceCount') || '0');
 let lastAdviceDate = localStorage.getItem('lastAdviceDate') || '';
-
 function resetDailyCount() {
   const today = new Date().toDateString();
   if (lastAdviceDate !== today) {
@@ -19,11 +16,9 @@ function resetDailyCount() {
   }
 }
 resetDailyCount();
-
 // === LIMITATION 6 RÉSULTATS/JOUR ===
 let dailyResultCount = parseInt(localStorage.getItem('dailyResultCount') || '0');
 let lastResultDate = localStorage.getItem('lastResultDate') || '';
-
 function resetDailyResultCount() {
   const today = new Date().toDateString();
   if (lastResultDate !== today) {
@@ -34,7 +29,6 @@ function resetDailyResultCount() {
   }
 }
 resetDailyResultCount();
-
 // === CHARGEMENT LOCAL ===
 function loadAll() {
   const data = localStorage.getItem('fisherXP');
@@ -45,14 +39,12 @@ function loadAll() {
   if (species) knownSpecies = new Set(JSON.parse(species));
 }
 loadAll();
-
 // === XP DOPAMINE PUR ===
 function awardXP(amount, message) {
   progress.xp += amount;
   saveAll();
   showXPPop(`+${amount} XP ! ${message}`);
 }
-
 function showXPPop(text) {
   const pop = document.createElement('div');
   pop.innerHTML = `<strong style="font-size:30px;">${text}</strong>`;
@@ -60,14 +52,12 @@ function showXPPop(text) {
   document.body.appendChild(pop);
   setTimeout(() => pop.remove(), 1800);
 }
-
 function saveAll() {
   localStorage.setItem('fisherXP', JSON.stringify(progress));
   localStorage.setItem('knownSpots', JSON.stringify([...knownSpots]));
   localStorage.setItem('knownSpecies', JSON.stringify([...knownSpecies]));
   updateDashboard();
 }
-
 // === DASHBOARD LIVE (SÉCURISÉ) ===
 function updateDashboard() {
   const dashboard = document.querySelector('.dashboard');
@@ -81,12 +71,12 @@ const level = progress.xp < 50 ? "Débutant 👼" :
               progress.xp < 555 ? "FisherForce 💪" :
               progress.xp < 666 ? "Ami des poissons 🐟" :
               progress.xp < 1000 ? "Guide de pêche 🦞" :
-              progress.xp < 1500 ? "Compétiteur 🥽" : 
+              progress.xp < 1500 ? "Compétiteur 🥽" :
               progress.xp < 2000 ? "Spécialiste 🤖" :
-              progress.xp < 3000 ? " Bar de légende 👾" :  
+              progress.xp < 3000 ? " Bar de légende 👾" :
               progress.xp < 4000 ? " Visionnaire 🦅" :
               progress.xp < 5000 ? " Perche divine 🐠" :
-              progress.xp < 10000 ? "Goat 🐊" : "Légende Vivante 🌟"; 
+              progress.xp < 10000 ? "Goat 🐊" : "Légende Vivante 🌟";
   const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
   dashboard.innerHTML = `
     <h3><span class="level-badge">${level}</span> — <span id="xp">${progress.xp}</span> XP</h3>
@@ -96,14 +86,12 @@ const level = progress.xp < 50 ? "Débutant 👼" :
       <div class="stat-item">Réussite : <strong>${rate}%</strong></div>
     </div>`;
 }
-
 // === FONCTION CARTE : SAUVEGARDE GPS DE CHAQUE SESSION ===
 function saveSessionToMap(success, speciesName, poids, spotName, lure) {
   if (!navigator.geolocation) {
     console.log("Géolocalisation non supportée");
     return;
   }
-
   navigator.geolocation.getCurrentPosition(
     (pos) => {
       const session = {
@@ -117,7 +105,6 @@ function saveSessionToMap(success, speciesName, poids, spotName, lure) {
         date: new Date().toISOString(),
         pseudo: localStorage.getItem('fisherPseudo') || "Anonyme"
       };
-
       let sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
       sessions.push(session);
       localStorage.setItem('fishingSessions', JSON.stringify(sessions));
@@ -129,7 +116,6 @@ function saveSessionToMap(success, speciesName, poids, spotName, lure) {
     { enableHighAccuracy: true, timeout: 10000 }
   );
 }
-
 // === TOUT LE CODE ===
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('xpAnim')) {
@@ -138,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
     s.textContent = '@keyframes pop{0%{transform:scale(0) translateX(-50%)}40%{transform:scale(1.7) translateX(-50%)}100%{transform:scale(1) translateX(-50%);opacity:0}}';
     document.head.appendChild(s);
   }
-
   el('getAdvice')?.addEventListener('click', async () => {
     if (dailyAdviceCount >= 5) {
       alert("Limite de 5 conseils par jour atteinte ! Reviens demain pour plus d'aventure.");
@@ -147,82 +132,38 @@ document.addEventListener('DOMContentLoaded', () => {
     dailyAdviceCount++;
     localStorage.setItem('dailyAdviceCount', dailyAdviceCount.toString());
     localStorage.setItem('lastAdviceDate', new Date().toDateString());
-
     const input = readForm();
     const spotName = (input.spotName || "").trim().toLowerCase();
-
     awardXP(1, "Conseil demandé !");
     if (spotName && !knownSpots.has(spotName)) {
       knownSpots.add(spotName);
       awardXP(10, "Nouveau spot découvert !");
     }
-
     el('advice').innerHTML = '<p class="muted">Génération en cours…</p>';
-
     let result;
     try {
-// VÉRIFICATION CAS PERSONNEL AVANT API
-const personalLure = checkPersonalCaseLocal(species, conditionsText, structure, spotType, temp);
-
-if (personalLure) {
-  // CAS PERSONNEL DÉTECTÉ – AFFICHE DIRECT SANS API
-  resultDiv.innerHTML = `
-    <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
-      <b style="color:#ffd700;font-size:24px;">CAS PERSONNEL DÉTECTÉ !</b><br>
-      <span style="font-size:20px;">Ce leurre a déjà marché pour toi dans ces conditions</span><br>
-      <b style="color:#00ff9d;font-size:26px;margin-top:10px;display:block;">${personalLure[0]}</b>
-    </div>
-    <p style="color:#888;font-size:14px;margin-top:20px;">
-      IA FisherForce — Apprentissage personnel activé
-    </p>
-  `;
-} else {
-  // Sinon → appel normal API
-  const adviceRes = await fetch('/api/advice', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      targetSpecies: species,
-      structure: structure,
-      conditions: conditionsText,
-      spotType: spotType,
-      temperature: temp
-    })
-  });
-  const conseil = await adviceRes.json();
-
-  // ton code normal pour afficher le conseil API
-  resultDiv.innerHTML = `
-    // ton affichage normal du conseil API
-  `;
-}
       result = await res.json();
     } catch (e) {
       console.log("API HS → mode démo");
     }
-
     if (!result || result.error) {
       result = {
         adviceText: "Pêche en poids suspendu avec un leurre souple 10cm texan. Varie les couleurs selon la luminosité.",
         lures: ["Texas rig 10g — Herbiers", "Jerkbait 11cm — Eau claire", "Spinnerbait — Vent fort"]
       };
     }
-
     renderAdvice(result);
   });
-
   el('clearBtn')?.addEventListener('click', () => {
     ['spotName','structure','targetSpecies','conditions','temperature'].forEach(id => el(id).value = '');
     el('waterType').value = 'Étang';
     el('advice').innerHTML = '<p class="muted">Remplis le formulaire…</p>';
     el('voiceControls') && (el('voiceControls').style.display = 'none');
   });
-
   window.openResultat = () => {
     const spot = el('spotName')?.value.trim() || "Spot inconnu";
     window.open(`resultat.html?spot=${encodeURIComponent(spot)}`, '_blank', 'width=500,height=700');
   };
-
   // === RÉCEPTION DES RÉSULTATS + RÉACTIONS IA + SAUVEGARDE GPS ===
   window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
@@ -233,9 +174,7 @@ if (personalLure) {
       dailyResultCount++;
       localStorage.setItem('dailyResultCount', dailyResultCount.toString());
       localStorage.setItem('lastResultDate', new Date().toDateString());
-
       const { success, speciesName, spotName, lure, poids = 0 } = e.data;
-
       // ENVOI À L'IA
       if (success && speciesName && lure) {
         const input = readForm();
@@ -259,41 +198,24 @@ if (personalLure) {
           console.warn("Échec envoi session IA", err);
         }
       }
-      if (success && currentLure) { // currentLure = le leurre que l'utilisateur a utilisé
-  learnFromSuccessfulCatch(
-    currentSpecies, 
-    currentLure, 
-    currentConditions, 
-    currentStructure, 
-    currentSpotType, 
-    currentTemp
-  );
-}
-
       if (success) awardXP(5, "Prise validée !");
       else awardXP(5, "Session enregistrée");
-
       if (spotName && !knownSpots.has(spotName)) {
         knownSpots.add(spotName);
         awardXP(10, "NOUVEAU SPOT CONQUIS !");
       }
-
       if (success && speciesName && !knownSpecies.has(speciesName)) {
         knownSpecies.add(speciesName);
         awardXP(10, `NOUVELLE ESPÈCE : ${speciesName.toUpperCase()} !`);
       }
-
       if (success && speciesName) {
         progress.speciesCaught[speciesName] = (progress.speciesCaught[speciesName] || 0) + 1;
       }
-
       progress.attempts += 1;
       if (success) progress.successes += 1;
       saveAll();
-
       // SAUVEGARDE GPS SUR LA CARTE
       saveSessionToMap(success, speciesName || null, poids, spotName || "Spot inconnu", lure || "Inconnu");
-
       // RÉACTION IA
       if (success && speciesName && poids > 0) {
         showFishReaction(speciesName, poids, false);
@@ -302,8 +224,6 @@ if (personalLure) {
       }
     }
   });
-
-
   // === FONCTIONS DE BASE ===
   function readForm() {
     return {
@@ -315,7 +235,6 @@ if (personalLure) {
       temperature: parseFloat(el('temperature')?.value) || null,
     };
   }
-
   function renderAdvice(data) {
     const c = el('advice');
     c.innerHTML = `<h3>Résumé IA</h3><div class="advice-text">${data.adviceText || ""}</div>`;
@@ -324,12 +243,11 @@ if (personalLure) {
     }
     el('voiceControls') && (el('voiceControls').style.display = 'block');
   }
-
   // === RÉACTION IA ULTRA VIVANTE (PRISE + BREDOUILLE + CHAMBRAGE) ===
   function showFishReaction(species = null, poidsGram = 0, isBredouille = false) {
     const pseudo = localStorage.getItem('fisherPseudo') || "Pêcheur";
     let bredouilleStreak = parseInt(localStorage.getItem('bredouilleStreak') || '0');
-    
+   
     if (isBredouille) {
       bredouilleStreak++;
       localStorage.setItem('bredouilleStreak', bredouilleStreak.toString());
@@ -337,15 +255,12 @@ if (personalLure) {
       bredouilleStreak = 0;
       localStorage.setItem('bredouilleStreak', '0');
     }
-
     let message = "";
     let bgColor = "#00d4aa";
-
     if (!isBredouille && species && poidsGram > 0) {
       const poids = poidsGram / 1000;
       const key = `pb_${species}`;
       const ancienPB = parseFloat(localStorage.getItem(key)) || 0;
-
       if (poids >= 10) {
         message = `${pseudo} TU VIENS DE SORTIR UN MONSTRE ABSOLU ! ${species.toUpperCase()} de ${poids.toFixed(2)} KG !!`;
         bgColor = "#ff0066";
@@ -360,13 +275,11 @@ if (personalLure) {
       } else {
         message = `Beau ${species} de ${poidsGram}g ! Chaque poisson compte !`;
       }
-
       if (poidsGram > ancienPB) {
         localStorage.setItem(key, poidsGram.toString());
         message += `\n\nRECORD PERSONNEL PULVÉRISÉ !\nAncien : ${ancienPB ? (ancienPB/1000).toFixed(2)+"kg" : "aucun"}\nNouveau : ${poids.toFixed(2)} kg !`;
         bgColor = "#ffd700";
       }
-
     } else if (isBredouille) {
       const messages = [
         ["C’est pas grave, ça arrive même aux meilleurs", "La prochaine sera la bonne", "Allez, rembobine et on recommence !"],
@@ -375,17 +288,13 @@ if (personalLure) {
         ["OK là t’abuses. T’es NUL.", "Je doute de tes talents", "Donne-moi ta canne, je vais le faire"],
         ["T’as battu le record du monde de bredouilles", "Même un enfant de 5 ans ferait mieux", "Je t’appelle « Monsieur Bredouille » désormais"]
       ];
-
       let niveau = Math.min(Math.floor(bredouilleStreak / 3), 4);
       message = messages[niveau][Math.floor(Math.random() * messages[niveau].length)];
-
       if (bredouilleStreak === 5) message = "5 bredouilles d’affilée… T’es en train de battre un record";
       if (bredouilleStreak === 10) message = "10… DIX… T’as un don pour ne rien prendre";
       if (bredouilleStreak >= 15) message = "OK je capitule. T’es le roi de la bredouille. Respect.";
-
       bgColor = "#e74c3c";
     }
-
     const pop = document.createElement('div');
     pop.innerHTML = `<strong style="font-size:26px; text-shadow: 2px 2px 10px black; line-height:1.5;">
       ${message.replace(/\n\n/g, '<br><br>')}
@@ -399,45 +308,36 @@ if (personalLure) {
     document.body.appendChild(pop);
     setTimeout(() => pop.remove(), 8000);
   }
-
-
-  
+ 
 // === MÉTÉO AUTO + CONSEIL LEURRE IA (VERSION 100% COMPATIBLE CAS ULTRA-CIBLÉS) ===
 document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () => {
   el('weatherResult').style.display = 'block';
   el('weatherResult').innerHTML = `<p style="color:#00d4aa;font-size:18px;">Détection position + météo en cours…</p>`;
-
   if (!navigator.geolocation) {
     el('weatherResult').innerHTML = "Géolocalisation bloquée";
     return;
   }
-
   navigator.geolocation.getCurrentPosition(async pos => {
     const lat = pos.coords.latitude;
     const lon = pos.coords.longitude;
-
     try {
       const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover,pressure_msl,is_day&timezone=Europe/Paris`);
       const meteo = await res.json();
       const c = meteo.current;
-
       const temp = Math.round(c.temperature_2m);
       const vent = Math.round(c.wind_speed_10m);
       const pluie = c.precipitation > 0.5;
       const nuages = c.cloud_cover > 70;
       const pression = Math.round(c.pressure_msl);
       const jour = c.is_day === 1;
-
       // NORMALISATION PARFAITE POUR MATCHER TON SERVER.JS
       let conditionsText = "";
       if (pluie) conditionsText += "pluie ";
-      if (nuages) conditionsText += "nuages ";  // "nuages" pour matcher tes includes('nuages')
-      if (!pluie && !nuages) conditionsText += "clair ";  // ou "soleil" si tu préfères
+      if (nuages) conditionsText += "nuages "; // "nuages" pour matcher tes includes('nuages')
+      if (!pluie && !nuages) conditionsText += "clair "; // ou "soleil" si tu préfères
       if (vent > 30) conditionsText += "vent fort ";
       if (!jour) conditionsText += "nuit ";
-
-      conditionsText = conditionsText.trim();  // ex: "pluie nuages" ou "clair vent fort nuit"
-
+      conditionsText = conditionsText.trim(); // ex: "pluie nuages" ou "clair vent fort nuit"
       // REMPLISSAGE CHAMPS FORMULAIRE
       if (document.getElementById('conditions')) {
         document.getElementById('conditions').value = conditionsText;
@@ -445,7 +345,6 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
       if (document.getElementById('temperature')) {
         document.getElementById('temperature').value = temp;
       }
-
       // ENVOI AU SERVEUR (maintenant 100% compatible cas ultra-ciblés)
       const serverRes = await fetch('/api/advice', {
         method: 'POST',
@@ -459,7 +358,6 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
         })
       });
       const conseil = await serverRes.json();
-
       el('weatherResult').innerHTML = `
         <h3 style="color:#00ff9d;margin:15px 0;">MÉTÉO PRÈS DE CHEZ TOI</h3>
         <p style="font-size:22px;margin:10px 0;">
@@ -475,7 +373,6 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
           Conditions envoyées à l'IA : "${conditionsText}"
         </p>
       `;
-
     } catch (e) {
       el('weatherResult').innerHTML = "Erreur réseau — réessaie dans 10s";
     }
@@ -486,21 +383,17 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
   // === SYSTÈME DE QUÊTES XP RÉEL (automatique + tableau de bord) ===
 const today = new Date().toDateString();
 const completedQuests = JSON.parse(localStorage.getItem('completedQuests') || '{}');
-
 function completeQuest(questId, xpReward) {
   if (completedQuests[today]?.includes(questId)) {
     alert("Quête déjà accomplie aujourd'hui !");
     return;
   }
-
   // Ajoute la quête accomplie
   if (!completedQuests[today]) completedQuests[today] = [];
   completedQuests[today].push(questId);
   localStorage.setItem('completedQuests', JSON.stringify(completedQuests));
-
   // Donne l’XP réel
   awardXP(xpReward, `Quête accomplie ! +${xpReward} XP`);
-
   // Désactive le bouton
   const btn = document.querySelector(`#quest${questId} button`);
   if (btn) {
@@ -509,7 +402,6 @@ function completeQuest(questId, xpReward) {
     btn.style.background = "#006600";
   }
 }
-
 // Vérifie les quêtes déjà accomplies au chargement
 function checkCompletedQuests() {
   if (completedQuests[today]) {
@@ -523,16 +415,12 @@ function checkCompletedQuests() {
     });
   }
 }
-
 // Reset quotidien (à minuit)
 if (localStorage.getItem('lastQuestDay') !== today) {
   localStorage.setItem('lastQuestDay', today);
 }
-
 // Lance au chargement
 document.addEventListener('DOMContentLoaded', checkCompletedQuests);
-
-
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
     const firebaseConfig = {
@@ -548,10 +436,8 @@ document.addEventListener('DOMContentLoaded', checkCompletedQuests);
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
-
     window.db = db;
     window.currentUser = null;
-
     auth.onAuthStateChanged(user => {
       window.currentUser = user;
       if (user) {
@@ -561,7 +447,6 @@ document.addEventListener('DOMContentLoaded', checkCompletedQuests);
         el('pseudoInput').value = savedPseudo;
         const userNameEl = el('userName');
         if (userNameEl) userNameEl.textContent = savedPseudo;
-
         const level = progress.xp < 50 ? "Débutant" : progress.xp < 200 ? "Traqueur" : "Maître du brochet";
         db.collection('users').doc(user.uid).set({
           displayName: savedPseudo,
@@ -572,7 +457,6 @@ document.addEventListener('DOMContentLoaded', checkCompletedQuests);
           photoURL: user.photoURL || "",
           lastSeen: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-
         el('savePseudo')?.addEventListener('click', () => {
           const newPseudo = el('pseudoInput').value.trim();
           if (newPseudo && newPseudo.length >= 2) {
@@ -586,32 +470,26 @@ document.addEventListener('DOMContentLoaded', checkCompletedQuests);
         el('userInfo').style.display = 'none';
       }
     });
-
     el('loginBtn')?.addEventListener('click', () => {
       auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
     });
     el('logoutBtn')?.addEventListener('click', () => auth.signOut());
   }
-
   const friendsBtn = document.getElementById('friendsBtn');
   if (friendsBtn) {
     friendsBtn.addEventListener('click', () => {
       window.open('friends.html', '_blank', 'width=600,height=800');
     });
   }
-
   updateDashboard();
 });
-
 // === SYSTÈME D'ABONNEMENT FISHERFORCE AI (Gratuit / Inter / Premium) ===
 const subscriptionLevels = {
   free: "Gratuit",
   inter: "Intermédiaire",
   premium: "Premium"
 };
-
 let currentSubscription = "free"; // par défaut
-
 // Liste des codes secrets (tu les modifies/ajoutes toi-même ici)
 const secretCodes = {
   "THAO2026": "premium",
@@ -621,7 +499,6 @@ const secretCodes = {
   "MAITREPECHE": "premium"
   // Ajoute autant que tu veux ici
 };
-
 // Chargement abonnement au démarrage
 function loadSubscription() {
   const saved = localStorage.getItem('fisherSubscription');
@@ -632,12 +509,10 @@ function loadSubscription() {
   }
   updateSubscriptionUI();
 }
-
 // Sauvegarde abonnement
 function setSubscription(level) {
   currentSubscription = level;
   localStorage.setItem('fisherSubscription', level);
-
   // Si Firebase connecté → sauvegarde aussi sur Firestore
   if (window.currentUser && window.db) {
     window.db.collection('users').doc(window.currentUser.uid).update({
@@ -645,11 +520,9 @@ function setSubscription(level) {
       subscriptionDate: new Date().toISOString()
     });
   }
-
   updateSubscriptionUI();
   alert(`Abonnement passé en ${subscriptionLevels[level]} ! Toutes les fonctions sont débloquées.`);
 }
-
 // UI abonnement (badge + niveau)
 function updateSubscriptionUI() {
   const badge = document.getElementById('subscriptionBadge');
@@ -659,13 +532,10 @@ function updateSubscriptionUI() {
                             currentSubscription === "inter" ? "#00d4aa" : "#888888";
   }
 }
-
 // Pop-up changement abonnement
 function showSubscriptionUpgrade() {
   const code = prompt(`Ton abonnement actuel : ${subscriptionLevels[currentSubscription]}\n\nEntre un code pour passer à Intermédiaire ou Premium :`);
-
   if (!code) return;
-
   const level = secretCodes[code.trim().toUpperCase()];
   if (level) {
     setSubscription(level);
@@ -673,20 +543,16 @@ function showSubscriptionUpgrade() {
     alert("Code invalide – réessaie ou reste en Gratuit pour l’instant.");
   }
 }
-
 // Fonction pour bloquer les fonctions premium/inter
 function requireSubscription(minLevel, featureName) {
   if (currentSubscription === "premium") return true;
   if (minLevel === "inter" && currentSubscription === "inter") return true;
-
   alert(`La fonction "${featureName}" est réservée aux abonnés ${minLevel === "inter" ? "Intermédiaire" : "Premium"}.\n\nClique sur "Passer à Premium" pour entrer un code.`);
   showSubscriptionUpgrade();
   return false;
 }
-
 // Exemple d'utilisation sur un bouton premium
 // <button onclick="if(requireSubscription('premium', 'Scanner spot IA')) { lancerScannerSpot(); }">Scanner spot IA (Premium)</button>
-
 // Chargement au démarrage
 document.addEventListener('DOMContentLoaded', () => {
   loadSubscription();
@@ -694,39 +560,32 @@ document.addEventListener('DOMContentLoaded', () => {
 // === STATISTIQUES PERSONNELLES AVANCÉES (basées sur XP, conseils, poissons map) ===
 function updateStatsAfterAdvice(adviceData) {
   let stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
-  
+ 
   // Conseils demandés
   stats.totalAdvice = (stats.totalAdvice || 0) + 1;
   stats.adviceBySpecies = stats.adviceBySpecies || {};
   stats.adviceBySpecies[adviceData.species] = (stats.adviceBySpecies[adviceData.species] || 0) + 1;
-
   // Leurres conseillés (on garde le premier comme "favori")
   stats.favoriteLures = stats.favoriteLures || {};
   const mainLure = adviceData.lures[0] || "Inconnu";
   stats.favoriteLures[mainLure] = (stats.favoriteLures[mainLure] || 0) + 1;
-
   localStorage.setItem('fisherAdvancedStats', JSON.stringify(stats));
 }
-
 function updateStatsAfterFishOnMap(species) {
   let stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
-  
+ 
   stats.totalFishOnMap = (stats.totalFishOnMap || 0) + 1;
   stats.fishOnMapBySpecies = stats.fishOnMapBySpecies || {};
   stats.fishOnMapBySpecies[species] = (stats.fishOnMapBySpecies[species] || 0) + 1;
-
   localStorage.setItem('fisherAdvancedStats', JSON.stringify(stats));
 }
-
 function showAdvancedStats() {
   if (currentSubscription !== 'premium') {
     requireSubscription('premium', 'Statistiques avancées');
     return;
   }
-
   const stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
   const xp = progress.xp || 0;
-
   // Top espèce conseil
   let topSpecies = "Aucune";
   let topSpeciesCount = 0;
@@ -738,7 +597,6 @@ function showAdvancedStats() {
       }
     }
   }
-
   // Top leurre
   let topLure = "Aucun";
   let topLureCount = 0;
@@ -750,7 +608,6 @@ function showAdvancedStats() {
       }
     }
   }
-
   // Top poisson map
   let topFishMap = "Aucun";
   let topFishMapCount = 0;
@@ -762,65 +619,30 @@ function showAdvancedStats() {
       }
     }
   }
-
   const display = document.getElementById('advancedStatsDisplay');
   display.style.display = 'block';
   display.innerHTML = `
     <div style="background:#003366;padding:20px;border-radius:15px;text-align:left;">
       <h4 style="color:#ffd700;text-align:center;margin-bottom:20px;">Tes stats Premium</h4>
-      
+     
       <p><strong>XP total :</strong> ${xp} points</p>
       <p><strong>Conseils demandés :</strong> ${stats.totalAdvice || 0}</p>
       <p><strong>Espèce la plus demandée :</strong> ${topSpecies} (${topSpeciesCount})</p>
       <p><strong>Leurre le plus conseillé :</strong> ${topLure} (${topLureCount})</p>
       <p><strong>Poissons placés sur la map :</strong> ${stats.totalFishOnMap || 0}</p>
       <p><strong>Espèce la plus placée sur map :</strong> ${topFishMap} (${topFishMapCount})</p>
-      
+     
       <p style="color:#00ff9d;text-align:center;margin-top:30px;font-size:18px;font-weight:bold;">
         Tu es un vrai traqueur ! Continue comme ça 🔥
       </p>
     </div>
   `;
 }
-
 // Appelle ces fonctions aux bons endroits :
 // Après un conseil IA :
 updateStatsAfterAdvice({
   species: species,
   lures: conseil.lures
 });
-
 // Après placement poisson sur map :
 updateStatsAfterFishOnMap(speciesName);
-
-// === APPRENTISSAGE IA À PARTIR DES PRISES RÉUSSIES (version locale simple) ===
-function learnFromSuccessfulCatch(species, lureUsed, conditions, structure, spotType, temperature) {
-  let personalCases = JSON.parse(localStorage.getItem('fisherPersonalCases') || '{}');
-  
-  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
-  
-  if (!personalCases[key]) {
-    personalCases[key] = {
-      lure: lureUsed,
-      successCount: 1,
-      lastDate: new Date().toLocaleDateString('fr-FR')
-    };
-  } else {
-    personalCases[key].successCount++;
-    personalCases[key].lastDate = new Date().toLocaleDateString('fr-FR');
-  }
-  
-  localStorage.setItem('fisherPersonalCases', JSON.stringify(personalCases));
-}
-
-// VÉRIFICATION CAS PERSONNEL AVANT CONSEIL (priorité absolue)
-function checkPersonalCaseLocal(species, conditions, structure, spotType, temperature) {
-  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
-  const personalCases = JSON.parse(localStorage.getItem('fisherPersonalCases') || '{}');
-  
-  if (personalCases[key]) {
-    const pc = personalCases[key];
-    return [`${pc.lure} — A déjà marché ${pc.successCount} fois pour toi dans ces conditions ! 🔥`];
-  }
-  return null;
-}
