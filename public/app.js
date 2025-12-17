@@ -268,30 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
-  // === APPRENTISSAGE IA À PARTIR DES PRISES RÉUSSIES ===
-function learnFromSuccessfulCatch(species, lureUsed, conditions, structure, spotType, temperature) {
-  let personalCases = JSON.parse(localStorage.getItem('fisherPersonalCases') || '{}');
-  
-  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${temperature}`;
-  
-  if (!personalCases[key]) {
-    personalCases[key] = {
-      lure: lureUsed,
-      successCount: 1,
-      lastDate: new Date().toLocaleDateString('fr-FR')
-    };
-  } else {
-    personalCases[key].successCount++;
-    personalCases[key].lastDate = new Date().toLocaleDateString('fr-FR');
-  }
-  
-  localStorage.setItem('fisherPersonalCases', JSON.stringify(personalCases));
-}
 
-// Appelle cette fonction QUAND L’UTILISATEUR ENREGISTRE UNE PRISE (pas bredouille)
-if (success && lureUsed) {
-  learnFromSuccessfulCatch(speciesName, lureUsed, currentConditions, currentStructure, currentSpotType, currentTemp);
-}
 
   // === FONCTIONS DE BASE ===
   function readForm() {
@@ -781,3 +758,35 @@ updateStatsAfterAdvice({
 
 // Après placement poisson sur map :
 updateStatsAfterFishOnMap(speciesName);
+
+// === APPRENTISSAGE IA À PARTIR DES PRISES RÉUSSIES (version locale simple) ===
+function learnFromSuccessfulCatch(species, lureUsed, conditions, structure, spotType, temperature) {
+  let personalCases = JSON.parse(localStorage.getItem('fisherPersonalCases') || '{}');
+  
+  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
+  
+  if (!personalCases[key]) {
+    personalCases[key] = {
+      lure: lureUsed,
+      successCount: 1,
+      lastDate: new Date().toLocaleDateString('fr-FR')
+    };
+  } else {
+    personalCases[key].successCount++;
+    personalCases[key].lastDate = new Date().toLocaleDateString('fr-FR');
+  }
+  
+  localStorage.setItem('fisherPersonalCases', JSON.stringify(personalCases));
+}
+
+// VÉRIFICATION CAS PERSONNEL AVANT CONSEIL (priorité absolue)
+function checkPersonalCaseLocal(species, conditions, structure, spotType, temperature) {
+  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
+  const personalCases = JSON.parse(localStorage.getItem('fisherPersonalCases') || '{}');
+  
+  if (personalCases[key]) {
+    const pc = personalCases[key];
+    return [`${pc.lure} — A déjà marché ${pc.successCount} fois pour toi dans ces conditions ! 🔥`];
+  }
+  return null;
+}
