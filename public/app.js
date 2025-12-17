@@ -161,17 +161,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let result;
     try {
-      const res = await fetch('/api/advice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          species: input.targetSpecies,
-          structure: input.structure,
-          conditions: input.conditions,
-          spotType: input.waterType,
-          temperature: input.temperature
-        })
-      });
+// VÉRIFICATION CAS PERSONNEL AVANT API
+const personalLure = checkPersonalCaseLocal(species, conditionsText, structure, spotType, temp);
+
+if (personalLure) {
+  // CAS PERSONNEL DÉTECTÉ – AFFICHE DIRECT SANS API
+  resultDiv.innerHTML = `
+    <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
+      <b style="color:#ffd700;font-size:24px;">CAS PERSONNEL DÉTECTÉ !</b><br>
+      <span style="font-size:20px;">Ce leurre a déjà marché pour toi dans ces conditions</span><br>
+      <b style="color:#00ff9d;font-size:26px;margin-top:10px;display:block;">${personalLure[0]}</b>
+    </div>
+    <p style="color:#888;font-size:14px;margin-top:20px;">
+      IA FisherForce — Apprentissage personnel activé
+    </p>
+  `;
+} else {
+  // Sinon → appel normal API
+  const adviceRes = await fetch('/api/advice', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      targetSpecies: species,
+      structure: structure,
+      conditions: conditionsText,
+      spotType: spotType,
+      temperature: temp
+    })
+  });
+  const conseil = await adviceRes.json();
+
+  // ton code normal pour afficher le conseil API
+  resultDiv.innerHTML = `
+    // ton affichage normal du conseil API
+  `;
+}
       result = await res.json();
     } catch (e) {
       console.log("API HS → mode démo");
