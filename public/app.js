@@ -65,18 +65,18 @@ function updateDashboard() {
     console.warn("Dashboard non trouvé dans le DOM. Attente...");
     return;
   }
-const level = progress.xp < 50 ? "Débutant 👼" :
-              progress.xp < 200 ? "Traqueur 🚶‍♀️‍➡️" :
-              progress.xp < 400 ? "Maître du brochet 🥷" :
-              progress.xp < 555 ? "FisherForce 💪" :
-              progress.xp < 666 ? "Ami des poissons 🐟" :
-              progress.xp < 1000 ? "Guide de pêche 🦞" :
-              progress.xp < 1500 ? "Compétiteur 🥽" :
-              progress.xp < 2000 ? "Spécialiste 🤖" :
-              progress.xp < 3000 ? " Bar de légende 👾" :
-              progress.xp < 4000 ? " Visionnaire 🦅" :
-              progress.xp < 5000 ? " Perche divine 🐠" :
-              progress.xp < 10000 ? "Goat 🐊" : "Légende Vivante 🌟";
+  const level = progress.xp < 50 ? "Débutant 👼" :
+                progress.xp < 200 ? "Traqueur 🚶‍♀️‍➡️" :
+                progress.xp < 400 ? "Maître du brochet 🥷" :
+                progress.xp < 555 ? "FisherForce 💪" :
+                progress.xp < 666 ? "Ami des poissons 🐟" :
+                progress.xp < 1000 ? "Guide de pêche 🦞" :
+                progress.xp < 1500 ? "Compétiteur 🥽" :
+                progress.xp < 2000 ? "Spécialiste 🤖" :
+                progress.xp < 3000 ? " Bar de légende 👾" :
+                progress.xp < 4000 ? " Visionnaire 🦅" :
+                progress.xp < 5000 ? " Perche divine 🐠" :
+                progress.xp < 10000 ? "Goat 🐊" : "Légende Vivante 🌟";
   const rate = progress.attempts ? Math.round((progress.successes / progress.attempts) * 100) : 0;
   dashboard.innerHTML = `
     <h3><span class="level-badge">${level}</span> — <span id="xp">${progress.xp}</span> XP</h3>
@@ -142,6 +142,11 @@ document.addEventListener('DOMContentLoaded', () => {
     el('advice').innerHTML = '<p class="muted">Génération en cours…</p>';
     let result;
     try {
+      const res = await fetch('/api/advice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input)
+      });
       result = await res.json();
     } catch (e) {
       console.log("API HS → mode démo");
@@ -361,9 +366,7 @@ document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () 
       el('weatherResult').innerHTML = `
         <h3 style="color:#00ff9d;margin:15px 0;">MÉTÉO PRÈS DE CHEZ TOI</h3>
         <p style="font-size:22px;margin:10px 0;">
-          ${temp}°C • ${vent} km/h vent • ${pluie ? 'Pluie' : nuages ? 'Nuageux' : 'Soleil'} • ${pression 
-
-hPa
+          ${temp}°C • ${vent} km/h vent • ${pluie ? 'Pluie' : nuages ? 'Nuageux' : 'Soleil'} • ${pression} hPa
         </p>
         <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
           <b>MEILLEUR LEURRE MAINTENANT :</b><br>
@@ -648,33 +651,3 @@ updateStatsAfterAdvice({
 });
 // Après placement poisson sur map :
 updateStatsAfterFishOnMap(speciesName);
-// === APPRENTISSAGE IA À PARTIR DES PRISES RÉUSSIES (version locale simple) ===
-function learnFromSuccessfulCatch(species, lureUsed, conditions, structure, spotType, temperature) {
-  let personalCases = JSON.parse(localStorage.getItem('fisherPersonalCases') || '{}');
- 
-  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
- 
-  if (!personalCases[key]) {
-    personalCases[key] = {
-      lure: lureUsed,
-      successCount: 1,
-      lastDate: new Date().toLocaleDateString('fr-FR')
-    };
-  } else {
-    personalCases[key].successCount++;
-    personalCases[key].lastDate = new Date().toLocaleDateString('fr-FR');
-  }
- 
-  localStorage.setItem('fisherPersonalCases', JSON.stringify(personalCases));
-}
-// VÉRIFICATION CAS PERSONNEL AVANT CONSEIL (priorité absolue)
-function checkPersonalCaseLocal(species, conditions, structure, spotType, temperature) {
-  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
-  const personalCases = JSON.parse(localStorage.getItem('fisherPersonalCases') || '{}');
- 
-  if (personalCases[key]) {
-    const pc = personalCases[key];
-    return [`${pc.lure} — A déjà marché ${pc.successCount} fois pour toi dans ces conditions ! 🔥`];
-  }
-  return null;
-}
