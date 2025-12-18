@@ -344,6 +344,11 @@ if (list.length === 0) {
   ];
   list.push(defaults[Math.floor(Math.random() * defaults.length)]);
 }
+  // Exclure les failedLures
+list = list.filter(l => !failedLures.includes(l.split(' — ')[0]));
+if (list.length === 0) {
+  list.push("Tous les leurres généraux ont échoué pour ces conditions – essaie un nouveau !");
+}
   // --- Profondeur selon température ---
   const depthAdvice = [];
   if (temperature !== null) {
