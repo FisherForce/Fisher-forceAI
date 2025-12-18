@@ -153,10 +153,22 @@ document.addEventListener('DOMContentLoaded', () => {
     el('advice').innerHTML = '<p class="muted">Génération en cours…</p>';
     let result;
     try {
+      // AJOUT : envoi des leurres blacklistés au serveur
+      const failedLures = getFailedLures(
+        input.targetSpecies,
+        input.conditions,
+        input.structure,
+        input.waterType,
+        input.temperature
+      );
+
       const res = await fetch('/api/advice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input)
+        body: JSON.stringify({
+          ...input,
+          failedLures: failedLures // ← envoi au serveur
+        })
       });
       result = await res.json();
     } catch (e) {
@@ -220,6 +232,20 @@ document.addEventListener('DOMContentLoaded', () => {
           console.warn("Échec envoi session IA", err);
         }
       }
+
+      // NOUVEAU : BLACKLIST LEURRE EN CAS DE BREDOUILLE
+      if (!success && lure && speciesName) {
+        const input = readForm();
+        blacklistLureOnFailure(
+          speciesName,
+          lure,
+          input.conditions || "inconnu",
+          input.structure || "inconnu",
+          input.waterType || "Étang",
+          input.temperature || 15
+        );
+      }
+
       if (success) awardXP(5, "Prise validée !");
       else awardXP(5, "Session enregistrée");
       if (spotName && !knownSpots.has(spotName)) {
@@ -668,3 +694,24 @@ updateStatsAfterAdvice({
 });
 // Après placement poisson sur map :
 updateStatsAfterFishOnMap(speciesName);
+
+// === APPRENTISSAGE IA DES BREDOUILLES (blacklist leurre en cas d’échec) ===
+function blacklistLureOnFailure(species, lureUsed, conditions, structure, spotType, temperature) {
+  let failedLures = JSON.parse(localStorage.getItem('fisherFailedLures') || '{}');
+  
+  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
+  
+  if (!failedLures[key]) failedLures[key] = [];
+  if (!failedLures[key].includes(lureUsed)) {
+    failedLures[key].push(lureUsed);
+    localStorage.setItem('fisherFailedLures', JSON.stringify(failedLures));
+    console.log(`Leurre "${lureUsed}" blacklisté pour ${key}`);
+  }
+}
+
+// RÉCUPÉRATION DES LEURRES BLACKLISTÉS POUR ENVOI AU SERVEUR
+function getFailedLures(species, conditions, structure, spotType, temperature) {
+  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
+  const failedLures = JSON.parse(localStorage.getItem('fisherFailedLures') || '{}');
+  return failedLures[key] || [];
+}
