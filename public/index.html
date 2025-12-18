@@ -689,16 +689,40 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
 // Init carte au chargement
 document.addEventListener('DOMContentLoaded', initSpotMap);
 </script>
-// === CARTE FRAYÈRES COLLABORATIVE — 100 % FONCTIONNELLE ===
+
+      <!-- CARTE FRAYÈRES COLLABORATIVE — 100 % FONCTIONNELLE & CORRIGÉE -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#8B0000,#FF4500);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(255,0,0,0.7);">
+  <h3 style="margin:0 0 20px;color:#FFD700;font-size:26px;">
+    CARTE DES FRAYÈRES BROCHET
+  </h3>
+  
+  <div id="fraieStatus" style="font-size:20px;margin:20px 0;line-height:1.6;"></div>
+  
+  <div id="fraieMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
+  
+  <p style="font-size:16px;margin:20px 0;color:#aaa;">
+    Double-clique sur la carte pendant la fermeture (janvier à avril) pour signaler une frayère active<br>
+    +2000 XP + protection des brochets
+  </p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<script>
+// === CARTE FRAYÈRES COLLABORATIVE — VERSION CORRIGÉE & FIABLE ===
 let fraieMap = null;
 let userFraieSpots = JSON.parse(localStorage.getItem('fraieSpots') || '[]');
 
-// Init map au chargement
-window.addEventListener('load', () => {
-  setTimeout(initFraieMap, 500);
-});
-
 function initFraieMap() {
+  // Protection si l'élément n'existe pas encore
+  if (!document.getElementById('fraieMap')) {
+    console.warn("fraieMap non trouvé dans le DOM – attente...");
+    setTimeout(initFraieMap, 500);
+    return;
+  }
+
+  // Suppression ancienne carte si existe
   if (fraieMap) fraieMap.remove();
 
   fraieMap = L.map('fraieMap').setView([46.8, 1.7], 6);
@@ -707,55 +731,72 @@ function initFraieMap() {
   }).addTo(fraieMap);
 
   const today = new Date();
-  const isClosed = today.getMonth() <= 3; // janv → avril
+  const isClosed = today.getMonth() + 1 <= 4; // janvier (0) à avril (3)
 
-  document.getElementById('fraieStatus').innerHTML = isClosed
-    ? '<span style="color:#FF0000;font-size:26px;">PÊCHE AU BROCHET INTERDITE EN FRANCE</span><br>Frayères actives – Toute prise = infraction'
-    : 'Saison de fraie terminée – Merci d’avoir protégé nos brochets !';
+  const statusEl = document.getElementById('fraieStatus');
+  if (statusEl) {
+    statusEl.innerHTML = isClosed
+      ? '<span style="color:#FF0000;font-size:26px;font-weight:bold;">PÊCHE AU BROCHET INTERDITE EN FRANCE</span><br><span style="font-size:18px;">Frayères actives – Toute prise = infraction grave</span>'
+      : '<span style="color:#00ff00;font-size:26px;font-weight:bold;">Saison de fraie terminée</span><br><span style="font-size:18px;">Merci d’avoir protégé nos brochets !</span>';
+  }
 
   // Affichage des frayères déjà ajoutées
   userFraieSpots.forEach(spot => {
     const marker = L.marker([spot.lat, spot.lng], {
       icon: L.divIcon({
-        html: '<div style="background:#FF0000;color:white;padding:6px 14px;border-radius:50px;font-weight:bold;border:3px solid white;box-shadow:0 0 20px red;">FRAYÈRE</div>',
-        iconSize: [120, 40]
+        html: '<div style="background:#FF0000;color:white;padding:8px 16px;border-radius:50px;font-weight:bold;border:3px solid white;box-shadow:0 0 25px red;font-size:16px;">FRAYÈRE</div>',
+        iconSize: [140, 50],
+        className: 'fraie-marker'
       })
     }).addTo(fraieMap);
 
     marker.bindPopup(`
-      <b style="color:#FF0000;">Frayère brochet – PÊCHE INTERDITE</b><br>
-      Ajouté par : ${spot.pseudo || "Anonyme"}<br>
-      ${spot.photo ? `<img src="${spot.photo}" style="width:100%;max-height:200px;border-radius:8px;margin:8px 0;">` : ''}
-      <button onclick="proposeReserve(${spot.lat},${spot.lng})" style="margin-top:8px;background:#FFD700;color:black;padding:10px;border:none;border-radius:10px;font-weight:bold;">
+      <b style="color:#FF0000;font-size:18px;">Frayère brochet – PÊCHE INTERDITE</b><br>
+      Ajouté par : ${spot.pseudo || "Anonyme"} le ${spot.date}<br>
+      ${spot.photo ? `<img src="${spot.photo}" style="width:100%;max-height:200px;border-radius:8px;margin:10px 0;">` : ''}
+      <button onclick="proposeReserve(${spot.lat},${spot.lng})" style="margin-top:10px;background:#FFD700;color:black;padding:12px 24px;border:none;border-radius:50px;font-weight:bold;font-size:16px;">
         Proposer réserve AAPPMA
       </button>
     `);
   });
 
-  // Double-clic = ajouter une frayère
+  // Double-clic = ajouter une frayère (uniquement en période de fermeture)
   fraieMap.on('dblclick', e => {
-    if (!isClosed) return alert("Ajouts possibles uniquement pendant la période de fermeture brochet");
+    if (!isClosed) {
+      alert("Les signalements de frayères sont possibles uniquement pendant la période de fermeture brochet (janvier à avril).");
+      return;
+    }
     addFraieSpot(e.latlng);
   });
 
   // Centre sur l’utilisateur
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(pos => {
-      fraieMap.setView([pos.coords.latitude, pos.coords.longitude], 12);
-      L.circle([pos.coords.latitude, pos.coords.longitude], {radius: 500, color: '#00ff00'}).addTo(fraieMap);
+      fraieMap.setView([pos.coords.latitude, pos.coords.longitude], 13);
+      L.circle([pos.coords.latitude, pos.coords.longitude], {
+        radius: 500,
+        color: '#00ff00',
+        fillOpacity: 0.2
+      }).addTo(fraieMap)
+        .bindPopup("Ta position approximative");
+    }, err => {
+      console.warn("Géoloc échouée", err);
     });
   }
 }
 
 function addFraieSpot(latlng) {
-  if (!confirm("100 % sûr que c’est une frayère brochet active ?")) return;
+  if (!confirm("Tu es 100 % sûr que c’est une frayère brochet active ? (photo obligatoire pour preuve)")) return;
 
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
   input.capture = 'environment';
+
   input.onchange = e => {
     const file = e.target.files[0];
+    if (!file) return;
+
     const reader = new FileReader();
     reader.onload = ev => {
       const spot = {
@@ -765,27 +806,35 @@ function addFraieSpot(latlng) {
         pseudo: localStorage.getItem('fisherPseudo') || "Anonyme",
         photo: ev.target.result
       };
-
       userFraieSpots.push(spot);
       localStorage.setItem('fraieSpots', JSON.stringify(userFraieSpots));
 
+      // +2000 XP
       let xp = parseInt(localStorage.getItem('userXP') || '0') + 2000;
       localStorage.setItem('userXP', xp);
+      awardXP(2000, "Frayère signalée – Protection brochet");
 
-      alert("Frayère ajoutée ! +2000 XP\nEnvoi automatique à l’AAPPMA en cours...");
-      initFraieMap();
+      alert("Frayère ajoutée avec succès !\n+2000 XP\nPhoto sauvegardée – Merci pour les brochets 🇫🇷");
+      initFraieMap(); // refresh carte
     };
     reader.readAsDataURL(file);
   };
+
   input.click();
 }
 
 function proposeReserve(lat, lng) {
-  const subject = "PROPOSITION CLASSEMENT RÉSERVE – Frayère brochet détectée";
-  const body = `Coordonnées : ${lat}, ${lng}\nPreuves jointes via Fisher-Force AI\nDemande de classement immédiat en réserve de pêche`;
+  const subject = "PROPOSITION CLASSEMENT RÉSERVE – Frayère brochet détectée via FisherForce AI";
+  const body = `Bonjour,\n\nUne frayère brochet active a été signalée par la communauté FisherForce AI.\n\nCoordonnées GPS précises : ${lat}, ${lng}\nLien carte : https://www.google.com/maps?q=${lat},${lng}\n\nNous proposons le classement immédiat en réserve de pêche pour protéger la reproduction.\n\nMerci pour votre action rapide.\n\nL’équipe FisherForce AI (30 000+ pêcheurs engagés)`;
   window.location.href = `mailto:contact@fedepeche.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
+
+// Init sécurisé au chargement complet
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(initFraieMap, 300); // petit délai pour être sûr que le DOM est prêt
+});
 </script>
+      
       <!-- CARTE POISSONS MIGRATEURS — VERSION PRIVÉE ULTRA-STYLÉE -->
 <div style="margin:30px auto;padding:20px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;box-shadow:0 10px 40px rgba(0,31,63,0.8);">
   <h3 style="margin:0 0 15px;font-size:22px;color:#7FDBFF;">
