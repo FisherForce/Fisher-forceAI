@@ -92,6 +92,56 @@
     </div>
   </header>
 
+  <!-- POP-UP CONNEXION GOOGLE (s'affiche si pas connecté) -->
+<div id="googleLoginPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:99999;justify-content:center;align-items:center;">
+  <div style="background:#001122;padding:30px;border-radius:20px;max-width:500px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,255,157,0.4);position:relative;">
+    <button onclick="document.getElementById('googleLoginPopup').style.display='none'" style="position:absolute;top:10px;right:15px;background:none;border:none;color:#888;font-size:28px;cursor:pointer;">&times;</button>
+    
+    <h2 style="color:#00ff9d;font-size:28px;margin:20px 0;">🔒 Connecte-toi avec Google</h2>
+    
+    <p style="color:white;font-size:18px;line-height:1.6;margin:20px 0;">
+      Pour profiter pleinement de FisherForce AI :<br>
+      • Sauvegarde de tes stats et XP<br>
+      • Synchronisation entre appareils<br>
+      • Accès Premium + classements<br>
+      • Historique sécurisé
+    </p>
+    
+    <button id="popupLoginBtn" style="background:#00d4aa;color:black;padding:18px 40px;border:none;border-radius:50px;font-weight:bold;font-size:22px;cursor:pointer;box-shadow:0 10px 30px rgba(0,212,170,0.6);margin:20px 0;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" style="width:24px;vertical-align:middle;margin-right:10px;">
+      Se connecter avec Google
+    </button>
+    
+    <p style="color:#888;font-size:14px;margin-top:30px;">
+      Aucune donnée personnelle vendue • 100% sécurisé via Google
+    </p>
+  </div>
+</div>
+
+<script>
+// === AFFICHAGE POP-UP CONNEXION GOOGLE SI PAS CONNECTÉ ===
+document.addEventListener('DOMContentLoaded', () => {
+  // Attend que Firebase soit chargé et l'état auth connu
+  const checkAuthAndShowPopup = setInterval(() => {
+    if (typeof window.currentUser !== 'undefined') {
+      clearInterval(checkAuthAndShowPopup);
+      
+      if (!window.currentUser) {
+        // Pas connecté → affiche le pop-up
+        document.getElementById('googleLoginPopup').style.display = 'flex';
+        
+        // Bouton connexion dans le pop-up
+        document.getElementById('popupLoginBtn').addEventListener('click', () => {
+          if (typeof firebase !== 'undefined' && firebase.auth) {
+            firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+          }
+        });
+      }
+    }
+  }, 500); // vérifie toutes les 500ms
+});
+</script>
+
 
   <main class="container main-grid">
     <section class="card input-card">
