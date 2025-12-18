@@ -44,6 +44,7 @@ function loadAll() {
   if (species) knownSpecies = new Set(JSON.parse(species));
 }
 loadAll();
+
 // === XP DOPAMINE PUR ===
 function awardXP(amount, message) {
   progress.xp += amount;
@@ -63,6 +64,7 @@ function saveAll() {
   localStorage.setItem('knownSpecies', JSON.stringify([...knownSpecies]));
   updateDashboard();
 }
+
 // === DASHBOARD LIVE (SÉCURISÉ) ===
 function updateDashboard() {
   const dashboard = document.querySelector('.dashboard');
@@ -91,6 +93,7 @@ function updateDashboard() {
       <div class="stat-item">Réussite : <strong>${rate}%</strong></div>
     </div>`;
 }
+
 // === FONCTION CARTE : SAUVEGARDE GPS DE CHAQUE SESSION ===
 function saveSessionToMap(success, speciesName, poids, spotName, lure) {
   if (!navigator.geolocation) {
@@ -121,6 +124,7 @@ function saveSessionToMap(success, speciesName, poids, spotName, lure) {
     { enableHighAccuracy: true, timeout: 10000 }
   );
 }
+
 // === TOUT LE CODE ===
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('xpAnim')) {
@@ -153,22 +157,10 @@ document.addEventListener('DOMContentLoaded', () => {
     el('advice').innerHTML = '<p class="muted">Génération en cours…</p>';
     let result;
     try {
-      // AJOUT : envoi des leurres blacklistés au serveur
-      const failedLures = getFailedLures(
-        input.targetSpecies,
-        input.conditions,
-        input.structure,
-        input.waterType,
-        input.temperature
-      );
-
       const res = await fetch('/api/advice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...input,
-          failedLures: failedLures // ← envoi au serveur
-        })
+        body: JSON.stringify(input)
       });
       result = await res.json();
     } catch (e) {
@@ -232,20 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
           console.warn("Échec envoi session IA", err);
         }
       }
-
-      // NOUVEAU : BLACKLIST LEURRE EN CAS DE BREDOUILLE
-      if (!success && lure && speciesName) {
-        const input = readForm();
-        blacklistLureOnFailure(
-          speciesName,
-          lure,
-          input.conditions || "inconnu",
-          input.structure || "inconnu",
-          input.waterType || "Étang",
-          input.temperature || 15
-        );
-      }
-
       if (success) awardXP(5, "Prise validée !");
       else awardXP(5, "Session enregistrée");
       if (spotName && !knownSpots.has(spotName)) {
@@ -295,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function showFishReaction(species = null, poidsGram = 0, isBredouille = false) {
     const pseudo = localStorage.getItem('fisherPseudo') || "Pêcheur";
     let bredouilleStreak = parseInt(localStorage.getItem('bredouilleStreak') || '0');
-   
+
     if (isBredouille) {
       bredouilleStreak++;
       localStorage.setItem('bredouilleStreak', bredouilleStreak.toString());
@@ -356,119 +334,113 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(pop);
     setTimeout(() => pop.remove(), 8000);
   }
- 
-// === MÉTÉO AUTO + CONSEIL LEURRE IA (VERSION 100% COMPATIBLE CAS ULTRA-CIBLÉS) ===
-document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () => {
-  el('weatherResult').style.display = 'block';
-  el('weatherResult').innerHTML = `<p style="color:#00d4aa;font-size:18px;">Détection position + météo en cours…</p>`;
-  if (!navigator.geolocation) {
-    el('weatherResult').innerHTML = "Géolocalisation bloquée";
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(async pos => {
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
-    try {
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover,pressure_msl,is_day&timezone=Europe/Paris`);
-      const meteo = await res.json();
-      const c = meteo.current;
-      const temp = Math.round(c.temperature_2m);
-      const vent = Math.round(c.wind_speed_10m);
-      const pluie = c.precipitation > 0.5;
-      const nuages = c.cloud_cover > 70;
-      const pression = Math.round(c.pressure_msl);
-      const jour = c.is_day === 1;
-      // NORMALISATION PARFAITE POUR MATCHER TON SERVER.JS
-      let conditionsText = "";
-      if (pluie) conditionsText += "pluie ";
-      if (nuages) conditionsText += "nuages "; // "nuages" pour matcher tes includes('nuages')
-      if (!pluie && !nuages) conditionsText += "clair "; // ou "soleil" si tu préfères
-      if (vent > 30) conditionsText += "vent fort ";
-      if (!jour) conditionsText += "nuit ";
-      conditionsText = conditionsText.trim(); // ex: "pluie nuages" ou "clair vent fort nuit"
-      // REMPLISSAGE CHAMPS FORMULAIRE
-      if (document.getElementById('conditions')) {
-        document.getElementById('conditions').value = conditionsText;
-      }
-      if (document.getElementById('temperature')) {
-        document.getElementById('temperature').value = temp;
-      }
-      // ENVOI AU SERVEUR (maintenant 100% compatible cas ultra-ciblés)
-      const serverRes = await fetch('/api/advice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetSpecies: "Brochet",
-          structure: "mixte",
-          conditions: conditionsText,
-          spotType: "étang",
-          temperature: temp
-        })
-      });
-      const conseil = await serverRes.json();
-      el('weatherResult').innerHTML = `
-        <h3 style="color:#00ff9d;margin:15px 0;">MÉTÉO PRÈS DE CHEZ TOI</h3>
-        <p style="font-size:22px;margin:10px 0;">
-          ${temp}°C • ${vent} km/h vent • ${pluie ? 'Pluie' : nuages ? 'Nuageux' : 'Soleil'} • ${pression} hPa
-        </p>
-        <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
-          <b>MEILLEUR LEURRE MAINTENANT :</b><br>
-          ${conseil.lures?.[0] || "Jerkbait 12cm naturel"}<br>
-          <i>${conseil.lures?.[1] || ""}</i>
-          <i>${conseil.lures?.[2] || ""}</i>
-        </div>
-        <p style="color:#888;font-size:14px;margin-top:20px;">
-          Conditions envoyées à l'IA : "${conditionsText}"
-        </p>
-      `;
-    } catch (e) {
-      el('weatherResult').innerHTML = "Erreur réseau — réessaie dans 10s";
+
+  // === MÉTÉO AUTO + CONSEIL LEURRE IA (VERSION 100% COMPATIBLE CAS ULTRA-CIBLÉS) ===
+  document.getElementById('weatherAdviceBtn')?.addEventListener('click', async () => {
+    el('weatherResult').style.display = 'block';
+    el('weatherResult').innerHTML = `<p style="color:#00d4aa;font-size:18px;">Détection position + météo en cours…</p>`;
+    if (!navigator.geolocation) {
+      el('weatherResult').innerHTML = "Géolocalisation bloquée";
+      return;
     }
-  }, () => {
-    el('weatherResult').innerHTML = "Active la localisation pour un conseil 100% précis";
-  });
-});
-  // === SYSTÈME DE QUÊTES XP RÉEL (automatique + tableau de bord) ===
-const today = new Date().toDateString();
-const completedQuests = JSON.parse(localStorage.getItem('completedQuests') || '{}');
-function completeQuest(questId, xpReward) {
-  if (completedQuests[today]?.includes(questId)) {
-    alert("Quête déjà accomplie aujourd'hui !");
-    return;
-  }
-  // Ajoute la quête accomplie
-  if (!completedQuests[today]) completedQuests[today] = [];
-  completedQuests[today].push(questId);
-  localStorage.setItem('completedQuests', JSON.stringify(completedQuests));
-  // Donne l’XP réel
-  awardXP(xpReward, `Quête accomplie ! +${xpReward} XP`);
-  // Désactive le bouton
-  const btn = document.querySelector(`#quest${questId} button`);
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = "Accomplie ✓";
-    btn.style.background = "#006600";
-  }
-}
-// Vérifie les quêtes déjà accomplies au chargement
-function checkCompletedQuests() {
-  if (completedQuests[today]) {
-    completedQuests[today].forEach(id => {
-      const btn = document.querySelector(`#quest${id} button`);
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = "Accomplie ✓";
-        btn.style.background = "#006600";
+    navigator.geolocation.getCurrentPosition(async pos => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover,pressure_msl,is_day&timezone=Europe/Paris`);
+        const meteo = await res.json();
+        const c = meteo.current;
+        const temp = Math.round(c.temperature_2m);
+        const vent = Math.round(c.wind_speed_10m);
+        const pluie = c.precipitation > 0.5;
+        const nuages = c.cloud_cover > 70;
+        const pression = Math.round(c.pressure_msl);
+        const jour = c.is_day === 1;
+        // NORMALISATION PARFAITE POUR MATCHER TON SERVER.JS
+        let conditionsText = "";
+        if (pluie) conditionsText += "pluie ";
+        if (nuages) conditionsText += "nuages ";
+        if (!pluie && !nuages) conditionsText += "clair ";
+        if (vent > 30) conditionsText += "vent fort ";
+        if (!jour) conditionsText += "nuit ";
+        conditionsText = conditionsText.trim();
+        // REMPLISSAGE CHAMPS FORMULAIRE
+        if (document.getElementById('conditions')) {
+          document.getElementById('conditions').value = conditionsText;
+        }
+        if (document.getElementById('temperature')) {
+          document.getElementById('temperature').value = temp;
+        }
+        // ENVOI AU SERVEUR
+        const serverRes = await fetch('/api/advice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetSpecies: "Brochet",
+            structure: "mixte",
+            conditions: conditionsText,
+            spotType: "étang",
+            temperature: temp
+          })
+        });
+        const conseil = await serverRes.json();
+        el('weatherResult').innerHTML = `
+          <h3 style="color:#00ff9d;margin:15px 0;">MÉTÉO PRÈS DE CHEZ TOI</h3>
+          <p style="font-size:22px;margin:10px 0;">
+            ${temp}°C • ${vent} km/h vent • ${pluie ? 'Pluie' : nuages ? 'Nuageux' : 'Soleil'} • ${pression} hPa
+          </p>
+          <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
+            <b>MEILLEUR LEURRE MAINTENANT :</b><br>
+            ${conseil.lures?.[0] || "Jerkbait 12cm naturel"}<br>
+            <i>${conseil.lures?.[1] || ""}</i>
+            <i>${conseil.lures?.[2] || ""}</i>
+          </div>
+          <p style="color:#888;font-size:14px;margin-top:20px;">
+            Conditions envoyées à l'IA : "${conditionsText}"
+          </p>
+        `;
+      } catch (e) {
+        el('weatherResult').innerHTML = "Erreur réseau — réessaie dans 10s";
       }
+    }, () => {
+      el('weatherResult').innerHTML = "Active la localisation pour un conseil 100% précis";
     });
+  });
+  // === SYSTÈME DE QUÊTES XP RÉEL (automatique + tableau de bord) ===
+  const today = new Date().toDateString();
+  const completedQuests = JSON.parse(localStorage.getItem('completedQuests') || '{}');
+  function completeQuest(questId, xpReward) {
+    if (completedQuests[today]?.includes(questId)) {
+      alert("Quête déjà accomplie aujourd'hui !");
+      return;
+    }
+    if (!completedQuests[today]) completedQuests[today] = [];
+    completedQuests[today].push(questId);
+    localStorage.setItem('completedQuests', JSON.stringify(completedQuests));
+    awardXP(xpReward, `Quête accomplie ! +${xpReward} XP`);
+    const btn = document.querySelector(`#quest${questId} button`);
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Accomplie ✓";
+      btn.style.background = "#006600";
+    }
   }
-}
-// Reset quotidien (à minuit)
-if (localStorage.getItem('lastQuestDay') !== today) {
-  localStorage.setItem('lastQuestDay', today);
-}
-// Lance au chargement
-document.addEventListener('DOMContentLoaded', checkCompletedQuests);
+  function checkCompletedQuests() {
+    if (completedQuests[today]) {
+      completedQuests[today].forEach(id => {
+        const btn = document.querySelector(`#quest${id} button`);
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Accomplie ✓";
+          btn.style.background = "#006600";
+        }
+      });
+    }
+  }
+  if (localStorage.getItem('lastQuestDay') !== today) {
+    localStorage.setItem('lastQuestDay', today);
+  }
+  document.addEventListener('DOMContentLoaded', checkCompletedQuests);
   // === CONNEXION GOOGLE + PROFIL FIRESTORE ===
   if (typeof firebase !== 'undefined') {
     const firebaseConfig = {
@@ -538,16 +510,13 @@ const subscriptionLevels = {
   premium: "Premium"
 };
 let currentSubscription = "free"; // par défaut
-// Liste des codes secrets (tu les modifies/ajoutes toi-même ici)
 const secretCodes = {
   "THAO2026": "premium",
   "INTER44": "inter",
   "PREMIUM85": "premium",
   "GARDIEN44": "premium",
   "MAITREPECHE": "premium"
-  // Ajoute autant que tu veux ici
 };
-// Chargement abonnement au démarrage
 function loadSubscription() {
   const saved = localStorage.getItem('fisherSubscription');
   if (saved && subscriptionLevels[saved]) {
@@ -557,11 +526,9 @@ function loadSubscription() {
   }
   updateSubscriptionUI();
 }
-// Sauvegarde abonnement
 function setSubscription(level) {
   currentSubscription = level;
   localStorage.setItem('fisherSubscription', level);
-  // Si Firebase connecté → sauvegarde aussi sur Firestore
   if (window.currentUser && window.db) {
     window.db.collection('users').doc(window.currentUser.uid).update({
       subscription: level,
@@ -571,7 +538,6 @@ function setSubscription(level) {
   updateSubscriptionUI();
   alert(`Abonnement passé en ${subscriptionLevels[level]} ! Toutes les fonctions sont débloquées.`);
 }
-// UI abonnement (badge + niveau)
 function updateSubscriptionUI() {
   const badge = document.getElementById('subscriptionBadge');
   if (badge) {
@@ -580,7 +546,6 @@ function updateSubscriptionUI() {
                             currentSubscription === "inter" ? "#00d4aa" : "#888888";
   }
 }
-// Pop-up changement abonnement
 function showSubscriptionUpgrade() {
   const code = prompt(`Ton abonnement actuel : ${subscriptionLevels[currentSubscription]}\n\nEntre un code pour passer à Intermédiaire ou Premium :`);
   if (!code) return;
@@ -591,7 +556,6 @@ function showSubscriptionUpgrade() {
     alert("Code invalide – réessaie ou reste en Gratuit pour l’instant.");
   }
 }
-// Fonction pour bloquer les fonctions premium/inter
 function requireSubscription(minLevel, featureName) {
   if (currentSubscription === "premium") return true;
   if (minLevel === "inter" && currentSubscription === "inter") return true;
@@ -599,21 +563,15 @@ function requireSubscription(minLevel, featureName) {
   showSubscriptionUpgrade();
   return false;
 }
-// Exemple d'utilisation sur un bouton premium
-// <button onclick="if(requireSubscription('premium', 'Scanner spot IA')) { lancerScannerSpot(); }">Scanner spot IA (Premium)</button>
-// Chargement au démarrage
 document.addEventListener('DOMContentLoaded', () => {
   loadSubscription();
 });
 // === STATISTIQUES PERSONNELLES AVANCÉES (basées sur XP, conseils, poissons map) ===
 function updateStatsAfterAdvice(adviceData) {
   let stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
- 
-  // Conseils demandés
   stats.totalAdvice = (stats.totalAdvice || 0) + 1;
   stats.adviceBySpecies = stats.adviceBySpecies || {};
   stats.adviceBySpecies[adviceData.species] = (stats.adviceBySpecies[adviceData.species] || 0) + 1;
-  // Leurres conseillés (on garde le premier comme "favori")
   stats.favoriteLures = stats.favoriteLures || {};
   const mainLure = adviceData.lures[0] || "Inconnu";
   stats.favoriteLures[mainLure] = (stats.favoriteLures[mainLure] || 0) + 1;
@@ -621,7 +579,6 @@ function updateStatsAfterAdvice(adviceData) {
 }
 function updateStatsAfterFishOnMap(species) {
   let stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
- 
   stats.totalFishOnMap = (stats.totalFishOnMap || 0) + 1;
   stats.fishOnMapBySpecies = stats.fishOnMapBySpecies || {};
   stats.fishOnMapBySpecies[species] = (stats.fishOnMapBySpecies[species] || 0) + 1;
@@ -634,7 +591,6 @@ function showAdvancedStats() {
   }
   const stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
   const xp = progress.xp || 0;
-  // Top espèce conseil
   let topSpecies = "Aucune";
   let topSpeciesCount = 0;
   if (stats.adviceBySpecies) {
@@ -645,7 +601,6 @@ function showAdvancedStats() {
       }
     }
   }
-  // Top leurre
   let topLure = "Aucun";
   let topLureCount = 0;
   if (stats.favoriteLures) {
@@ -656,7 +611,6 @@ function showAdvancedStats() {
       }
     }
   }
-  // Top poisson map
   let topFishMap = "Aucun";
   let topFishMapCount = 0;
   if (stats.fishOnMapBySpecies) {
@@ -672,14 +626,12 @@ function showAdvancedStats() {
   display.innerHTML = `
     <div style="background:#003366;padding:20px;border-radius:15px;text-align:left;">
       <h4 style="color:#ffd700;text-align:center;margin-bottom:20px;">Tes stats Premium</h4>
-     
       <p><strong>XP total :</strong> ${xp} points</p>
       <p><strong>Conseils demandés :</strong> ${stats.totalAdvice || 0}</p>
       <p><strong>Espèce la plus demandée :</strong> ${topSpecies} (${topSpeciesCount})</p>
       <p><strong>Leurre le plus conseillé :</strong> ${topLure} (${topLureCount})</p>
       <p><strong>Poissons placés sur la map :</strong> ${stats.totalFishOnMap || 0}</p>
       <p><strong>Espèce la plus placée sur map :</strong> ${topFishMap} (${topFishMapCount})</p>
-     
       <p style="color:#00ff9d;text-align:center;margin-top:30px;font-size:18px;font-weight:bold;">
         Tu es un vrai traqueur ! Continue comme ça 🔥
       </p>
@@ -687,31 +639,5 @@ function showAdvancedStats() {
   `;
 }
 // Appelle ces fonctions aux bons endroits :
-// Après un conseil IA :
-updateStatsAfterAdvice({
-  species: species,
-  lures: conseil.lures
-});
-// Après placement poisson sur map :
-updateStatsAfterFishOnMap(speciesName);
-
-// === APPRENTISSAGE IA DES BREDOUILLES (blacklist leurre en cas d’échec) ===
-function blacklistLureOnFailure(species, lureUsed, conditions, structure, spotType, temperature) {
-  let failedLures = JSON.parse(localStorage.getItem('fisherFailedLures') || '{}');
-  
-  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
-  
-  if (!failedLures[key]) failedLures[key] = [];
-  if (!failedLures[key].includes(lureUsed)) {
-    failedLures[key].push(lureUsed);
-    localStorage.setItem('fisherFailedLures', JSON.stringify(failedLures));
-    console.log(`Leurre "${lureUsed}" blacklisté pour ${key}`);
-  }
-}
-
-// RÉCUPÉRATION DES LEURRES BLACKLISTÉS POUR ENVOI AU SERVEUR
-function getFailedLures(species, conditions, structure, spotType, temperature) {
-  const key = `${species.toLowerCase()}_${conditions.toLowerCase()}_${structure.toLowerCase()}_${spotType.toLowerCase()}_${Math.round(temperature)}`;
-  const failedLures = JSON.parse(localStorage.getItem('fisherFailedLures') || '{}');
-  return failedLures[key] || [];
-}
+// Après un conseil IA : updateStatsAfterAdvice({ species: species, lures: conseil.lures });
+// Après placement poisson sur map : updateStatsAfterFishOnMap(speciesName);
