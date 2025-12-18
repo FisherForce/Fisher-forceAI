@@ -3,32 +3,37 @@ const el = id => document.getElementById(id);
 let progress = { xp: 0, speciesCaught: {}, successes: 0, attempts: 0 };
 let knownSpots = new Set();
 let knownSpecies = new Set();
-// === LIMITATION 5 CONSEILS/JOUR ===
-let dailyAdviceCount = parseInt(localStorage.getItem('dailyAdviceCount') || '0');
-let lastAdviceDate = localStorage.getItem('lastAdviceDate') || '';
-function resetDailyCount() {
+
+// === LIMITATION 5 CONSEILS/JOUR (UNIQUEMENT GRATUIT) ===
+let dailyAdviceCount = 0;
+let lastAdviceDate = '';
+function resetDailyAdviceCount() {
   const today = new Date().toDateString();
   if (lastAdviceDate !== today) {
     dailyAdviceCount = 0;
     lastAdviceDate = today;
-    localStorage.setItem('dailyAdviceCount', '0');
     localStorage.setItem('lastAdviceDate', today);
+  } else {
+    dailyAdviceCount = parseInt(localStorage.getItem('dailyAdviceCount') || '0');
   }
 }
-resetDailyCount();
-// === LIMITATION 6 RÉSULTATS/JOUR ===
-let dailyResultCount = parseInt(localStorage.getItem('dailyResultCount') || '0');
-let lastResultDate = localStorage.getItem('lastResultDate') || '';
+resetDailyAdviceCount();
+
+// === LIMITATION 6 RÉSULTATS/JOUR (UNIQUEMENT GRATUIT) ===
+let dailyResultCount = 0;
+let lastResultDate = '';
 function resetDailyResultCount() {
   const today = new Date().toDateString();
   if (lastResultDate !== today) {
     dailyResultCount = 0;
     lastResultDate = today;
-    localStorage.setItem('dailyResultCount', '0');
     localStorage.setItem('lastResultDate', today);
+  } else {
+    dailyResultCount = parseInt(localStorage.getItem('dailyResultCount') || '0');
   }
 }
 resetDailyResultCount();
+
 // === CHARGEMENT LOCAL ===
 function loadAll() {
   const data = localStorage.getItem('fisherXP');
@@ -125,13 +130,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(s);
   }
   el('getAdvice')?.addEventListener('click', async () => {
-    if (dailyAdviceCount >= 5) {
-      alert("Limite de 5 conseils par jour atteinte ! Reviens demain pour plus d'aventure.");
+    // LIMITE CONSEILS UNIQUEMENT POUR GRATUIT
+    if (currentSubscription !== 'premium' && dailyAdviceCount >= 5) {
+      alert("Limite de 5 conseils par jour atteinte (compte Gratuit) !\nPasse Premium pour conseils illimités.");
+      showSubscriptionUpgrade();
       return;
     }
-    dailyAdviceCount++;
-    localStorage.setItem('dailyAdviceCount', dailyAdviceCount.toString());
-    localStorage.setItem('lastAdviceDate', new Date().toDateString());
+
+    // Incrémente seulement si Gratuit
+    if (currentSubscription !== 'premium') {
+      dailyAdviceCount++;
+      localStorage.setItem('dailyAdviceCount', dailyAdviceCount.toString());
+    }
+
     const input = readForm();
     const spotName = (input.spotName || "").trim().toLowerCase();
     awardXP(1, "Conseil demandé !");
@@ -172,13 +183,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // === RÉCEPTION DES RÉSULTATS + RÉACTIONS IA + SAUVEGARDE GPS ===
   window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
-      if (dailyResultCount >= 6) {
-        alert("Limite de 6 sessions enregistrées par jour atteinte ! Reviens demain pour plus de gloire.");
+      // LIMITE RÉSULTATS UNIQUEMENT POUR GRATUIT
+      if (currentSubscription !== 'premium' && dailyResultCount >= 6) {
+        alert("Limite de 6 sessions enregistrées par jour atteinte (compte Gratuit) !\nPasse Premium pour enregistrements illimités.");
+        showSubscriptionUpgrade();
         return;
       }
-      dailyResultCount++;
-      localStorage.setItem('dailyResultCount', dailyResultCount.toString());
-      localStorage.setItem('lastResultDate', new Date().toDateString());
+
+      // Incrémente seulement si Gratuit
+      if (currentSubscription !== 'premium') {
+        dailyResultCount++;
+        localStorage.setItem('dailyResultCount', dailyResultCount.toString());
+      }
+
       const { success, speciesName, spotName, lure, poids = 0 } = e.data;
       // ENVOI À L'IA
       if (success && speciesName && lure) {
