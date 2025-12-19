@@ -76,32 +76,49 @@
   📔 Journal de pêche
 </button>
 
-<!-- MODAL JOURNAL DE PÊCHE AVEC DÉFILEMENT -->
+<!-- BOUTON JOURNAL DE PÊCHE (à côté du pseudo) -->
+<button id="openJournalBtn" style="background:#00d4aa;color:black;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;font-size:16px;margin-left:15px;cursor:pointer;box-shadow:0 8px 20px rgba(0,212,170,0.5);">
+  📔 Journal de pêche
+</button>
+
+<!-- MODAL JOURNAL DE PÊCHE AVEC PHOTOS + STATS -->
 <div id="journalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99999;justify-content:center;align-items:flex-start;overflow-y:auto;">
-  <div style="background:#001122;padding:25px;border-radius:20px;max-width:750px;width:95%;margin:20px auto;box-shadow:0 20px 60px rgba(0,255,157,0.4);position:relative;min-height:80vh;">
+  <div style="background:#001122;padding:25px;border-radius:20px;max-width:800px;width:95%;margin:20px auto;box-shadow:0 20px 60px rgba(0,255,157,0.4);position:relative;">
     <button id="closeJournalBtn" style="position:absolute;top:15px;right:20px;background:none;border:none;color:#888;font-size:34px;cursor:pointer;z-index:10;">&times;</button>
     
     <h2 style="color:#00ff9d;text-align:center;font-size:30px;margin:20px 0 30px;">📔 Mon Journal de Pêche</h2>
     
-    <div id="journalEntries" style="color:white;font-size:18px;line-height:1.8;max-height:70vh;overflow-y:auto;padding-right:10px;">
-      <!-- Scrollbar personnalisée -->
+    <!-- STATISTIQUES PERSONNELLES -->
+    <div id="journalStats" style="background:#003366;padding:20px;border-radius:15px;margin:20px 0;text-align:center;">
+      <p style="color:#ffd700;font-size:20px;font-weight:bold;margin:10px 0;">Statistiques de ton journal</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:15px;">
+        <div style="background:#001f3f;padding:15px;border-radius:12px;">
+          <p style="color:#aaa;font-size:14px;margin:0;">Total sessions</p>
+          <p style="color:#00ff9d;font-size:24px;font-weight:bold;margin:8px 0 0;">0</p>
+        </div>
+        <div style="background:#001f3f;padding:15px;border-radius:12px;">
+          <p style="color:#aaa;font-size:14px;margin:0;">Taux de réussite</p>
+          <p style="color:#00ff9d;font-size:24px;font-weight:bold;margin:8px 0 0;">0%</p>
+        </div>
+        <div style="background:#001f3f;padding:15px;border-radius:12px;">
+          <p style="color:#aaa;font-size:14px;margin:0;">Espèce star</p>
+          <p style="color:#00ff9d;font-size:20px;font-weight:bold;margin:8px 0 0;">Aucune</p>
+        </div>
+        <div style="background:#001f3f;padding:15px;border-radius:12px;">
+          <p style="color:#aaa;font-size:14px;margin:0;">Meilleur mois</p>
+          <p style="color:#00ff9d;font-size:20px;font-weight:bold;margin:8px 0 0;">-</p>
+        </div>
+      </div>
+    </div>
+    
+    <div id="journalEntries" style="color:white;font-size:18px;line-height:1.8;max-height:60vh;overflow-y:auto;padding-right:10px;">
       <style>
-        #journalEntries::-webkit-scrollbar {
-          width: 12px;
-        }
-        #journalEntries::-webkit-scrollbar-track {
-          background: #001122;
-          border-radius: 10px;
-        }
-        #journalEntries::-webkit-scrollbar-thumb {
-          background: #00d4aa;
-          border-radius: 10px;
-        }
-        #journalEntries::-webkit-scrollbar-thumb:hover {
-          background: #00ff9d;
-        }
+        #journalEntries::-webkit-scrollbar { width: 12px; }
+        #journalEntries::-webkit-scrollbar-track { background: #001122; border-radius: 10px; }
+        #journalEntries::-webkit-scrollbar-thumb { background: #00d4aa; border-radius: 10px; }
+        #journalEntries::-webkit-scrollbar-thumb:hover { background: #00ff9d; }
       </style>
-      <p style="text-align:center;color:#888;font-size:20px;padding:50px 0;">Aucune session enregistrée pour l’instant...<br><br>Enregistre tes prises et bredouilles pour remplir ton journal !</p>
+      <p style="text-align:center;color:#888;font-size:20px;padding:80px 0;">Ton journal est vide pour l’instant...<br><br>Enregistre tes premières sessions pour le remplir !</p>
     </div>
     
     <div style="text-align:center;margin-top:30px;">
@@ -113,65 +130,65 @@
 </div>
 
 <script>
-// === JOURNAL DE PÊCHE PERSONNEL AVEC DÉFILEMENT FLUIDE ===
+// === JOURNAL DE PÊCHE AVEC PHOTOS + STATISTIQUES PERSONNELLES ===
 document.addEventListener('DOMContentLoaded', () => {
   const openBtn = document.getElementById('openJournalBtn');
   const modal = document.getElementById('journalModal');
   const closeBtn = document.getElementById('closeJournalBtn');
   const entriesDiv = document.getElementById('journalEntries');
+  const statsDiv = document.getElementById('journalStats');
 
-  if (!openBtn || !modal || !closeBtn || !entriesDiv) {
-    console.warn("Éléments du journal de pêche non trouvés");
-    return;
-  }
+  if (!openBtn || !modal || !closeBtn || !entriesDiv || !statsDiv) return;
 
-  // Ouvre le journal
   openBtn.addEventListener('click', () => {
     modal.style.display = 'flex';
-    modal.scrollTop = 0; // remontée en haut
-    displayJournalEntries();
+    modal.scrollTop = 0;
+    displayJournal();
   });
 
-  // Ferme avec la croix
-  closeBtn.addEventListener('click', () => {
-    modal.style.display = 'none';
-  });
+  closeBtn.addEventListener('click', () => modal.style.display = 'none');
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
 
-  // Ferme au clic dehors du contenu
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.style.display = 'none';
-    }
-  });
-
-  function displayJournalEntries() {
+  function displayJournal() {
     const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
     
+    // === CALCUL DES STATS ===
     if (sessions.length === 0) {
-      entriesDiv.innerHTML = `
-        <div style="text-align:center;padding:80px 20px;">
-          <p style="font-size:24px;color:#00ff9d;">🎣</p>
-          <p style="color:#888;font-size:20px;">Ton journal est vide pour l'instant...</p>
-          <p style="color:#666;font-size:16px;margin-top:20px;">Enregistre tes premières prises et bredouilles<br>pour commencer à remplir ton histoire de pêcheur !</p>
-        </div>
-      `;
+      entriesDiv.innerHTML = `<div style="text-align:center;padding:100px 20px;"><p style="font-size:24px;color:#00ff9d;">🎣</p><p style="color:#888;font-size:20px;">Ton journal est vide...</p><p style="color:#666;font-size:16px;margin-top:20px;">Commence à enregistrer tes sessions !</p></div>`;
+      updateStats(0, 0, 'Aucune', '-');
       return;
     }
 
-    // Tri par date décroissante (plus récent en haut)
+    // Tri par date décroissante
     sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+    // Stats
+    const successes = sessions.filter(s => s.success).length;
+    const rate = sessions.length ? Math.round((successes / sessions.length) * 100) : 0;
+
+    // Espèce la plus pêchée (uniquement succès)
+    const speciesCount = {};
+    sessions.filter(s => s.success && s.species).forEach(s => {
+      speciesCount[s.species] = (speciesCount[s.species] || 0) + 1;
+    });
+    const topSpecies = Object.keys(speciesCount).length ? Object.keys(speciesCount).reduce((a, b) => speciesCount[a] > speciesCount[b] ? a : b) : 'Aucune';
+
+    // Meilleur mois (plus de succès)
+    const monthCount = {};
+    sessions.filter(s => s.success).forEach(s => {
+      const month = new Date(s.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+      monthCount[month] = (monthCount[month] || 0) + 1;
+    });
+    const bestMonth = Object.keys(monthCount).length ? Object.keys(monthCount).reduce((a, b) => monthCount[a] > monthCount[b] ? a : b) : '-';
+
+    updateStats(sessions.length, rate, topSpecies, bestMonth);
+
+    // === AFFICHAGE DES ENTRÉES ===
     let html = '';
     sessions.forEach((session, index) => {
       const date = new Date(session.date).toLocaleDateString('fr-FR', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
       });
-
       const successEmoji = session.success ? '🎣💥' : '😔';
       const resultText = session.success ? 'PRISE VALIDÉE' : 'BREDOUILLE';
       const poidsText = session.poids > 0 ? `<strong>${session.poids}g</strong>` : 'Aucun poisson';
@@ -190,8 +207,15 @@ document.addEventListener('DOMContentLoaded', () => {
             <p style="margin:4px 0;"><strong>Espèce :</strong> ${session.species || 'Aucune'}</p>
             <p style="margin:4px 0;"><strong>Poids :</strong> ${poidsText}</p>
             <p style="margin:4px 0;"><strong>Spot :</strong> ${session.spot}</p>
-            <p style="margin:4px 0;"><strong>Leurre utilisé :</strong> ${session.lure}</p>
-          </div>
+            <p style="margin:4px 0;"><strong>Leurre :</strong> ${session.lure}</p>
+          </div>`;
+
+      // PHOTO DE LA PRISE (si existe)
+      if (session.photo) {
+        html += `<img src="${session.photo}" style="width:100%;max-height:400px;object-fit:cover;border-radius:12px;margin:15px 0;box-shadow:0 10px 30px rgba(0,0,0,0.5);">`;
+      }
+
+      html += `
           <p style="margin:10px 0 0;color:#888;font-size:14px;font-style:italic;">
             Session n°${sessions.length - index} — Par ${session.pseudo}
           </p>
@@ -200,6 +224,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     entriesDiv.innerHTML = html;
+  }
+
+  function updateStats(total, rate, topSpecies, bestMonth) {
+    statsDiv.innerHTML = `
+      <p style="color:#ffd700;font-size:20px;font-weight:bold;margin:10px 0;">Statistiques de ton journal</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:15px;">
+        <div style="background:#001f3f;padding:15px;border-radius:12px;">
+          <p style="color:#aaa;font-size:14px;margin:0;">Total sessions</p>
+          <p style="color:#00ff9d;font-size:24px;font-weight:bold;margin:8px 0 0;">${total}</p>
+        </div>
+        <div style="background:#001f3f;padding:15px;border-radius:12px;">
+          <p style="color:#aaa;font-size:14px;margin:0;">Taux de réussite</p>
+          <p style="color:#00ff9d;font-size:24px;font-weight:bold;margin:8px 0 0;">${rate}%</p>
+        </div>
+        <div style="background:#001f3f;padding:15px;border-radius:12px;">
+          <p style="color:#aaa;font-size:14px;margin:0;">Espèce star</p>
+          <p style="color:#00ff9d;font-size:20px;font-weight:bold;margin:8px 0 0;">${topSpecies}</p>
+        </div>
+        <div style="background:#001f3f;padding:15px;border-radius:12px;">
+          <p style="color:#aaa;font-size:14px;margin:0;">Meilleur mois</p>
+          <p style="color:#00ff9d;font-size:20px;font-weight:bold;margin:8px 0 0;">${bestMonth}</p>
+        </div>
+      </div>
+    `;
   }
 });
 </script>
