@@ -291,82 +291,62 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');
   }
 
-  // === NOUVEAU : CONSEILS RANDOM PAR ESPÈCE (si aucun cas ultra-ciblé n'a matché) ===
-  const defaultConseils = [
-    'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère taille N°2. Enregistre ta session pour faire progresser l\'IA !',
-    'Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer ! Dis-moi ensuite si tu as eu un poisson pour faire progresser l\'IA !',
-    'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l\'attend pas. Enregistre ta session pour faire progresser l\'IA !',
-    'Essaie un grub blanc, en linéaire lent, ça peut être sympa, enregistre ta session pour me faire progresser !',
-    'Essaie un petit worm très rigide, sur le fond et gratte : ça peut rapporter de belles surprises, enregistre ta session pour me faire progresser !',
-    'Essaie une écrevisse, laisse tomber sur le fond et donne des à-coups, enregistre ta session pour me faire progresser !',
-    'Essaie un petit leurre souple de 6cm au mileu de la rivière tu je suis sure que tu aura quelque chose ',
-    'Tu est obligé de prendre un poisson au jerk-minnow !',
-    'Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !',
-  ];
+  // === TOUJOURS UN CONSEIL RANDOM PAR ESPÈCE (même si cas ciblé matché) ===
+  const randomParEspece = {
+    brochet: [
+      "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
+      "Power fishing agressif autour des structures avec gros swimbaits ou jerkbaits XXL.",
+      "Twitching violent avec un glider ou un jerkbait long dans les bordures herbeuses.",
+      "Réaction pure avec spinnerbait ou chatterbait dans les zones venteuses.",
+      "Pêche finesse en période difficile : weightless ou drop shot avec shad 10cm."
+    ],
+    perche: [
+      "Micro-jig ou drop shot en verticale sur les tombants rocheux.",
+      "Petits crankbaits ou lipless pour déclencher des attaques réflexes.",
+      "Leurres souples en linéaire lent imitant écrevisses ou petits poissons.",
+      "Ned rig ou tube sur fond propre avec pauses longues.",
+      "Cuillère ondulante ou rotating en récupération variée."
+    ],
+    sandre: [
+      "Pêche au fond avec jig ou texas rig en animation très lente.",
+      "Verticale avec shad ou finess jig sur les cassures.",
+      "Linéaire lent avec gros leurre souple par faible luminosité.",
+      "Dead slow avec jerkbait suspendu en soirée."
+    ],
+    blackbass: [
+      "Flipping & pitching avec jig ou texas dans les herbiers épais.",
+      "Topwater frog ou popper au lever/coucher du soleil.",
+      "Crankbait profond sur les structures submergées.",
+      "Finesse shakey head ou wacky rig quand c'est dur."
+    ],
+    chevesne: [
+      "Petits leurres de surface ou insectes pour attaques en surface.",
+      "Cuillère ou micro-crank en récupération rapide dans le courant.",
+      "Lame vibrante ou petit spinner pour les chasses."
+    ],
+    aspe: [
+      "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
+      "Petits crankbaits ou lipless dans les zones rapides.",
+      "Leurres de surface bruyants en été."
+    ],
+    silure: [
+      "Gros leurres souples ou vifs au fond avec longues pauses.",
+      "Fireball ou clonk avec gros shad en verticale.",
+      "Swimbait XXL en linéaire lent près des trous."
+    ],
+    truite: [
+      "Cuillère ondulante ou rotating en rivière avec courant.",
+      "Leurre souple imitant vairon en récupération naturelle.",
+      "Micro-jig ou spinner en zone calme."
+    ]
+  };
 
-  if (list.length === 0 || (list.length === 1 && defaultConseils.some(d => list[0].includes(d.split(' — ')[0] || d)))) {
-    const randomParEspece = {
-      brochet: [
-        "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
-        "Power fishing agressif autour des structures avec gros swimbaits ou jerkbaits XXL.",
-        "Twitching violent avec un glider ou un jerkbait long dans les bordures herbeuses.",
-        "Réaction pure avec spinnerbait ou chatterbait dans les zones venteuses.",
-        "Pêche finesse en période difficile : weightless ou drop shot avec shad 10cm."
-      ],
-      perche: [
-        "Micro-jig ou drop shot en verticale sur les tombants rocheux.",
-        "Petits crankbaits ou lipless pour déclencher des attaques réflexes.",
-        "Leurres souples en linéaire lent imitant écrevisses ou petits poissons.",
-        "Ned rig ou tube sur fond propre avec pauses longues.",
-        "Cuillère ondulante ou rotating en récupération variée."
-      ],
-      sandre: [
-        "Pêche au fond avec jig ou texas rig en animation très lente.",
-        "Verticale avec shad ou finess jig sur les cassures.",
-        "Linéaire lent avec gros leurre souple par faible luminosité.",
-        "Dead slow avec jerkbait suspendu en soirée."
-      ],
-      blackbass: [
-        "Flipping & pitching avec jig ou texas dans les herbiers épais.",
-        "Topwater frog ou popper au lever/coucher du soleil.",
-        "Crankbait profond sur les structures submergées.",
-        "Finesse shakey head ou wacky rig quand c'est dur."
-      ],
-      chevesne: [
-        "Petits leurres de surface ou insectes pour attaques en surface.",
-        "Cuillère ou micro-crank en récupération rapide dans le courant.",
-        "Lame vibrante ou petit spinner pour les chasses."
-      ],
-      aspe: [
-        "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
-        "Petits crankbaits ou lipless dans les zones rapides.",
-        "Leurres de surface bruyants en été."
-      ],
-      silure: [
-        "Gros leurres souples ou vifs au fond avec longues pauses.",
-        "Fireball ou clonk avec gros shad en verticale.",
-        "Swimbait XXL en linéaire lent près des trous."
-      ],
-      truite: [
-        "Cuillère ondulante ou rotating en rivière avec courant.",
-        "Leurre souple imitant vairon en récupération naturelle.",
-        "Micro-jig ou spinner en zone calme."
-      ]
-    };
+  const conseilsEspece = randomParEspece[species] || randomParEspece.brochet;
+  const randomText = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+  list.push(randomText);
+  list.push("Varie les animations et les profondeurs pour trouver les actifs.");
+  list.push("Enregistre ta session pour faire progresser l'IA !");
 
-    const conseilsEspece = randomParEspece[species] || randomParEspece.brochet;
-    const randomText = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
-
-    list.push(randomText);
-    list.push("Varie les animations et les profondeurs pour trouver les actifs.");
-    list.push("Enregistre ta session pour faire progresser l'IA !");
-  }
-
-  // --- Conseils généraux (fallback final si vraiment rien) ---
-  if (list.length === 0) {
-    const defaults = defaultConseils;
-    list.push(defaults[Math.floor(Math.random() * defaults.length)]);
-  }
   // --- Profondeur selon température ---
   const depthAdvice = [];
   if (temperature !== null) {
@@ -448,17 +428,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-// === /API/ADVICE AVEC LISTE NOIRE DES LEURRES ===
+// === /API/ADVICE AVEC LISTE NOIRE RENFORCÉE ===
 app.post('/api/advice', (req, res) => {
   try {
     let { species, structure, conditions, spotType, temperature, failedLures = [] } = req.body;
 
-    // Sécurité
     species = (species || "").toLowerCase();
     structure = (structure || "").toLowerCase();
     conditions = (conditions || "").toLowerCase();
     spotType = (spotType || "").toLowerCase();
-    failedLures = Array.isArray(failedLures) ? failedLures.map(l => l.trim()) : [];
+    failedLures = Array.isArray(failedLures) ? failedLures.map(l => l.trim().toLowerCase()) : [];
 
     if (!structure || !conditions) {
       return res.status(400).json({ error: 'Champs requis manquants : structure et conditions.' });
@@ -466,13 +445,13 @@ app.post('/api/advice', (req, res) => {
 
     const result = suggestLures(species, structure, conditions, spotType, temperature);
 
-    // === FILTRAGE DE LA LISTE NOIRE ===
+    // === FILTRAGE RENFORCÉ (insensible à la casse) ===
     let filteredLures = result.lures.filter(lure => {
-      const lureName = lure.split(' — ')[0].trim();
+      const lureName = lure.split(' — ')[0].trim().toLowerCase();
       return !failedLures.includes(lureName);
     });
 
-    // Fallback si tout est blacklisté
+    // Fallback si tout blacklisté
     if (filteredLures.length === 0) {
       filteredLures = [
         "Aucun leurre précédent n'a fonctionné dans ces conditions...",
@@ -483,7 +462,7 @@ app.post('/api/advice', (req, res) => {
     }
 
     console.log(`Conseils générés (après blacklist de ${failedLures.length} leurres) :`, filteredLures);
-    res.json({ 
+    res.json({
       adviceText: "Voici mes meilleurs conseils pour ces conditions :",
       lures: filteredLures,
       depthAdvice: result.depthAdvice || []
