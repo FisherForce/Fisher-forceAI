@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (success) progress.successes += 1;
       saveAll();
       // SAUVEGARDE GPS SUR LA CARTE
-      saveSessionToMap(success, speciesName || null, poids, spotName || "Spot inconnu", lure || "Inconnu", photo || null); 
+      saveSessionToMap(success, speciesName || null, poids, spotName || "Spot inconnu", lure || "Inconnu", photo); 
       // RÉACTION IA
       if (success && speciesName && poids > 0) {
         showFishReaction(speciesName, poids, false);
