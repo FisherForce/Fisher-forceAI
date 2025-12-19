@@ -186,6 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
     renderAdvice(result);
+    // Sauvegarde le dernier conseil pour la blacklist automatique en bredouille
+localStorage.setItem('lastAdviceLures', JSON.stringify(result.lures || []));
+localStorage.setItem('lastAdviceConditions', JSON.stringify({
+  targetSpecies: input.targetSpecies,
+  structure: input.structure,
+  conditions: input.conditions,
+  spotType: input.waterType,
+  temperature: input.temperature
+}));
   });
   el('clearBtn')?.addEventListener('click', () => {
     ['spotName','structure','targetSpecies','conditions','temperature'].forEach(id => el(id).value = '');
