@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prise partagée - FisherForce AI</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #000811, #001122); color: white; margin: 0; padding: 20px; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: #001f3f; padding: 30px; border-radius: 25px; max-width: 600px; width: 95%; text-align: center; box-shadow: 0 20px 60px rgba(0,255,157,0.3); }
+    h1 { color: #00ff9d; font-size: 36px; margin: 0 0 20px; }
+    .photo { width: 100%; max-height: 70vh; object-fit: contain; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.7); margin: 20px 0; }
+    .info { font-size: 24px; margin: 15px 0; }
+    .info strong { color: #ffd700; }
+    .footer { margin-top: 40px; font-size: 16px; color: #888; }
+    .footer a { color: #00d4aa; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎣 Une prise partagée via FisherForce AI</h1>
+    <img id="sharedPhoto" class="photo" src="" alt="Prise de poisson">
+    <div class="info">
+      <p><strong>Espèce :</strong> <span id="species">Chargement...</span></p>
+      <p><strong>Poids :</strong> <span id="poids">Chargement...</span></p>
+      <p><strong>Date :</strong> <span id="date">Chargement...</span></p>
+      <p><strong>Spot :</strong> <span id="spot">Chargement...</span></p>
+    </div>
+    <div class="footer">
+      Découvre l’app qui révolutionne la pêche :<br>
+      <a href="https://fisherforce.ai" target="_blank">fisherforce.ai</a>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const data = urlParams.get('d');
+    
+    if (data) {
+      try {
+        const decoded = JSON.parse(atob(data));
+        document.getElementById('sharedPhoto').src = decoded.photo;
+        document.getElementById('species').textContent = decoded.species || 'Non précisée';
+        document.getElementById('poids').textContent = decoded.poids > 0 ? decoded.poids + 'cm' : 'Non précisé';
+        document.getElementById('date').textContent = new Date(decoded.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        document.getElementById('spot').textContent = decoded.spot || 'Spot inconnu';
+      } catch (e) {
+        document.querySelector('.card').innerHTML = '<h1 style="color:#e74c3c;">Lien invalide ou expiré</h1>';
+      }
+    } else {
+      document.querySelector('.card').innerHTML = '<h1 style="color:#e74c3c;">Aucune prise à afficher</h1>';
+    }
+  </script>
+</body>
+</html>
