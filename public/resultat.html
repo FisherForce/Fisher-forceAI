@@ -108,40 +108,40 @@
       document.getElementById('photoPreview').style.display = 'none';
     }
 
-    function saveResult() {
-      if (isSuccess === null) {
-        alert("Choisis Prise ou Bredouille !");
-        return;
-      }
+function saveResult() {
+  if (isSuccess === null) {
+    alert("Choisis Prise ou Bredouille !");
+    return;
+  }
 
-      const spotName = document.getElementById('spotName').value.trim() || "Spot inconnu";
-      const lure = document.getElementById('lure').value || "Inconnu";
-      let speciesName = "";
-      let poids = 0;
+  const spotName = document.getElementById('spotName').value.trim() || "Spot inconnu";
+  const lure = document.getElementById('lure').value.trim() || "Inconnu";
+  let speciesName = "";
+  let poids = 0;
 
-      if (isSuccess) {
-        speciesName = document.getElementById('species').value;
-        poids = parseInt(document.getElementById('poids').value) || 0;
-        if (!speciesName || poids === 0) {
-          alert("Remplis l'espèce et le poids pour une prise !");
-          return;
-        }
-      }
-
-      // Envoi au parent (app principale)
-      window.parent.postMessage({
-        type: 'ADD_XP',
-        success: isSuccess,
-        speciesName: speciesName || null,
-        spotName: spotName,
-        lure: lure,
-        poids: poids,
-        photo: photoData // ← photo envoyée (ou null si aucune)
-      }, '*');
-
-      alert(isSuccess ? "Prise enregistrée avec succès ! 🎣" : "Session enregistrée. On reviendra plus fort ! 💪");
-      window.close();
+  if (isSuccess) {
+    speciesName = document.getElementById('species').value.trim();
+    poids = parseInt(document.getElementById('poids').value) || 0;
+    if (!speciesName || poids === 0) {
+      alert("Remplis l'espèce et le poids pour une prise !");
+      return;
     }
+  }
+
+  // ENVOI CORRECT AU PARENT AVEC PHOTO
+  window.opener.postMessage({
+    type: 'ADD_XP',
+    success: isSuccess,
+    speciesName: speciesName || null,
+    spotName: spotName,
+    lure: lure,
+    poids: poids,
+    photo: photoData  // ← photo bien envoyée (base64 ou null)
+  }, window.location.origin);
+
+  alert(isSuccess ? "Prise enregistrée avec succès ! 🎣" : "Session enregistrée. On reviendra plus fort ! 💪");
+  window.close();
+}
 
     // Récupère le spot depuis l'URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -152,3 +152,4 @@
   </script>
 </body>
 </html>
+
