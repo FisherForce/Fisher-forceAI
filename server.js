@@ -7,37 +7,30 @@ const FileSync = require('lowdb/adapters/FileSync');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
-
 app.use(express.json());
-
 // === Initialisation lowdb (ta DB simple) ===
 const adapter = new FileSync('db.json');
 const db = lowdb(adapter);
 db.defaults({ users: [], spots: [] }).write();
-
 const secretKey = 'your-secret-key'; // À CHANGER EN VRAI (ex: process.env.JWT_SECRET)
-
 // Multer pour photos profil
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage });
-
 // Crée dossier uploads si pas là
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
-
 // === REGISTER ===
 app.post('/api/register', upload.single('photo'), async (req, res) => {
   const { pseudo, password } = req.body;
-  const photo = req.file ? req.file.pathPath : null;
+  const photo = req.file ? req.file.path : null; // Correction : req.file.path, pas pathPath
   if (db.get('users').find({ pseudo }).value()) return res.status(400).json({ error: 'Pseudo pris' });
   const hashedPass = await bcrypt.hash(password, 10);
   const user = { pseudo, password: hashedPass, photo, xp: 0, friends: [] };
   db.get('users').push(user).write();
   res.json({ success: true });
 });
-
 // === LOGIN ===
 app.post('/api/login', async (req, res) => {
   const { pseudo, password } = req.body;
@@ -47,7 +40,6 @@ app.post('/api/login', async (req, res) => {
   const token = jwt.sign({ pseudo }, secretKey, { expiresIn: '7d' }); // 7 jours
   res.json({ token, user: { pseudo: user.pseudo, photo: user.photo, xp: user.xp } });
 });
-
 // === AJOUT AMI / SPOTS / RANKING (tout ton code ancien reste intact) ===
 app.post('/api/add-friend', (req, res) => {
   const token = req.headers['authorization'];
@@ -65,7 +57,6 @@ app.post('/api/add-friend', (req, res) => {
     res.status(401).json({ error: 'Token invalide' });
   }
 });
-
 app.post('/api/add-spot', (req, res) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ error: 'Non autorisé' });
@@ -79,11 +70,9 @@ app.post('/api/add-spot', (req, res) => {
     res.status(401).json({ error: 'Token invalide' });
   }
 });
-
 app.get('/api/spots', (req, res) => {
   res.json(db.get('spots').value());
 });
-
 app.get('/api/ranking', (req, res) => {
   const users = db.get('users').value();
   const ranking = users
@@ -91,13 +80,11 @@ app.get('/api/ranking', (req, res) => {
     .map(u => ({ pseudo: u.pseudo, xp: u.xp }));
   res.json(ranking);
 });
-
 // === FICHIER D'APPRENTISSAGE ULTRA-COMPLET (V12) ===
 const LEARNING_FILE = 'learning-data-v12.json';
 if (!fs.existsSync(LEARNING_FILE)) {
   fs.writeFileSync(LEARNING_FILE, JSON.stringify([], null, 2));
 }
-
 app.post('/api/learn', async (req, res) => {
   try {
     const session = {
@@ -105,39 +92,31 @@ app.post('/api/learn', async (req, res) => {
       receivedAt: new Date().toISOString(),
       ip: req.ip || "unknown"
     };
-
     // Lecture + ajout + sauvegarde
     let data = [];
     try {
       data = JSON.parse(fs.readFileSync(LEARNING_FILE, 'utf8'));
     } catch (e) { data = []; }
-
     data.push(session);
     fs.writeFileSync(LEARNING_FILE, JSON.stringify(data, null, 2));
-
     console.log(`IA V12 → Session apprise (${data.length} total) | ${session.success ? "POISSON" : "BREDOUILLE"} ${session.species || ""} ${session.weight || 0}kg`);
-
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       totalSessions: data.length,
       message: "Session apprise avec succès (V12)"
     });
-
   } catch (err) {
     console.error("Erreur /api/learn V12 :", err);
     res.status(500).json({ error: "Erreur serveur" });
   }
 });
-
 // === Téléchargement direct du fichier d'apprentissage (secret) ===
 app.get('/download-learning-data', (req, res) => {
   if (req.query.key !== "thao2026") return res.status(403).send("Accès refusé");
   res.download(LEARNING_FILE, 'fisherforce-learning-data-v12.json');
 });
-
 // === Tes anciennes routes /api/advice, /api/suggest, etc. restent 100% intactes ===
 // (je les laisse telles quelles, elles sont en bas de ton code original)
-
 let learn;
 try {
   learn = require('./learn');
@@ -151,7 +130,6 @@ try {
     loadSpots: () => []
   };
 }
-
 // --- Tout ton ancien code suggestLures, /api/suggest, /api/advice, leaderboard, etc. ---
 const spotFile = path.join(__dirname, 'spots.json');
 let spotDatabase = [];
@@ -165,7 +143,6 @@ if (fs.existsSync(spotFile)) {
 } else {
   fs.writeFileSync(spotFile, JSON.stringify([]));
 }
-
 function saveSpot(spotName) {
   if (spotName && !spotDatabase.includes(spotName)) {
     spotDatabase.push(spotName);
@@ -173,7 +150,6 @@ function saveSpot(spotName) {
     console.log(`Spot "${spotName}" ajouté à la base.`);
   }
 }
-
 let learnedPatterns = {};
 try {
   learnedPatterns = learn.loadLearnedPatterns();
@@ -181,7 +157,6 @@ try {
 } catch (err) {
   console.warn("Pas de patterns appris");
 }
-
 function suggestLures(species, structure, conditions, spotType, temperature = null) {
   // === TOUT TON CODE suggestLures ORIGINAL EST LÀ (je ne touche à rien) ===
   species = (species || "").toLowerCase();
@@ -196,13 +171,12 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   else if ([3, 4, 5].includes(mois)) saison = "printemps";
   else if ([6, 7, 8].includes(mois)) saison = "été";
   else saison = "automne";
-  
+ 
   // === AJOUT SAISONNALITÉ + TEMPÉRATURE PRÉCISE ===
   if (temperature !== null) {
     if (temperature < 10) saison += " froid"; // Ajout froid pour hiver/ printemps froid
     else if (temperature > 20) saison += " chaud"; // Été chaud
   }
-
   // === UTILISER LES PATTERNS APPRENTIS (déjà chargés en haut) ===
   const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
   if (learnedLures && learnedLures.length > 0) {
@@ -210,7 +184,6 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push(`${lure} (appris des sessions)`);
     });
   }
-
   // Cas ultra-ciblés
   if (species.includes('perche')) {
   list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
@@ -249,7 +222,6 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "automne" && spotType === "étang" && conditions.includes('pluie'))
       list.push('Leurre souple de 7cm en Ned Rig — Tente les grosses perches dans les obstacles');
   }
-
   if (species.includes('brochet')) {
   list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
     if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
@@ -279,9 +251,8 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "automne" && spotType === "étang" && conditions.includes('vent'))
       list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d\'eau au fur et à mesure du temps');
   }
-
   if (species.includes('bass')) {
-  list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');    
+  list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
       list.push('Ned Rig ou ver manié — Récupération lente ou dandine en verticale');
     if (saison === "printemps" && spotType === "étang" && conditions.includes('vent'))
@@ -297,40 +268,36 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
       list.push('Écrevisses en punching — Dans les herbiers');
   }
-
   if (species.includes('chevesne')) {
-  list.push('Lame Vibrante — Récupération rapide avec des pauses proche des obstacles');    
+  list.push('Lame Vibrante — Récupération rapide avec des pauses proche des obstacles');
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
     if (saison === "été" && spotType === "rivière" )
-      list.push('Leurres Insectes — Récupération par à coups pour déclencher des attaques de réaction');    
+      list.push('Leurres Insectes — Récupération par à coups pour déclencher des attaques de réaction');
   }
-
   if (species.includes('sandre')) {
-  list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session je te donnerais de meilleurs conseils !');    
+  list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session je te donnerais de meilleurs conseils !');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
   }
   if (species.includes('aspe')) {
-  list.push('Essaie un jerkminnow de 7cm — Ramène le très vite, puis un jig de 10G à utiliser près du fond, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');      
+  list.push('Essaie un jerkminnow de 7cm — Ramène le très vite, puis un jig de 10G à utiliser près du fond, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
   }
   if (species.includes('silure')) {
-  list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');      
+  list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
   }
   if (species.includes('truite')) {
-  list.push('Essaie une ondulante de 5g — Lance dans les courants et ramène sans pause pour déclencher des attaques de réaction, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');      
+  list.push('Essaie une ondulante de 5g — Lance dans les courants et ramène sans pause pour déclencher des attaques de réaction, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
   }
     if (species.includes('carpe')) {
-  list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');      
+  list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');
   }
-  
-      
-
-  // --- Conseils généraux ---
-if (list.length === 0) {
-  const defaults = [
+ 
+     
+  // === NOUVEAU : CONSEILS RANDOM PAR ESPÈCE (si aucun cas ultra-ciblé n'a matché) ===
+  const defaultConseils = [
     'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère taille N°2. Enregistre ta session pour faire progresser l\'IA !',
     'Rien ne semble sortir du lot : Tente un shad en linéaire, puis twitching et dandine. Le poisson finira par craquer ! Dis-moi ensuite si tu as eu un poisson pour faire progresser l\'IA !',
     'Essaie un petit crankbait ou un spinnerbait. La magie opère souvent là où on ne l\'attend pas. Enregistre ta session pour faire progresser l\'IA !',
@@ -340,11 +307,73 @@ if (list.length === 0) {
     'Essaie un petit leurre souple de 6cm au mileu de la rivière tu je suis sure que tu aura quelque chose ',
     'Tu est obligé de prendre un poisson au jerk-minnow !',
     'Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !',
-
   ];
-  list.push(defaults[Math.floor(Math.random() * defaults.length)]);
-}
 
+  // Si aucun cas ciblé n'a été ajouté (list est vide ou contient seulement le conseil par défaut)
+  if (list.length === 0 || (list.length === 1 && defaultConseils.some(d => list[0].includes(d.split(' — ')[0] || d)))) {
+    const randomParEspece = {
+      brochet: [
+        "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
+        "Power fishing agressif autour des structures avec gros swimbaits ou jerkbaits XXL.",
+        "Twitching violent avec un glider ou un jerkbait long dans les bordures herbeuses.",
+        "Réaction pure avec spinnerbait ou chatterbait dans les zones venteuses.",
+        "Pêche finesse en période difficile : weightless ou drop shot avec shad 10cm."
+      ],
+      perche: [
+        "Micro-jig ou drop shot en verticale sur les tombants rocheux.",
+        "Petits crankbaits ou lipless pour déclencher des attaques réflexes.",
+        "Leurres souples en linéaire lent imitant écrevisses ou petits poissons.",
+        "Ned rig ou tube sur fond propre avec pauses longues.",
+        "Cuillère ondulante ou rotating en récupération variée."
+      ],
+      sandre: [
+        "Pêche au fond avec jig ou texas rig en animation très lente.",
+        "Verticale avec shad ou finess jig sur les cassures.",
+        "Linéaire lent avec gros leurre souple par faible luminosité.",
+        "Dead slow avec jerkbait suspendu en soirée."
+      ],
+      blackbass: [
+        "Flipping & pitching avec jig ou texas dans les herbiers épais.",
+        "Topwater frog ou popper au lever/coucher du soleil.",
+        "Crankbait profond sur les structures submergées.",
+        "Finesse shakey head ou wacky rig quand c'est dur."
+      ],
+      chevesne: [
+        "Petits leurres de surface ou insectes pour attaques en surface.",
+        "Cuillère ou micro-crank en récupération rapide dans le courant.",
+        "Lame vibrante ou petit spinner pour les chasses."
+      ],
+      aspe: [
+        "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
+        "Petits crankbaits ou lipless dans les zones rapides.",
+        "Leurres de surface bruyants en été."
+      ],
+      silure: [
+        "Gros leurres souples ou vifs au fond avec longues pauses.",
+        "Fireball ou clonk avec gros shad en verticale.",
+        "Swimbait XXL en linéaire lent près des trous."
+      ],
+      truite: [
+        "Cuillère ondulante ou rotating en rivière avec courant.",
+        "Leurre souple imitant vairon en récupération naturelle.",
+        "Micro-jig ou spinner en zone calme."
+      ]
+    };
+
+    const conseilsEspece = randomParEspece[species] || randomParEspece.brochet;
+    const randomText = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+
+    // Ajoute un conseil textuel + quelques leurres génériques variés
+    list.push(randomText);
+    list.push("Varie les animations et les profondeurs pour trouver les actifs.");
+    list.push("Enregistre ta session pour faire progresser l'IA !");
+  }
+
+  // --- Conseils généraux (fallback final si vraiment rien) ---
+  if (list.length === 0) {
+    const defaults = defaultConseils;
+    list.push(defaults[Math.floor(Math.random() * defaults.length)]);
+  }
   // --- Profondeur selon température ---
   const depthAdvice = [];
   if (temperature !== null) {
@@ -359,17 +388,14 @@ if (list.length === 0) {
       else depthAdvice.push("Bordure et surface 0-2m, frog et cuillère");
     }
   }
-
   return { lures: list, depthAdvice };
 }
-
 // === ROUTES ===
 app.post('/api/suggest', (req, res) => {
   const { species, structure, conditions, spotType, temperature } = req.body;
   const result = suggestLures(species, structure, conditions, spotType, temperature);
   res.json(result);
 });
-
 app.post('/api/learn', (req, res) => {
   try {
     const session = req.body || {};
@@ -384,7 +410,6 @@ app.post('/api/learn', (req, res) => {
     return res.status(500).json({ error: 'Erreur serveur' });
   }
 });
-
 app.get('/api/sessions', (req, res) => {
   try {
     res.json(learn.loadSessions());
@@ -392,7 +417,6 @@ app.get('/api/sessions', (req, res) => {
     res.status(500).json([]);
   }
 });
-
 app.get('/api/learnedPatterns', (req, res) => {
   try {
     res.json(learn.loadLearnedPatterns());
@@ -400,7 +424,6 @@ app.get('/api/learnedPatterns', (req, res) => {
     res.status(500).json([]);
   }
 });
-
 app.get('/api/spots', (req, res) => {
   try {
     res.json(learn.loadSpots());
@@ -408,38 +431,30 @@ app.get('/api/spots', (req, res) => {
     res.status(500).json([]);
   }
 });
-
 // === CLASSEMENT DES PÊCHEURS (NOUVEAU) ===
 app.get('/api/leaderboard', (req, res) => {
   try {
     const sessions = learn.loadSessions();
     const leaderboard = {};
-
     sessions.forEach(s => {
       if (s.resultFish && s.anglerName && s.anglerName !== "Anonyme") {
         leaderboard[s.anglerName] = (leaderboard[s.anglerName] || 0) + 1;
       }
     });
-
     const ranked = Object.entries(leaderboard)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
-
     res.json(ranked);
   } catch (e) {
     console.error("Erreur leaderboard:", e);
     res.status(500).json([]);
   }
 });
-
-
-
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
 app.post('/api/advice', (req, res) => {
   try {
     const { species, structure, conditions, spotType, temperature } = req.body;
@@ -454,7 +469,6 @@ app.post('/api/advice', (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
