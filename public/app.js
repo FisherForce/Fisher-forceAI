@@ -186,15 +186,16 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     }
     renderAdvice(result);
+
     // Sauvegarde le dernier conseil pour la blacklist automatique en bredouille
-localStorage.setItem('lastAdviceLures', JSON.stringify(result.lures || []));
-localStorage.setItem('lastAdviceConditions', JSON.stringify({
-  targetSpecies: input.targetSpecies,
-  structure: input.structure,
-  conditions: input.conditions,
-  spotType: input.waterType,
-  temperature: input.temperature
-}));
+    localStorage.setItem('lastAdviceLures', JSON.stringify(result.lures || []));
+    localStorage.setItem('lastAdviceConditions', JSON.stringify({
+      targetSpecies: input.targetSpecies,
+      structure: input.structure,
+      conditions: input.conditions,
+      spotType: input.waterType,
+      temperature: input.temperature
+    }));
   });
   el('clearBtn')?.addEventListener('click', () => {
     ['spotName','structure','targetSpecies','conditions','temperature'].forEach(id => el(id).value = '');
@@ -223,6 +224,12 @@ localStorage.setItem('lastAdviceConditions', JSON.stringify({
       }
 
       const { success, speciesName, spotName, lure = "Inconnu", poids = 0, photo = null } = e.data;
+
+      let lureName = null;
+      if (lure && lure !== "Inconnu") {
+        lureName = lure.split(' — ')[0].trim();
+      }
+
       // ENVOI À L'IA
       if (success && speciesName && lure) {
         const input = readForm();
@@ -248,23 +255,22 @@ localStorage.setItem('lastAdviceConditions', JSON.stringify({
       }
 
       // === LISTE NOIRE EN CAS DE BREDOUILLE ===
-if (!success && lure && lure !== "Inconnu") {
-  const input = readForm();
-  const blacklistSpecies = success ? speciesName : input.targetSpecies || "inconnu"; // ← FIX : utilise targetSpecies en bredouille
+      if (!success && lure && lure !== "Inconnu") {
+        const input = readForm();
+        const blacklistSpecies = input.targetSpecies || "inconnu"; // Utilise l'espèce visée
 
-  blacklistLureOnFailure(
-    blacklistSpecies,
-    lure,
-    input.conditions,
-    input.structure,
-    input.waterType,
-    input.temperature
-  );
-}
+        blacklistLureOnFailure(
+          blacklistSpecies,
+          lure,
+          input.conditions,
+          input.structure,
+          input.waterType,
+          input.temperature
+        );
 
-  // === POP-UP BLACKLIST ===
-  showBlacklistPop(lureName);
-}
+        // POP-UP BLACKLIST
+        showBlacklistPop(lureName);
+      }
 
       if (success) awardXP(5, "Prise validée !");
       else awardXP(5, "Session enregistrée");
@@ -757,6 +763,7 @@ function getFailedLures(species, conditions, structure, spotType, temperature) {
   const failedLures = JSON.parse(localStorage.getItem('fisherFailedLures') || '{}');
   return failedLures[key] || [];
 }
+
 // === POP-UP "LEURRE BLACKLISTÉ" (s’affiche avec le +XP en cas de bredouille) ===
 function showBlacklistPop(lureName) {
   const pop = document.createElement('div');
