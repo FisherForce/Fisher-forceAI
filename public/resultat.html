@@ -114,8 +114,19 @@ function saveResult() {
     return;
   }
 
+  let lure = document.getElementById('lure')?.value.trim() || "Inconnu";
+
+  // === AUTOMATIQUE EN BREDOUILLE : on prend le premier leurre du dernier conseil ===
+  if (!isSuccess && lure === "Inconnu") {
+    const lastLures = JSON.parse(localStorage.getItem('lastAdviceLures') || '[]');
+    if (lastLures.length > 0) {
+      lure = lastLures[0]; // On prend le leurre principal conseillé
+      document.getElementById('lure').value = lure; // Optionnel : affiche le leurre
+      alert(`Bredouille détectée ! Le leurre "${lure}" (dernier conseillé) sera blacklisté automatiquement.`);
+    }
+  }
+
   const spotName = document.getElementById('spotName').value.trim() || "Spot inconnu";
-  const lure = document.getElementById('lure').value.trim() || "Inconnu";
   let speciesName = "";
   let poids = 0;
 
@@ -128,7 +139,7 @@ function saveResult() {
     }
   }
 
-  // ENVOI CORRECT AU PARENT AVEC PHOTO
+  // Envoi au parent
   window.opener.postMessage({
     type: 'ADD_XP',
     success: isSuccess,
@@ -136,13 +147,12 @@ function saveResult() {
     spotName: spotName,
     lure: lure,
     poids: poids,
-    photo: photoData  // ← photo bien envoyée (base64 ou null)
-  }, window.location.origin);
+    photo: photoData
+  }, '*');
 
-  alert(isSuccess ? "Prise enregistrée avec succès ! 🎣" : "Session enregistrée. On reviendra plus fort ! 💪");
+  alert(isSuccess ? "Prise enregistrée avec succès ! 🎣" : "Session enregistrée. Le leurre a été blacklisté automatiquement.");
   window.close();
 }
-
     // Récupère le spot depuis l'URL
     const urlParams = new URLSearchParams(window.location.search);
     const spot = urlParams.get('spot');
@@ -152,5 +162,6 @@ function saveResult() {
   </script>
 </body>
 </html>
+
 
 
