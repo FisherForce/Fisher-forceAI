@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
   📸 Album photos
 </button>
 
-<!-- MODAL ALBUM PHOTOS -->
+<!-- MODAL ALBUM PHOTOS AVEC PARTAGE NATIF -->
 <div id="albumModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:99999;justify-content:center;align-items:flex-start;overflow-y:auto;">
   <div style="background:#001122;padding:25px;border-radius:20px;max-width:900px;width:95%;margin:20px auto;box-shadow:0 20px 60px rgba(255,107,0,0.4);position:relative;">
     <button id="closeAlbumBtn" style="position:absolute;top:15px;right:20px;background:none;border:none;color:#888;font-size:34px;cursor:pointer;">&times;</button>
@@ -249,26 +249,13 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- POP-UP PARTAGE -->
-<div id="sharePopup" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#001f3f;padding:30px;border-radius:20px;max-width:500px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(255,107,0,0.6);z-index:100000;">
-  <h3 style="color:#ff6b00;margin:0 0 20px;">🔗 Partager cette prise</h3>
-  <input type="text" id="shareLink" style="width:100%;padding:15px;background:#003366;color:white;border:none;border-radius:12px;margin:15px 0;font-size:16px;" readonly>
-  <p style="color:#aaa;font-size:14px;margin:10px 0;">Copie le lien et envoie-le à tes amis !</p>
-  <div style="display:flex;gap:15px;justify-content:center;">
-    <button onclick="copyLink()" style="background:#00d4aa;color:black;padding:12px 30px;border:none;border-radius:50px;font-weight:bold;">Copier le lien</button>
-    <button onclick="document.getElementById('sharePopup').style.display='none'" style="background:#e74c3c;color:white;padding:12px 30px;border:none;border-radius:50px;font-weight:bold;">Fermer</button>
-  </div>
-</div>
-
 <script>
-// === ALBUM PHOTOS + PARTAGE PUBLIC ===
+// === ALBUM PHOTOS + PARTAGE NATIF (Web Share API + Fallback copie) ===
 document.addEventListener('DOMContentLoaded', () => {
   const openBtn = document.getElementById('openAlbumBtn');
   const modal = document.getElementById('albumModal');
   const closeBtn = document.getElementById('closeAlbumBtn');
   const photosDiv = document.getElementById('albumPhotos');
-  const sharePopup = document.getElementById('sharePopup');
-  const shareLinkInput = document.getElementById('shareLink');
 
   if (!openBtn || !modal || !closeBtn || !photosDiv) return;
 
@@ -279,6 +266,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
   closeBtn.addEventListener('click', () => modal.style.display = 'none');
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+  async function shareCatch(session) {
+    const text = `🎣 Ma prise FisherForce AI !\n${session.species || 'Poisson'} de ${session.poids > 0 ? session.poids + 'g' : 'poids inconnu'}\nLe ${new Date(session.date).toLocaleDateString('fr-FR')}\nÀ ${session.spot}\n\nTélécharge l’app : fisherforce.ai`;
+
+    // Méthode 1 : Web Share API (mobile principalement)
+    if (navigator.share && navigator.canShare) {
+      try {
+        // Convertir base64 en Blob
+        const response = await fetch(session.photo);
+        const blob = await response.blob();
+        const file = new File([blob], "prise.jpg", { type: blob.type });
+
+        await navigator.share({
+          title: 'Ma prise FisherForce AI',
+          text: text,
+          files: [file]
+        });
+        console.log("Partage natif réussi");
+        return;
+      } catch (err) {
+        console.log("Partage natif échoué, fallback copie", err);
+      }
+    }
+
+    // Méthode 2 : Fallback copie presse-papier (desktop + mobile)
+    try {
+      const response = await fetch(session.photo);
+      const blob = await response.blob();
+      const item = new ClipboardItem({ [blob.type]: blob });
+      await navigator.clipboard.write([item]);
+
+      // Copie aussi le texte
+      await navigator.clipboard.writeText(text);
+
+      alert("📋 Photo + texte copiés dans le presse-papier !\nColle-les dans WhatsApp, Insta, SMS... 🔥");
+    } catch (err) {
+      console.error("Copie échouée", err);
+      // Ultime fallback : copie juste le texte
+      await navigator.clipboard.writeText(text + "\n(Photo non copiable sur ce navigateur)");
+      alert("📋 Texte copié ! (photo non supportée sur ce navigateur)");
+    }
+  }
 
   function displayAlbumPhotos() {
     const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
@@ -293,29 +322,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let html = '';
     photoSessions.forEach(session => {
-      const poidsText = session.poids > 0 ? `${session.poids}cm` : 'Poids inconnu';
+      const poidsText = session.poids > 0 ? `${session.poids}g` : 'Poids inconnu';
       const caption = session.species ? `${session.species} de ${poidsText}` : `Prise de ${poidsText}`;
       const date = new Date(session.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 
-      // Génère les données pour le partage
-      const shareData = {
-        photo: session.photo,
-        species: session.species || 'Non précisée',
-        poids: session.poids || 0,
-        date: session.date,
-        spot: session.spot || 'Spot inconnu'
-      };
-      const encodedData = btoa(JSON.stringify(shareData));
-      const shareUrl = `${window.location.origin}/share.html?d=${encodedData}`;
-
       html += `
-        <div style="background:#003366;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.6);text-align:center;position:relative;">
-          <img src="${session.photo}" style="width:100%;height:300px;object-fit:cover;cursor:pointer;" onclick="openSharePopup('${shareUrl}')">
+        <div style="background:#003366;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.6);text-align:center;">
+          <img src="${session.photo}" style="width:100%;height:300px;object-fit:cover;">
           <div style="padding:15px;">
             <p style="color:#00ff9d;font-weight:bold;font-size:18px;margin:8px 0;">${caption}</p>
             <p style="color:#aaa;font-size:14px;margin:5px 0;">${date} — ${session.spot}</p>
-            <button onclick="openSharePopup('${shareUrl}')" style="margin-top:15px;background:#ff6b00;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;cursor:pointer;">
-              🔗 Partager cette prise
+            <button onclick='shareCatch(${JSON.stringify(session)})' style="margin-top:15px;background:#ff6b00;color:white;padding:12px 25px;border:none;border-radius:50px;font-weight:bold;cursor:pointer;font-size:16px;">
+              📤 Partager cette prise
             </button>
           </div>
         </div>
@@ -325,16 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
     photosDiv.innerHTML = html;
   }
 
-  window.openSharePopup = function(url) {
-    shareLinkInput.value = url;
-    sharePopup.style.display = 'block';
-  }
-
-  window.copyLink = function() {
-    shareLinkInput.select();
-    document.execCommand('copy');
-    alert("Lien copié ! Envoie-le à tes potes 🔥");
-  }
+  // Fonction globale pour le onclick
+  window.shareCatch = shareCatch;
 });
 </script>
       <button id="logoutBtn" style="background:#e74c3c;color:white;border:none;padding:8px 14px;border-radius:25px;font-size:12px;cursor:pointer;">Déconnexion</button>
