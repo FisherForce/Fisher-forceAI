@@ -95,7 +95,7 @@ function updateDashboard() {
 }
 
 // === FONCTION CARTE : SAUVEGARDE GPS DE CHAQUE SESSION ===
-function saveSessionToMap(success, speciesName, poids, spotName, lure) {
+function saveSessionToMap(success, speciesName, poids, spotName, lure, photo) {
   if (!navigator.geolocation) {
     console.log("Géolocalisation non supportée");
     return;
@@ -111,7 +111,8 @@ function saveSessionToMap(success, speciesName, poids, spotName, lure) {
         spot: spotName || "Spot inconnu",
         lure: lure || "Inconnu",
         date: new Date().toISOString(),
-        pseudo: localStorage.getItem('fisherPseudo') || "Anonyme"
+        pseudo: localStorage.getItem('fisherPseudo') || "Anonyme",
+        photo: photo || null
       };
       let sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
       sessions.push(session);
@@ -200,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('dailyResultCount', dailyResultCount.toString());
       }
 
-      const { success, speciesName, spotName, lure, poids = 0 } = e.data;
+      const { success, speciesName, spotName, lure, poids = 0, photo= null } = e.data;
       // ENVOI À L'IA
       if (success && speciesName && lure) {
         const input = readForm();
@@ -241,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (success) progress.successes += 1;
       saveAll();
       // SAUVEGARDE GPS SUR LA CARTE
-      saveSessionToMap(success, speciesName || null, poids, spotName || "Spot inconnu", lure || "Inconnu");
+      saveSessionToMap(success, speciesName || null, poids, spotName || "Spot inconnu", lure || "Inconnu", photo || null); 
       // RÉACTION IA
       if (success && speciesName && poids > 0) {
         showFishReaction(speciesName, poids, false);
