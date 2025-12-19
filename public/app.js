@@ -638,6 +638,67 @@ function showAdvancedStats() {
     </div>
   `;
 }
+// === JOURNAL DE PÊCHE PERSONNEL ===
+document.addEventListener('DOMContentLoaded', () => {
+  const openBtn = document.getElementById('openJournalBtn');
+  const modal = document.getElementById('journalModal');
+  const closeBtn = document.getElementById('closeJournalBtn');
+  const entriesDiv = document.getElementById('journalEntries');
+
+  if (!openBtn || !modal || !closeBtn || !entriesDiv) return;
+
+  // Ouvre le journal
+  openBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    displayJournalEntries();
+  });
+
+  // Ferme le journal
+  closeBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  // Ferme au clic dehors
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+
+  function displayJournalEntries() {
+    const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
+    
+    if (sessions.length === 0) {
+      entriesDiv.innerHTML = '<p style="text-align:center;color:#888;font-size:20px;">Aucune session enregistrée pour l’instant...<br>Enregistre tes prises et bredouilles pour remplir ton journal !</p>';
+      return;
+    }
+
+    // Tri par date décroissante
+    sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    let html = '';
+    sessions.forEach(session => {
+      const date = new Date(session.date).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const successEmoji = session.success ? '🎣' : '😔';
+      const poidsText = session.poids > 0 ? `${session.poids}g` : 'Bredouille';
+
+      html += `
+        <div style="background:#003366;padding:20px;border-radius:15px;margin:15px 0;">
+          <p style="margin:0 0 10px;color:#00ff9d;font-weight:bold;font-size:20px;">
+            ${successEmoji} ${session.success ? 'Prise !' : 'Bredouille'} — ${date}
+          </p>
+          <p style="margin:5px 0;"><strong>Espèce :</strong> ${session.species || 'Aucune'}</p>
+          <p style="margin:5px 0;"><strong>Poids :</strong> ${poidsText}</p>
+          <p style="margin:5px 0;"><strong>Spot :</strong> ${session.spot}</p>
+          <p style="margin:5px 0;"><strong>Leurre :</strong> ${session.lure}</p>
+          <p style="margin:5px 0;color:#aaa;font-size:14px;">Par ${session.pseudo}</p>
+        </div>
+      `;
+    });
+
+    entriesDiv.innerHTML = html;
+  }
+});
 // Appelle ces fonctions aux bons endroits :
 // Après un conseil IA : updateStatsAfterAdvice({ species: species, lures: conseil.lures });
 // Après placement poisson sur map : updateStatsAfterFishOnMap(speciesName);
