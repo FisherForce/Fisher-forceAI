@@ -344,7 +344,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   const conseilsEspece = randomParEspece[species] || randomParEspece.brochet;
   const randomText = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
   list.push(randomText);
-  list.push("Varie les animations et les profondeurs pour trouver les actifs.");
+  list.push("Essaie un leurre soupe de 7cm c'est une valeur sure !.");
   list.push("Enregistre ta session pour faire progresser l'IA !");
 
   // --- Profondeur selon température ---
