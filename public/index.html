@@ -71,6 +71,23 @@
     <div id="userInfo" style="display:none;color:white;font-weight:bold;align-items:center;gap:10px;">
       <input id="pseudoInput" type="text" placeholder="Ton pseudo" style="padding:6px 10px;border-radius:20px;border:none;font-size:13px;width:100px;">
       <button id="savePseudo" style="background:#ffd700;color:#000;border:none;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;">OK</button>
+      <!-- BOUTON JOURNAL DE PÊCHE (à côté du pseudo) -->
+<button id="openJournalBtn" style="background:#00d4aa;color:black;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;font-size:16px;margin-left:15px;cursor:pointer;box-shadow:0 8px 20px rgba(0,212,170,0.5);">
+  📔 Journal de pêche
+</button>
+
+<!-- MODAL JOURNAL DE PÊCHE -->
+<div id="journalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:99999;justify-content:center;align-items:center;">
+  <div style="background:#001122;padding:25px;border-radius:20px;max-width:700px;width:90%;max-height:90%;overflow-y:auto;box-shadow:0 20px 60px rgba(0,255,157,0.4);position:relative;">
+    <button id="closeJournalBtn" style="position:absolute;top:10px;right:15px;background:none;border:none;color:#888;font-size:32px;cursor:pointer;">&times;</button>
+    
+    <h2 style="color:#00ff9d;text-align:center;font-size:28px;margin:20px 0;">📔 Mon Journal de Pêche</h2>
+    
+    <div id="journalEntries" style="color:white;font-size:18px;line-height:1.8;">
+      <p style="text-align:center;color:#888;">Aucune session enregistrée pour l'instant...</p>
+    </div>
+  </div>
+</div>
       <button id="logoutBtn" style="background:#e74c3c;color:white;border:none;padding:8px 14px;border-radius:25px;font-size:12px;cursor:pointer;">Déconnexion</button>
              
     </div>
