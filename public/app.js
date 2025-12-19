@@ -239,17 +239,22 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // === LISTE NOIRE EN CAS DE BREDOUILLE ===
-      if (!success && lure && lure !== "Inconnu") {
-        const input = readForm();
-        blacklistLureOnFailure(
-          speciesName,
-          lure,
-          input.conditions,
-          input.structure,
-          input.waterType,
-          input.temperature
-        );
-      }
+if (!success && lure && lure !== "Inconnu") {
+  const input = readForm();
+  const lureName = lure.split(' — ')[0].trim(); // Ex: "Texas rig 10g"
+
+  blacklistLureOnFailure(
+    speciesName,
+    lure,
+    input.conditions,
+    input.structure,
+    input.waterType,
+    input.temperature
+  );
+
+  // === POP-UP BLACKLIST ===
+  showBlacklistPop(lureName);
+}
 
       if (success) awardXP(5, "Prise validée !");
       else awardXP(5, "Session enregistrée");
@@ -741,6 +746,28 @@ function getFailedLures(species, conditions, structure, spotType, temperature) {
   const key = `${(species || "inconnu").toLowerCase()}_${(conditions || "inconnu").toLowerCase()}_${(structure || "inconnu").toLowerCase()}_${(spotType || "étang").toLowerCase()}_${Math.round(temperature || 15)}`;
   const failedLures = JSON.parse(localStorage.getItem('fisherFailedLures') || '{}');
   return failedLures[key] || [];
+}
+// === POP-UP "LEURRE BLACKLISTÉ" (s’affiche avec le +XP en cas de bredouille) ===
+function showBlacklistPop(lureName) {
+  const pop = document.createElement('div');
+  pop.innerHTML = `<strong style="font-size:28px;">🚫 LEURRE BLACKLISTÉ</strong><br><span style="font-size:20px;">${lureName}</span>`;
+  pop.style.cssText = `
+    position:fixed;
+    top:28%;
+    left:50%;
+    transform:translateX(-50%);
+    background:linear-gradient(45deg,#e74c3c,#ff6b00);
+    color:white;
+    padding:20px 50px;
+    border-radius:70px;
+    z-index:99999;
+    box-shadow:0 20px 50px rgba(231,76,60,0.8);
+    animation:pop 2.2s forwards;
+    text-align:center;
+    font-weight:bold;
+  `;
+  document.body.appendChild(pop);
+  setTimeout(() => pop.remove(), 2200);
 }
 
 // Appelle ces fonctions aux bons endroits :
