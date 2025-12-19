@@ -24,7 +24,7 @@ if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
 // === REGISTER ===
 app.post('/api/register', upload.single('photo'), async (req, res) => {
   const { pseudo, password } = req.body;
-  const photo = req.file ? req.file.path : null; // Correction : req.file.path, pas pathPath
+  const photo = req.file ? req.file.path : null;
   if (db.get('users').find({ pseudo }).value()) return res.status(400).json({ error: 'Pseudo pris' });
   const hashedPass = await bcrypt.hash(password, 10);
   const user = { pseudo, password: hashedPass, photo, xp: 0, friends: [] };
@@ -116,7 +116,6 @@ app.get('/download-learning-data', (req, res) => {
   res.download(LEARNING_FILE, 'fisherforce-learning-data-v12.json');
 });
 // === Tes anciennes routes /api/advice, /api/suggest, etc. restent 100% intactes ===
-// (je les laisse telles quelles, elles sont en bas de ton code original)
 let learn;
 try {
   learn = require('./learn');
@@ -158,7 +157,6 @@ try {
   console.warn("Pas de patterns appris");
 }
 function suggestLures(species, structure, conditions, spotType, temperature = null) {
-  // === TOUT TON CODE suggestLures ORIGINAL EST LÀ (je ne touche à rien) ===
   species = (species || "").toLowerCase();
   structure = (structure || "").toLowerCase();
   conditions = (conditions || "").toLowerCase();
@@ -171,13 +169,11 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   else if ([3, 4, 5].includes(mois)) saison = "printemps";
   else if ([6, 7, 8].includes(mois)) saison = "été";
   else saison = "automne";
- 
-  // === AJOUT SAISONNALITÉ + TEMPÉRATURE PRÉCISE ===
+
   if (temperature !== null) {
-    if (temperature < 10) saison += " froid"; // Ajout froid pour hiver/ printemps froid
-    else if (temperature > 20) saison += " chaud"; // Été chaud
+    if (temperature < 10) saison += " froid";
+    else if (temperature > 20) saison += " chaud";
   }
-  // === UTILISER LES PATTERNS APPRENTIS (déjà chargés en haut) ===
   const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
   if (learnedLures && learnedLures.length > 0) {
     learnedLures.forEach(lure => {
@@ -186,7 +182,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
   // Cas ultra-ciblés
   if (species.includes('perche')) {
-  list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
+    list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
       list.push('Dropshot — Animation lente proche des structures');
     if (saison === "hiver" && spotType === "rivière" && conditions.includes('soleil'))
@@ -223,7 +219,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Leurre souple de 7cm en Ned Rig — Tente les grosses perches dans les obstacles');
   }
   if (species.includes('brochet')) {
-  list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
+    list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
     if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
       list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
     if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
@@ -252,7 +248,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d\'eau au fur et à mesure du temps');
   }
   if (species.includes('bass')) {
-  list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');
+    list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
       list.push('Ned Rig ou ver manié — Récupération lente ou dandine en verticale');
     if (saison === "printemps" && spotType === "étang" && conditions.includes('vent'))
@@ -269,33 +265,32 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Écrevisses en punching — Dans les herbiers');
   }
   if (species.includes('chevesne')) {
-  list.push('Lame Vibrante — Récupération rapide avec des pauses proche des obstacles');
+    list.push('Lame Vibrante — Récupération rapide avec des pauses proche des obstacles');
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
     if (saison === "été" && spotType === "rivière" )
       list.push('Leurres Insectes — Récupération par à coups pour déclencher des attaques de réaction');
   }
   if (species.includes('sandre')) {
-  list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session je te donnerais de meilleurs conseils !');
+    list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session je te donnerais de meilleurs conseils !');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
     if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux') && structure.includes('pont'))
       list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
   }
   if (species.includes('aspe')) {
-  list.push('Essaie un jerkminnow de 7cm — Ramène le très vite, puis un jig de 10G à utiliser près du fond, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
+    list.push('Essaie un jerkminnow de 7cm — Ramène le très vite, puis un jig de 10G à utiliser près du fond, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
   }
   if (species.includes('silure')) {
-  list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
+    list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
   }
   if (species.includes('truite')) {
-  list.push('Essaie une ondulante de 5g — Lance dans les courants et ramène sans pause pour déclencher des attaques de réaction, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
+    list.push('Essaie une ondulante de 5g — Lance dans les courants et ramène sans pause pour déclencher des attaques de réaction, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
   }
-    if (species.includes('carpe')) {
-  list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');
+  if (species.includes('carpe')) {
+    list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');
   }
- 
-     
+
   // === NOUVEAU : CONSEILS RANDOM PAR ESPÈCE (si aucun cas ultra-ciblé n'a matché) ===
   const defaultConseils = [
     'Pas de cas précis ? Teste un leurre souple 5-7cm coloris naturel ou une cuillère taille N°2. Enregistre ta session pour faire progresser l\'IA !',
@@ -309,7 +304,6 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     'Essaie un micro-spinner bait la ou il y a une sortie d\'eau chaude 100% tu prends une perche !',
   ];
 
-  // Si aucun cas ciblé n'a été ajouté (list est vide ou contient seulement le conseil par défaut)
   if (list.length === 0 || (list.length === 1 && defaultConseils.some(d => list[0].includes(d.split(' — ')[0] || d)))) {
     const randomParEspece = {
       brochet: [
@@ -363,7 +357,6 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     const conseilsEspece = randomParEspece[species] || randomParEspece.brochet;
     const randomText = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
 
-    // Ajoute un conseil textuel + quelques leurres génériques variés
     list.push(randomText);
     list.push("Varie les animations et les profondeurs pour trouver les actifs.");
     list.push("Enregistre ta session pour faire progresser l'IA !");
@@ -455,15 +448,46 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+// === /API/ADVICE AVEC LISTE NOIRE DES LEURRES ===
 app.post('/api/advice', (req, res) => {
   try {
-    const { species, structure, conditions, spotType, temperature } = req.body;
+    let { species, structure, conditions, spotType, temperature, failedLures = [] } = req.body;
+
+    // Sécurité
+    species = (species || "").toLowerCase();
+    structure = (structure || "").toLowerCase();
+    conditions = (conditions || "").toLowerCase();
+    spotType = (spotType || "").toLowerCase();
+    failedLures = Array.isArray(failedLures) ? failedLures.map(l => l.trim()) : [];
+
     if (!structure || !conditions) {
       return res.status(400).json({ error: 'Champs requis manquants : structure et conditions.' });
     }
+
     const result = suggestLures(species, structure, conditions, spotType, temperature);
-    console.log("Conseils générés :", result);
-    res.json(result);
+
+    // === FILTRAGE DE LA LISTE NOIRE ===
+    let filteredLures = result.lures.filter(lure => {
+      const lureName = lure.split(' — ')[0].trim();
+      return !failedLures.includes(lureName);
+    });
+
+    // Fallback si tout est blacklisté
+    if (filteredLures.length === 0) {
+      filteredLures = [
+        "Aucun leurre précédent n'a fonctionné dans ces conditions...",
+        "Essaie un leurre totalement différent (taille, couleur, vibration)",
+        "Change radicalement d'animation ou de profondeur",
+        "Enregistre une nouvelle session pour faire progresser l'IA !"
+      ];
+    }
+
+    console.log(`Conseils générés (après blacklist de ${failedLures.length} leurres) :`, filteredLures);
+    res.json({ 
+      adviceText: "Voici mes meilleurs conseils pour ces conditions :",
+      lures: filteredLures,
+      depthAdvice: result.depthAdvice || []
+    });
   } catch (err) {
     console.error("Erreur dans /api/advice :", err);
     res.status(500).json({ error: 'Erreur serveur' });
