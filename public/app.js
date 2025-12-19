@@ -158,10 +158,22 @@ document.addEventListener('DOMContentLoaded', () => {
     el('advice').innerHTML = '<p class="muted">Génération en cours…</p>';
     let result;
     try {
+      // === ENVOI DE LA LISTE NOIRE AU SERVEUR ===
+      const failedLures = getFailedLures(
+        input.targetSpecies,
+        input.conditions,
+        input.structure,
+        input.waterType,
+        input.temperature
+      );
+
       const res = await fetch('/api/advice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input)
+        body: JSON.stringify({
+          ...input,
+          failedLures: failedLures
+        })
       });
       result = await res.json();
     } catch (e) {
@@ -201,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('dailyResultCount', dailyResultCount.toString());
       }
 
-      const { success, speciesName, spotName, lure, poids = 0, photo= null } = e.data;
+      const { success, speciesName, spotName, lure = "Inconnu", poids = 0, photo = null } = e.data;
       // ENVOI À L'IA
       if (success && speciesName && lure) {
         const input = readForm();
@@ -225,6 +237,20 @@ document.addEventListener('DOMContentLoaded', () => {
           console.warn("Échec envoi session IA", err);
         }
       }
+
+      // === LISTE NOIRE EN CAS DE BREDOUILLE ===
+      if (!success && lure && lure !== "Inconnu") {
+        const input = readForm();
+        blacklistLureOnFailure(
+          speciesName,
+          lure,
+          input.conditions,
+          input.structure,
+          input.waterType,
+          input.temperature
+        );
+      }
+
       if (success) awardXP(5, "Prise validée !");
       else awardXP(5, "Session enregistrée");
       if (spotName && !knownSpots.has(spotName)) {
@@ -242,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (success) progress.successes += 1;
       saveAll();
       // SAUVEGARDE GPS SUR LA CARTE
-      saveSessionToMap(success, speciesName || null, poids, spotName || "Spot inconnu", lure || "Inconnu", photo); 
+      saveSessionToMap(success, speciesName || null, poids, spotName || "Spot inconnu", lure || "Inconnu", photo);
       // RÉACTION IA
       if (success && speciesName && poids > 0) {
         showFishReaction(speciesName, poids, false);
@@ -357,7 +383,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const nuages = c.cloud_cover > 70;
         const pression = Math.round(c.pressure_msl);
         const jour = c.is_day === 1;
-        // NORMALISATION PARFAITE POUR MATCHER TON SERVER.JS
         let conditionsText = "";
         if (pluie) conditionsText += "pluie ";
         if (nuages) conditionsText += "nuages ";
@@ -365,14 +390,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (vent > 30) conditionsText += "vent fort ";
         if (!jour) conditionsText += "nuit ";
         conditionsText = conditionsText.trim();
-        // REMPLISSAGE CHAMPS FORMULAIRE
         if (document.getElementById('conditions')) {
           document.getElementById('conditions').value = conditionsText;
         }
         if (document.getElementById('temperature')) {
           document.getElementById('temperature').value = temp;
         }
-        // ENVOI AU SERVEUR
         const serverRes = await fetch('/api/advice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -648,18 +671,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (!openBtn || !modal || !closeBtn || !entriesDiv) return;
 
-  // Ouvre le journal
   openBtn.addEventListener('click', () => {
     modal.style.display = 'flex';
     displayJournalEntries();
   });
 
-  // Ferme le journal
   closeBtn.addEventListener('click', () => {
     modal.style.display = 'none';
   });
 
-  // Ferme au clic dehors
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       modal.style.display = 'none';
@@ -668,13 +688,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function displayJournalEntries() {
     const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
-    
+   
     if (sessions.length === 0) {
       entriesDiv.innerHTML = '<p style="text-align:center;color:#888;font-size:20px;">Aucune session enregistrée pour l’instant...<br>Enregistre tes prises et bredouilles pour remplir ton journal !</p>';
       return;
     }
 
-    // Tri par date décroissante
     sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     let html = '';
@@ -700,6 +719,30 @@ document.addEventListener('DOMContentLoaded', () => {
     entriesDiv.innerHTML = html;
   }
 });
+
+// === LISTE NOIRE DES LEURRES (blacklist en cas de bredouille) ===
+function blacklistLureOnFailure(species, lureUsed, conditions, structure, spotType, temperature) {
+  if (!lureUsed || lureUsed === "Inconnu") return;
+
+  let failedLures = JSON.parse(localStorage.getItem('fisherFailedLures') || '{}');
+  
+  const key = `${(species || "inconnu").toLowerCase()}_${(conditions || "inconnu").toLowerCase()}_${(structure || "inconnu").toLowerCase()}_${(spotType || "étang").toLowerCase()}_${Math.round(temperature || 15)}`;
+  
+  if (!failedLures[key]) failedLures[key] = [];
+  const lureName = lureUsed.split(' — ')[0].trim();
+  if (!failedLures[key].includes(lureName)) {
+    failedLures[key].push(lureName);
+    localStorage.setItem('fisherFailedLures', JSON.stringify(failedLures));
+    console.log(`Leurre "${lureName}" blacklisté pour ${key}`);
+  }
+}
+
+function getFailedLures(species, conditions, structure, spotType, temperature) {
+  const key = `${(species || "inconnu").toLowerCase()}_${(conditions || "inconnu").toLowerCase()}_${(structure || "inconnu").toLowerCase()}_${(spotType || "étang").toLowerCase()}_${Math.round(temperature || 15)}`;
+  const failedLures = JSON.parse(localStorage.getItem('fisherFailedLures') || '{}');
+  return failedLures[key] || [];
+}
+
 // Appelle ces fonctions aux bons endroits :
 // Après un conseil IA : updateStatsAfterAdvice({ species: species, lures: conseil.lures });
 // Après placement poisson sur map : updateStatsAfterFishOnMap(speciesName);
