@@ -250,16 +250,17 @@ localStorage.setItem('lastAdviceConditions', JSON.stringify({
       // === LISTE NOIRE EN CAS DE BREDOUILLE ===
 if (!success && lure && lure !== "Inconnu") {
   const input = readForm();
-  const lureName = lure.split(' — ')[0].trim(); // Ex: "Texas rig 10g"
+  const blacklistSpecies = success ? speciesName : input.targetSpecies || "inconnu"; // ← FIX : utilise targetSpecies en bredouille
 
   blacklistLureOnFailure(
-    speciesName,
+    blacklistSpecies,
     lure,
     input.conditions,
     input.structure,
     input.waterType,
     input.temperature
   );
+}
 
   // === POP-UP BLACKLIST ===
   showBlacklistPop(lureName);
