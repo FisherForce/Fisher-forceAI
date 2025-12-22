@@ -15,7 +15,7 @@ const adapter = new FileSync('db.json');
 const db = lowdb(adapter);
 db.defaults({ users: [], spots: [] }).write();
 
-const secretKey = 'your-secret-key'; // Change ça en prod avec process.env.JWT_SECRET
+const secretKey = 'your-secret-key'; // À CHANGER EN PROD (process.env.JWT_SECRET)
 
 // === Multer pour photos profil ===
 const storage = multer.diskStorage({
@@ -158,7 +158,7 @@ try {
   console.warn("Pas de patterns appris");
 }
 
-// === SUGGEST LURES (PROPRE ET FONCTIONNELLE) ===
+// === SUGGEST LURES ===
 function suggestLures(species, structure, conditions, spotType, temperature = null) {
   species = (species || "").toLowerCase();
   structure = (structure || "").toLowerCase();
@@ -184,7 +184,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     learnedLures.forEach(lure => list.push(`${lure} (appris des sessions)`));
   }
 
-  // Cas ultra-ciblés
+  // Cas ultra-ciblés (tes conditions originales)
   if (species.includes('perche')) {
     list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
     if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
@@ -272,7 +272,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     list.push('Lame Vibrante — Récupération rapide avec des pauses proche des obstacles');
     if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
       list.push('Cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
-    if (saison === "été" && spotType === "rivière" )
+    if (saison === "été" && spotType === "rivière")
       list.push('Leurres Insectes — Récupération par à coups pour déclencher des attaques de réaction');
   }
   if (species.includes('sandre')) {
@@ -295,113 +295,113 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');
   }
 
-// === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET CHIANT) ===
-const randomParEspece = {
-  brochet: [
-    "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
-    "Power fishing agressif autour des structures avec gros swimbaits ou jerkbaits XXL.",
-    "Twitching violent avec un glider ou un jerkbait long dans les bordures herbeuses.",
-    "Réaction pure avec spinnerbait ou chatterbait dans les zones venteuses.",
-    "Pêche finesse en période difficile : weightless ou drop shot avec shad 10cm."
-  ],
-  perche: [
-    "Micro-jig ou drop shot en verticale sur les tombants rocheux.",
-    "Petits crankbaits ou lipless pour déclencher des attaques réflexes.",
-    "Leurres souples en linéaire lent imitant écrevisses ou petits poissons.",
-    "Ned rig ou tube sur fond propre avec pauses longues.",
-    "Cuillère ondulante ou rotating en récupération variée."
-  ],
-  sandre: [
-    "Pêche au fond avec jig ou texas rig en animation très lente.",
-    "Verticale avec shad ou finesse jig sur les cassures.",
-    "Linéaire lent avec gros leurre souple par faible luminosité.",
-    "Dead slow avec jerkbait suspendu en soirée.",
-    "Leurre souple vibrant gratté sur le fond."
-  ],
-  bass: [
-    "Flipping & pitching avec jig ou texas dans les herbiers épais.",
-    "Topwater frog ou popper au lever/coucher du soleil.",
-    "Crankbait profond sur les structures submergées.",
-    "Finesse shakey head ou wacky rig quand c'est dur.",
-    "Swimbait en linéaire moyen pour imiter les proies."
-  ],
-  chevesne: [
-    "Petits leurres de surface ou insectes pour attaques en surface.",
-    "Cuillère ou micro-crank en récupération rapide dans le courant.",
-    "Lame vibrante ou petit spinner pour les chasses.",
-    "Petit popper ou stickbait en zone calme."
-  ],
-  aspe: [
-    "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
-    "Petits crankbaits ou lipless dans les zones rapides.",
-    "Leurres de surface bruyants en été.",
-    "Spinnerbait en burn pour les chasses."
-  ],
-  silure: [
-    "Gros leurres souples ou vifs au fond avec longues pauses.",
-    "Fireball ou clonk avec gros shad en verticale.",
-    "Swimbait XXL en linéaire lent près des trous."
-  ],
-  truite: [
-    "Cuillère ondulante ou rotating en rivière avec courant.",
-    "Leurre souple imitant vairon en récupération naturelle.",
-    "Micro-jig ou spinner en zone calme.",
-    "Petit crankbait en eau claire."
-  ]
-};
+  // === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET) ===
+  const randomParEspece = {
+    brochet: [
+      "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
+      "Power fishing agressif autour des structures avec gros swimbaits ou jerkbaits XXL.",
+      "Twitching violent avec un glider ou un jerkbait long dans les bordures herbeuses.",
+      "Réaction pure avec spinnerbait ou chatterbait dans les zones venteuses.",
+      "Pêche finesse en période difficile : weightless ou drop shot avec shad 10cm."
+    ],
+    perche: [
+      "Micro-jig ou drop shot en verticale sur les tombants rocheux.",
+      "Petits crankbaits ou lipless pour déclencher des attaques réflexes.",
+      "Leurres souples en linéaire lent imitant écrevisses ou petits poissons.",
+      "Ned rig ou tube sur fond propre avec pauses longues.",
+      "Cuillère ondulante ou rotating en récupération variée."
+    ],
+    sandre: [
+      "Pêche au fond avec jig ou texas rig en animation très lente.",
+      "Verticale avec shad ou finesse jig sur les cassures.",
+      "Linéaire lent avec gros leurre souple par faible luminosité.",
+      "Dead slow avec jerkbait suspendu en soirée.",
+      "Leurre souple vibrant gratté sur le fond."
+    ],
+    blackbass: [
+      "Flipping & pitching avec jig ou texas dans les herbiers épais.",
+      "Topwater frog ou popper au lever/coucher du soleil.",
+      "Crankbait profond sur les structures submergées.",
+      "Finesse shakey head ou wacky rig quand c'est dur.",
+      "Swimbait en linéaire moyen pour imiter les proies."
+    ],
+    chevesne: [
+      "Petits leurres de surface ou insectes pour attaques en surface.",
+      "Cuillère ou micro-crank en récupération rapide dans le courant.",
+      "Lame vibrante ou petit spinner pour les chasses.",
+      "Petit popper ou stickbait en zone calme."
+    ],
+    aspe: [
+      "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
+      "Petits crankbaits ou lipless dans les zones rapides.",
+      "Leurres de surface bruyants en été.",
+      "Spinnerbait en burn pour les chasses."
+    ],
+    silure: [
+      "Gros leurres souples ou vifs au fond avec longues pauses.",
+      "Fireball ou clonk avec gros shad en verticale.",
+      "Swimbait XXL en linéaire lent près des trous."
+    ],
+    truite: [
+      "Cuillère ondulante ou rotating en rivière avec courant.",
+      "Leurre souple imitant vairon en récupération naturelle.",
+      "Micro-jig ou spinner en zone calme.",
+      "Petit crankbait en eau claire."
+    ]
+  };
 
-// Normalisation de l'espèce (accents + variantes)
-let normalizedSpecies = species
-  .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // enlève accents
-  .toLowerCase()
-  .replace(/[^a-z0-9]/g, '') // enlève tirets, espaces, etc.
-  .replace('bass', 'bass')
-  .replace('bass', 'bass');
+  // Normalisation robuste
+  let normalized = species.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, '');
 
-// Mapping précis
-const speciesMap = {
-  brochet: 'brochet',
-  perche: 'perche',
-  sandre: 'sandre',
-  bass: 'bass',
-  bass: 'bass',
-  chevesne: 'chevesne',
-  aspe: 'aspe',
-  silure: 'silure',
-  truite: 'truite'
-};
+  const speciesMap = {
+    brochet: 'brochet',
+    perche: 'perche',
+    sandre: 'sandre',
+    blackbass: 'blackbass',
+    bass: 'blackbass',
+    chevesne: 'chevesne',
+    aspe: 'aspe',
+    silure: 'silure',
+    truite: 'truite'
+  };
 
-let matchedSpecies = speciesMap[normalizedSpecies];
-
-if (matchedSpecies && randomParEspece[matchedSpecies]) {
-  const conseilsEspece = randomParEspece[matchedSpecies];
-  let random1 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
-  let random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
-  while (random2 === random1 && conseilsEspece.length > 1) {
-    random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+  let matched = null;
+  for (const key in speciesMap) {
+    if (normalized.includes(key)) {
+      matched = speciesMap[key];
+      break;
+    }
   }
-  list.push(random1);
-  list.push(random2);
-} else {
-  // ESPÈCE NON RECONNUE → CONSEILS GÉNÉRIQUES NEUTRES
-  const generiques = [
-    "Prospection variée avec un leurre souple naturel en linéaire.",
-    "Essaie un crankbait moyen pour couvrir de l'eau rapidement.",
-    "Pêche en réaction avec une lame vibrante ou un spinner.",
-    "Animation lente au fond avec un jig ou un texas rig.",
-    "Varie les profondeurs jusqu'à trouver les poissons actifs."
-  ];
-  let random1 = generiques[Math.floor(Math.random() * generiques.length)];
-  let random2 = generiques[Math.floor(Math.random() * generiques.length)];
-  while (random2 === random1) {
-    random2 = generiques[Math.floor(Math.random() * generiques.length)];
-  }
-  list.push(random1);
-  list.push(random2);
-}
 
-list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
-list.push("Enregistre ta session pour faire progresser l'IA !");
+  if (matched && randomParEspece[matched]) {
+    const conseils = randomParEspece[matched];
+    let random1 = conseils[Math.floor(Math.random() * conseils.length)];
+    let random2 = conseils[Math.floor(Math.random() * conseils.length)];
+    while (random2 === random1 && conseils.length > 1) {
+      random2 = conseils[Math.floor(Math.random() * conseils.length)];
+    }
+    list.push(random1);
+    list.push(random2);
+  } else {
+    // Conseils génériques si espèce inconnue
+    const generiques = [
+      "Prospection variée avec un leurre souple naturel en linéaire.",
+      "Essaie un crankbait moyen pour couvrir de l'eau rapidement.",
+      "Pêche en réaction avec une lame vibrante ou un spinner.",
+      "Animation lente au fond avec un jig ou un texas rig.",
+      "Varie les profondeurs jusqu'à trouver les poissons actifs."
+    ];
+    let random1 = generiques[Math.floor(Math.random() * generiques.length)];
+    let random2 = generiques[Math.floor(Math.random() * generiques.length)];
+    while (random2 === random1) random2 = generiques[Math.floor(Math.random() * generiques.length)];
+    list.push(random1);
+    list.push(random2);
+  }
+
+  list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
+  list.push("Enregistre ta session pour faire progresser l'IA !");
+
+  // Profondeur
   const depthAdvice = [];
   if (temperature !== null) {
     if (species.includes('perche')) {
@@ -421,20 +421,14 @@ list.push("Enregistre ta session pour faire progresser l'IA !");
 
 // === ROUTES ===
 app.post('/api/suggest', (req, res) => {
-  const { species, structure, conditions, spotType, temperature } = req.body;
+  let { targetSpecies: species = "", structure, conditions, spotType, temperature } = req.body;
   const result = suggestLures(species, structure, conditions, spotType, temperature);
   res.json(result);
 });
 
-// ... (tes autres routes /api/learn, /api/sessions, leaderboard, etc. restent identiques)
-
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-
-// === /API/ADVICE AVEC BLACKLIST ===
 app.post('/api/advice', (req, res) => {
   try {
-    let { species, structure, conditions, spotType, temperature, failedLures = [] } = req.body;
+    let { targetSpecies: species = "", structure, conditions, spotType, temperature, failedLures = [] } = req.body;
 
     species = (species || "").toLowerCase();
     structure = (structure || "").toLowerCase();
@@ -468,10 +462,13 @@ app.post('/api/advice', (req, res) => {
       depthAdvice: result.depthAdvice || []
     });
   } catch (err) {
-    console.error("Erreur /api/advice :", err);
+    console.error("Erreur dans /api/advice :", err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+
+app.use(express.static(path.join(__dirname, 'public')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
