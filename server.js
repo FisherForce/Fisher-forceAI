@@ -295,7 +295,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');
   }
 
-  // === CONSEIL ALÉATOIRE PAR ESPÈCE (TOUJOURS PRÉSENT) ===
+   // === TOUJOURS UN CONSEIL RANDOM PAR ESPÈCE (même si cas ciblé matché) ===
   const randomParEspece = {
     brochet: [
       "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
@@ -311,7 +311,38 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       "Ned rig ou tube sur fond propre avec pauses longues.",
       "Cuillère ondulante ou rotating en récupération variée."
     ],
-    // ... (toutes les autres espèces comme avant)
+    sandre: [
+      "Pêche au fond avec jig ou texas rig en animation très lente.",
+      "Verticale avec shad ou finess jig sur les cassures.",
+      "Linéaire lent avec gros leurre souple par faible luminosité.",
+      "Dead slow avec jerkbait suspendu en soirée."
+    ],
+    bass: [
+      "Flipping & pitching avec jig ou texas dans les herbiers épais.",
+      "Topwater frog ou popper au lever/coucher du soleil.",
+      "Crankbait profond sur les structures submergées.",
+      "Finesse shakey head ou wacky rig quand c'est dur."
+    ],
+    chevesne: [
+      "Petits leurres de surface ou insectes pour attaques en surface.",
+      "Cuillère ou micro-crank en récupération rapide dans le courant.",
+      "Lame vibrante ou petit spinner pour les chasses."
+    ],
+    aspe: [
+      "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
+      "Petits crankbaits ou lipless dans les zones rapides.",
+      "Leurres de surface bruyants en été."
+    ],
+    silure: [
+      "Gros leurres souples ou vifs au fond avec longues pauses.",
+      "Fireball ou clonk avec gros shad en verticale.",
+      "Swimbait XXL en linéaire lent près des trous."
+    ],
+    truite: [
+      "Cuillère ondulante ou rotating en rivière avec courant.",
+      "Leurre souple imitant vairon en récupération naturelle.",
+      "Micro-jig ou spinner en zone calme."
+    ]
   };
 
   const conseilsEspece = randomParEspece[species] || randomParEspece.brochet;
