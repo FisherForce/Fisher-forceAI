@@ -296,59 +296,104 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
 
   // === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET) ===
-  const randomParEspece = {
-    brochet: [
-      "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
-      "Power fishing agressif autour des structures avec gros swimbaits ou jerkbaits XXL.",
-      "Twitching violent avec un glider ou un jerkbait long dans les bordures herbeuses.",
-      "Réaction pure avec spinnerbait ou chatterbait dans les zones venteuses.",
-      "Pêche finesse en période difficile : weightless ou drop shot avec shad 10cm."
-    ],
-    perche: [
-      "Micro-jig ou drop shot en verticale sur les tombants rocheux.",
-      "Petits crankbaits ou lipless pour déclencher des attaques réflexes.",
-      "Leurres souples en linéaire lent imitant écrevisses ou petits poissons.",
-      "Ned rig ou tube sur fond propre avec pauses longues.",
-      "Cuillère ondulante ou rotating en récupération variée."
-    ],
-    sandre: [
-      "Pêche au fond avec jig ou texas rig en animation très lente.",
-      "Verticale avec shad ou finesse jig sur les cassures.",
-      "Linéaire lent avec gros leurre souple par faible luminosité.",
-      "Dead slow avec jerkbait suspendu en soirée.",
-      "Leurre souple vibrant gratté sur le fond."
-    ],
-    blackbass: [
-      "Flipping & pitching avec jig ou texas dans les herbiers épais.",
-      "Topwater frog ou popper au lever/coucher du soleil.",
-      "Crankbait profond sur les structures submergées.",
-      "Finesse shakey head ou wacky rig quand c'est dur.",
-      "Swimbait en linéaire moyen pour imiter les proies."
-    ],
-    chevesne: [
-      "Petits leurres de surface ou insectes pour attaques en surface.",
-      "Cuillère ou micro-crank en récupération rapide dans le courant.",
-      "Lame vibrante ou petit spinner pour les chasses.",
-      "Petit popper ou stickbait en zone calme."
-    ],
-    aspe: [
-      "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
-      "Petits crankbaits ou lipless dans les zones rapides.",
-      "Leurres de surface bruyants en été.",
-      "Spinnerbait en burn pour les chasses."
-    ],
-    silure: [
-      "Gros leurres souples ou vifs au fond avec longues pauses.",
-      "Fireball ou clonk avec gros shad en verticale.",
-      "Swimbait XXL en linéaire lent près des trous."
-    ],
-    truite: [
-      "Cuillère ondulante ou rotating en rivière avec courant.",
-      "Leurre souple imitant vairon en récupération naturelle.",
-      "Micro-jig ou spinner en zone calme.",
-      "Petit crankbait en eau claire."
-    ]
-  };
+const randomParEspece = {
+  brochet: [
+    "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
+    "Power fishing agressif autour des structures avec gros swimbaits ou jerkbaits XXL.",
+    "Twitching violent avec un glider ou un jerkbait long dans les bordures herbeuses.",
+    "Réaction pure avec spinnerbait ou chatterbait dans les zones venteuses.",
+    "Pêche finesse en période difficile : weightless ou drop shot avec shad 10cm.",
+    "Longs lancers parallèles aux bordures avec un swimbait articulé naturel.",
+    "Pêche en punching dans les herbiers épais avec un gros texas rig.",
+    "Topwater à l'aube ou au crépuscule avec un buzzbait bruyant.",
+    "Linéaire rapide avec un lipless dans les plateaux herbeux.",
+    "Jerkbait suspendu en pauses longues par eau froide."
+  ],
+  perche: [
+    "Micro-jig ou drop shot en verticale sur les tombants rocheux.",
+    "Petits crankbaits ou lipless pour déclencher des attaques réflexes.",
+    "Leurres souples en linéaire lent imitant écrevisses ou petits poissons.",
+    "Ned rig ou tube sur fond propre avec pauses longues.",
+    "Cuillère ondulante ou rotating en récupération variée.",
+    "Finesse jig tête football sur les zones graveleuses.",
+    "Dandine avec un petit shad sous les branches noyées.",
+    "Wacky rig en weightless autour des obstacles.",
+    "Micro spinnerbait en récupération lente près des structures.",
+    "Petit topwater popper en été au lever du soleil."
+  ],
+  sandre: [
+    "Pêche au fond avec jig ou texas rig en animation très lente.",
+    "Verticale avec shad ou finesse jig sur les cassures.",
+    "Linéaire lent avec gros leurre souple par faible luminosité.",
+    "Dead slow avec jerkbait suspendu en soirée.",
+    "Leurre souple vibrant gratté sur le fond.",
+    "Shad en linéaire très lent près des piles de pont.",
+    "Lame vibrante en récupération lente sur les plateaux.",
+    "Verticale avec un tailworm en période froide.",
+    "Jigging rap ou balancier en hiver profond.",
+    "Leurre souple monté en drop shot sur les tombants."
+  ],
+  blackbass: [
+    "Flipping & pitching avec jig ou texas dans les herbiers épais.",
+    "Topwater frog ou popper au lever/coucher du soleil.",
+    "Crankbait profond sur les structures submergées.",
+    "Finesse shakey head ou wacky rig quand c'est dur.",
+    "Swimbait en linéaire moyen pour imiter les proies.",
+    "Spinnerbait slow roll le long des bordures boisées.",
+    "Carolina rig sur les plaines graveleuses.",
+    "Buzzbait en surface dans les zones peu profondes.",
+    "Tube jig en dandine autour des rochers.",
+    "Chatterbait dans les herbiers clairsemés."
+  ],
+  chevesne: [
+    "Petits leurres de surface ou insectes pour attaques en surface.",
+    "Cuillère ou micro-crank en récupération rapide dans le courant.",
+    "Lame vibrante ou petit spinner pour les chasses.",
+    "Petit popper ou stickbait en zone calme.",
+    "Leurre souple imitant un poissonnet en linéaire rapide.",
+    "Micro jig sous les branches surplombantes.",
+    "Petit crankbait shallow en eau peu profonde.",
+    "Insecte en mousse en sèche par beau temps.",
+    "Petit jerkbait en twitching rapide.",
+    "Cuillère ultra-légère en récupération continue."
+  ],
+  aspe: [
+    "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
+    "Petits crankbaits ou lipless dans les zones rapides.",
+    "Leurres de surface bruyants en été.",
+    "Spinnerbait en burn pour les chasses.",
+    "Stickbait en walking the dog en surface.",
+    "Petit swimbait en linéaire rapide.",
+    "Lame vibrante en récupération continue dans le courant.",
+    "Topwater pencil pour les attaques explosives.",
+    "Jig tête football gratté sur les fonds durs.",
+    "Crankbait shallow en eau peu profonde."
+  ],
+  silure: [
+    "Gros leurres souples ou vifs au fond avec longues pauses.",
+    "Fireball ou clonk avec gros shad en verticale.",
+    "Swimbait XXL en linéaire lent près des trous.",
+    "Gros jig vibrant posé au fond avec pauses.",
+    "Leurre souple 20cm+ en texan dans les obstacles.",
+    "Pellets ou bouillettes pour la pêche au posé (si autorisé).",
+    "Verticale avec un gros shad plombé lourd.",
+    "Clonk + vif en été profond.",
+    "Gros spinnerbait slow roll près des caches.",
+    "Leurre souple articulé en traction lente."
+  ],
+  truite: [
+    "Cuillère ondulante ou rotating en rivière avec courant.",
+    "Leurre souple imitant vairon en récupération naturelle.",
+    "Micro-jig ou spinner en zone calme.",
+    "Petit crankbait en eau claire.",
+    "Nymphe ou streamer en pêches fines.",
+    "Cuillère légère en récupération variée.",
+    "Petit poisson nageur en linéaire lent.",
+    "Micro crankbait shallow en ruisseau.",
+    "Leurre souple finesse en drop shot.",
+    "Rotating ultra-légère en eau vive."
+  ]
+};
 
   // Normalisation robuste
   let normalized = species.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, '');
