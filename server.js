@@ -295,7 +295,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');
   }
 
-// === TOUJOURS 2 CONSEILS RANDOM PAR ESPÈCE (corrigé et robuste) ===
+// === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET CHIANT) ===
 const randomParEspece = {
   brochet: [
     "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
@@ -318,7 +318,7 @@ const randomParEspece = {
     "Dead slow avec jerkbait suspendu en soirée.",
     "Leurre souple vibrant gratté sur le fond."
   ],
-  blackbass: [
+  bass: [
     "Flipping & pitching avec jig ou texas dans les herbiers épais.",
     "Topwater frog ou popper au lever/coucher du soleil.",
     "Crankbait profond sur les structures submergées.",
@@ -350,28 +350,58 @@ const randomParEspece = {
   ]
 };
 
-// Normalisation robuste de l'espèce
-let normalizedSpecies = species.replace(/é/g, 'e').replace(/è/g, 'e').replace(/ê/g, 'e').toLowerCase();
-normalizedSpecies = normalizedSpecies.replace('black-bass', 'blackbass').replace('black bass', 'blackbass');
+// Normalisation de l'espèce (accents + variantes)
+let normalizedSpecies = species
+  .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // enlève accents
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g, '') // enlève tirets, espaces, etc.
+  .replace('bass', 'bass')
+  .replace('bass', 'bass');
 
-// Liste des espèces reconnues
-const knownSpecies = Object.keys(randomParEspece);
-let matchedSpecies = knownSpecies.find(s => normalizedSpecies.includes(s)) || "brochet"; // fallback brochet seulement si vraiment rien
+// Mapping précis
+const speciesMap = {
+  brochet: 'brochet',
+  perche: 'perche',
+  sandre: 'sandre',
+  bass: 'bass',
+  bass: 'bass',
+  chevesne: 'chevesne',
+  aspe: 'aspe',
+  silure: 'silure',
+  truite: 'truite'
+};
 
-const conseilsEspece = randomParEspece[matchedSpecies];
+let matchedSpecies = speciesMap[normalizedSpecies];
 
-// 2 conseils aléatoires différents
-let random1 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
-let random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
-while (random2 === random1 && conseilsEspece.length > 1) {
-  random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+if (matchedSpecies && randomParEspece[matchedSpecies]) {
+  const conseilsEspece = randomParEspece[matchedSpecies];
+  let random1 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+  let random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+  while (random2 === random1 && conseilsEspece.length > 1) {
+    random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+  }
+  list.push(random1);
+  list.push(random2);
+} else {
+  // ESPÈCE NON RECONNUE → CONSEILS GÉNÉRIQUES NEUTRES
+  const generiques = [
+    "Prospection variée avec un leurre souple naturel en linéaire.",
+    "Essaie un crankbait moyen pour couvrir de l'eau rapidement.",
+    "Pêche en réaction avec une lame vibrante ou un spinner.",
+    "Animation lente au fond avec un jig ou un texas rig.",
+    "Varie les profondeurs jusqu'à trouver les poissons actifs."
+  ];
+  let random1 = generiques[Math.floor(Math.random() * generiques.length)];
+  let random2 = generiques[Math.floor(Math.random() * generiques.length)];
+  while (random2 === random1) {
+    random2 = generiques[Math.floor(Math.random() * generiques.length)];
+  }
+  list.push(random1);
+  list.push(random2);
 }
 
-list.push(random1);
-list.push(random2);
 list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
 list.push("Enregistre ta session pour faire progresser l'IA !");
-  // Profondeur
   const depthAdvice = [];
   if (temperature !== null) {
     if (species.includes('perche')) {
