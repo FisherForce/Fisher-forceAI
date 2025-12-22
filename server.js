@@ -295,66 +295,82 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     list.push('Je suis désolée — je ne donne des conseils que pour la pêche au leurre , mais peut-être que un jour je pourrais donner des conseils pour touts les types de pêche ');
   }
 
-   // === TOUJOURS UN CONSEIL RANDOM PAR ESPÈCE (même si cas ciblé matché) ===
-  const randomParEspece = {
-    brochet: [
-      "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
-      "Power fishing agressif autour des structures avec gros swimbaits ou jerkbaits XXL.",
-      "Twitching violent avec un glider ou un jerkbait long dans les bordures herbeuses.",
-      "Réaction pure avec spinnerbait ou chatterbait dans les zones venteuses.",
-      "Pêche finesse en période difficile : weightless ou drop shot avec shad 10cm."
-    ],
-    perche: [
-      "Micro-jig ou drop shot en verticale sur les tombants rocheux.",
-      "Petits crankbaits ou lipless pour déclencher des attaques réflexes.",
-      "Leurres souples en linéaire lent imitant écrevisses ou petits poissons.",
-      "Ned rig ou tube sur fond propre avec pauses longues.",
-      "Cuillère ondulante ou rotating en récupération variée."
-    ],
-    sandre: [
-      "Pêche au fond avec jig ou texas rig en animation très lente.",
-      "Verticale avec shad ou finess jig sur les cassures.",
-      "Linéaire lent avec gros leurre souple par faible luminosité.",
-      "Dead slow avec jerkbait suspendu en soirée."
-    ],
-    bass: [
-      "Flipping & pitching avec jig ou texas dans les herbiers épais.",
-      "Topwater frog ou popper au lever/coucher du soleil.",
-      "Crankbait profond sur les structures submergées.",
-      "Finesse shakey head ou wacky rig quand c'est dur."
-    ],
-    chevesne: [
-      "Petits leurres de surface ou insectes pour attaques en surface.",
-      "Cuillère ou micro-crank en récupération rapide dans le courant.",
-      "Lame vibrante ou petit spinner pour les chasses."
-    ],
-    aspe: [
-      "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
-      "Petits crankbaits ou lipless dans les zones rapides.",
-      "Leurres de surface bruyants en été."
-    ],
-    silure: [
-      "Gros leurres souples ou vifs au fond avec longues pauses.",
-      "Fireball ou clonk avec gros shad en verticale.",
-      "Swimbait XXL en linéaire lent près des trous."
-    ],
-    truite: [
-      "Cuillère ondulante ou rotating en rivière avec courant.",
-      "Leurre souple imitant vairon en récupération naturelle.",
-      "Micro-jig ou spinner en zone calme."
-    ]
-  };
+// === TOUJOURS 2 CONSEILS RANDOM PAR ESPÈCE (corrigé et robuste) ===
+const randomParEspece = {
+  brochet: [
+    "Prospection rapide en surface avec un gros popper ou stickbait quand l'eau est calme.",
+    "Power fishing agressif autour des structures avec gros swimbaits ou jerkbaits XXL.",
+    "Twitching violent avec un glider ou un jerkbait long dans les bordures herbeuses.",
+    "Réaction pure avec spinnerbait ou chatterbait dans les zones venteuses.",
+    "Pêche finesse en période difficile : weightless ou drop shot avec shad 10cm."
+  ],
+  perche: [
+    "Micro-jig ou drop shot en verticale sur les tombants rocheux.",
+    "Petits crankbaits ou lipless pour déclencher des attaques réflexes.",
+    "Leurres souples en linéaire lent imitant écrevisses ou petits poissons.",
+    "Ned rig ou tube sur fond propre avec pauses longues.",
+    "Cuillère ondulante ou rotating en récupération variée."
+  ],
+  sandre: [
+    "Pêche au fond avec jig ou texas rig en animation très lente.",
+    "Verticale avec shad ou finesse jig sur les cassures.",
+    "Linéaire lent avec gros leurre souple par faible luminosité.",
+    "Dead slow avec jerkbait suspendu en soirée.",
+    "Leurre souple vibrant gratté sur le fond."
+  ],
+  blackbass: [
+    "Flipping & pitching avec jig ou texas dans les herbiers épais.",
+    "Topwater frog ou popper au lever/coucher du soleil.",
+    "Crankbait profond sur les structures submergées.",
+    "Finesse shakey head ou wacky rig quand c'est dur.",
+    "Swimbait en linéaire moyen pour imiter les proies."
+  ],
+  chevesne: [
+    "Petits leurres de surface ou insectes pour attaques en surface.",
+    "Cuillère ou micro-crank en récupération rapide dans le courant.",
+    "Lame vibrante ou petit spinner pour les chasses.",
+    "Petit popper ou stickbait en zone calme."
+  ],
+  aspe: [
+    "Jerkminnow ou popper en récupération très rapide pour déclencher l'agressivité.",
+    "Petits crankbaits ou lipless dans les zones rapides.",
+    "Leurres de surface bruyants en été.",
+    "Spinnerbait en burn pour les chasses."
+  ],
+  silure: [
+    "Gros leurres souples ou vifs au fond avec longues pauses.",
+    "Fireball ou clonk avec gros shad en verticale.",
+    "Swimbait XXL en linéaire lent près des trous."
+  ],
+  truite: [
+    "Cuillère ondulante ou rotating en rivière avec courant.",
+    "Leurre souple imitant vairon en récupération naturelle.",
+    "Micro-jig ou spinner en zone calme.",
+    "Petit crankbait en eau claire."
+  ]
+};
 
-  const conseilsEspece = randomParEspece[species] || randomParEspece.brochet;
-  const random1 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
-  let random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
-  while (random2 === random1) random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+// Normalisation robuste de l'espèce
+let normalizedSpecies = species.replace(/é/g, 'e').replace(/è/g, 'e').replace(/ê/g, 'e').toLowerCase();
+normalizedSpecies = normalizedSpecies.replace('black-bass', 'blackbass').replace('black bass', 'blackbass');
 
-  list.push(random1);
-  list.push(random2);
-  list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
-  list.push("Enregistre ta session pour faire progresser l'IA !");
+// Liste des espèces reconnues
+const knownSpecies = Object.keys(randomParEspece);
+let matchedSpecies = knownSpecies.find(s => normalizedSpecies.includes(s)) || "brochet"; // fallback brochet seulement si vraiment rien
 
+const conseilsEspece = randomParEspece[matchedSpecies];
+
+// 2 conseils aléatoires différents
+let random1 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+let random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+while (random2 === random1 && conseilsEspece.length > 1) {
+  random2 = conseilsEspece[Math.floor(Math.random() * conseilsEspece.length)];
+}
+
+list.push(random1);
+list.push(random2);
+list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
+list.push("Enregistre ta session pour faire progresser l'IA !");
   // Profondeur
   const depthAdvice = [];
   if (temperature !== null) {
