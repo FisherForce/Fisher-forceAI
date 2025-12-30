@@ -1580,6 +1580,149 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 500);
 });
 </script>
+  <!-- BOUTON MENU HAMBURGER (3 barres) -->
+<button id="menuToggle" style="
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(45deg, #00d4aa, #009977);
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 10px 30px rgba(0, 212, 170, 0.5);
+  cursor: pointer;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+">
+  <div style="
+    width: 30px;
+    height: 20px;
+    position: relative;
+  ">
+    <span style="display: block; width: 100%; height: 3px; background: white; border-radius: 3px; position: absolute; left: 0; transition: all 0.3s;"></span>
+    <span style="display: block; width: 100%; height: 3px; background: white; border-radius: 3px; position: absolute; left: 0; top: 8px; transition: all 0.3s;"></span>
+    <span style="display: block; width: 100%; height: 3px; background: white; border-radius: 3px; position: absolute; left: 0; top: 16px; transition: all 0.3s;"></span>
+  </div>
+</button>
+
+<!-- MENU LATÉRAL CACHÉ -->
+<div id="sideMenu" style="
+  position: fixed;
+  top: 0;
+  right: -350px;
+  width: 350px;
+  height: 100vh;
+  background: linear-gradient(to bottom, #001122, #000811);
+  box-shadow: -10px 0 40px rgba(0,0,0,0.8);
+  z-index: 9999;
+  transition: right 0.4s ease;
+  padding: 100px 30px 30px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  color: white;
+">
+  <h2 style="text-align:center; color:#00d4aa; font-size:28px; margin-bottom:40px;">
+    🌊 Fonctions Cartes
+  </h2>
+
+  <div class="menu-item" onclick="openMapAnalysis()" style="
+    background: rgba(0,212,170,0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    border-left: 5px solid #00d4aa;
+    transition: all 0.3s;
+  ">
+    <h3 style="margin:0; color:#00ff9d; font-size:22px;">🗺️ Analyse carte spot de pêche</h3>
+    <p style="margin:5px 0 0; color:#aaa;">Découvre les meilleurs spots selon profondeur, structure et activité</p>
+  </div>
+
+  <div class="menu-item" onclick="openFrayeresBrochet()" style="
+    background: rgba(255,107,0,0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    border-left: 5px solid #ff6b00;
+    transition: all 0.3s;
+  ">
+    <h3 style="margin:0; color:#ff9d00; font-size:22px;">🐟 Carte des frayères brochet</h3>
+    <p style="margin:5px 0 0; color:#aaa;">Localisation des zones de reproduction (période de fermeture incluse)</p>
+  </div>
+
+  <div class="menu-item" onclick="openSpotsMigrateurs()" style="
+    background: rgba(0,150,255,0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    border-left: 5px solid #0096ff;
+    transition: all 0.3s;
+  ">
+    <h3 style="margin:0; color:#00b7ff; font-size:22px;">🚩 Mes spots poissons migrateurs</h3>
+    <p style="margin:5px 0 0; color:#aaa;">Aloses, lamproies, anguilles... tes zones perso</p>
+  </div>
+</div>
+
+<script>
+// === SCRIPT MENU HAMBURGER ===
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('menuToggle');
+  const menu = document.getElementById('sideMenu');
+  let isOpen = false;
+
+  toggle.addEventListener('click', () => {
+    if (isOpen) {
+      menu.style.right = '-350px';
+      toggle.style.transform = 'scale(1)';
+    } else {
+      menu.style.right = '0';
+      toggle.style.transform = 'scale(1.1)';
+    }
+    isOpen = !isOpen;
+  });
+
+  // Animation hover sur les items
+  document.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      item.style.transform = 'translateX(-10px)';
+      item.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+    });
+    item.addEventListener('mouseleave', () => {
+      item.style.transform = 'translateX(0)';
+      item.style.boxShadow = 'none';
+    });
+  });
+
+  // Fermer si clic dehors (optionnel)
+  document.addEventListener('click', (e) => {
+    if (isOpen && !menu.contains(e.target) && !toggle.contains(e.target)) {
+      menu.style.right = '-350px';
+      toggle.style.transform = 'scale(1)';
+      isOpen = false;
+    }
+  });
+});
+
+// === FONCTIONS À LIER À TES PAGES (à compléter plus tard) ===
+function openMapAnalysis() {
+  window.open('analyse-spots.html', '_blank');
+  // ou : document.getElementById('mapSection').style.display = 'block';
+}
+
+function openFrayeresBrochet() {
+  window.open('frayeres-brochet.html', '_blank');
+}
+
+function openSpotsMigrateurs() {
+  window.open('spots-migrateurs.html', '_blank');
+}
+</script>
 
   <!-- CLASSEMENT + DATE DANS LES CONSEILS (dans app.js) -->
   <script src="app.js"></script>
