@@ -830,6 +830,135 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+// === COMMANDE VOCALE INTELLIGENTE (français, remplissage auto des champs) ===
+document.addEventListener('DOMContentLoaded', () => {
+  const voiceBtn = document.getElementById('voiceCommandBtn');
+  const status = document.getElementById('voiceStatus');
+
+  if (!voiceBtn) return;
+
+  // Vérifie si le navigateur supporte la reconnaissance vocale
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    voiceBtn.style.display = 'none';
+    console.warn("Reconnaissance vocale non supportée sur ce navigateur");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'fr-FR'; // Français
+  recognition.interimResults = false;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 1;
+
+  voiceBtn.addEventListener('click', () => {
+    status.textContent = 'Écoute en cours... parle !';
+    voiceBtn.style.background = '#ff6b00'; // Orange pendant écoute
+    recognition.start();
+  });
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.toLowerCase().trim();
+    console.log("Phrase reconnue :", transcript);
+    status.textContent = `Analysé : "${transcript}"`;
+
+    // === PARSING INTELLIGENT DE LA PHRASE ===
+    const words = transcript.split(/\s+/);
+
+    // Mots clés par champ
+    const speciesKeywords = {
+      brochet: ['brochet', 'bec', 'pike'],
+      perche: ['perche', 'perches'],
+      sandre: ['sandre', 'zander'],
+      blackbass: ['blackbass', 'black-bass', 'bass', 'achigan'],
+      chevesne: ['chevesne', 'chevenne'],
+      aspe: ['aspe'],
+      silure: ['silure', 'catfish'],
+      truite: ['truite', 'truites']
+    };
+
+    const structureKeywords = {
+      nénuphars: ['nénuphars', 'nénuphar', 'nénufar', 'lily pads'],
+      herbiers: ['herbiers', 'herbe', 'herbes', 'weeds'],
+      bois: ['bois', 'bois noyés', 'branches', 'snags', 'wood'],
+      arbre: ['arbre', 'arbres', 'fallen tree'],
+      tombants: ['tombants', 'drop off', 'cassures'],
+      rochers: ['rochers', 'rocks'],
+      gravier: ['gravier', 'gravel'],
+      fond: ['fond', 'bottom']
+    };
+
+    const conditionsKeywords = {
+      pluie: ['pluie', 'pluvieux', 'rain'],
+      nuageux: ['nuageux', 'nuages', 'cloudy'],
+      soleil: ['soleil', 'ensoleillé', 'sunny', 'clair'],
+      vent: ['vent', 'venteux', 'windy'],
+      nuit: ['nuit', 'soirée', 'night', 'crépuscule']
+    };
+
+    let detectedSpecies = "";
+    let detectedStructure = "";
+    let detectedConditions = "";
+
+    // Détection espèce
+    for (const [key, keywords] of Object.entries(speciesKeywords)) {
+      if (keywords.some(k => words.includes(k))) {
+        detectedSpecies = key.charAt(0).toUpperCase() + key.slice(1);
+        break;
+      }
+    }
+
+    // Détection structure (prend le premier match)
+    for (const [key, keywords] of Object.entries(structureKeywords)) {
+      if (keywords.some(k => words.includes(k))) {
+        detectedStructure = key.charAt(0).toUpperCase() + key.slice(1);
+        break;
+      }
+    }
+
+    // Détection conditions (cumule plusieurs si besoin)
+    for (const [key, keywords] of Object.entries(conditionsKeywords)) {
+      if (keywords.some(k => words.includes(k))) {
+        if (detectedConditions) detectedConditions += " ";
+        detectedConditions += key;
+      }
+    }
+
+    // === REMPLISSAGE AUTO DES CHAMPS ===
+    if (detectedSpecies && el('targetSpecies')) {
+      el('targetSpecies').value = detectedSpecies;
+    }
+    if (detectedStructure && el('structure')) {
+      el('structure').value = detectedStructure;
+    }
+    if (detectedConditions && el('conditions')) {
+      el('conditions').value = detectedConditions;
+    }
+
+    // Si on a détecté au moins un champ → lance automatiquement le conseil
+    if (detectedSpecies || detectedStructure || detectedConditions) {
+      status.textContent = 'Champs remplis → conseil en cours...';
+      voiceBtn.style.background = '#00d4aa';
+      el('getAdvice')?.click(); // Déclenche le conseil automatiquement
+    } else {
+      status.textContent = 'Pas compris, réessaie !';
+      voiceBtn.style.background = '#e74c3c';
+    }
+  };
+
+  recognition.onerror = (event) => {
+    status.textContent = 'Erreur écoute, réessaie';
+    voiceBtn.style.background = '#e74c3c';
+    console.error("Erreur reconnaissance vocale :", event.error);
+  };
+
+  recognition.onend = () => {
+    voiceBtn.style.background = 'linear-gradient(45deg, #00d4aa, #009977)';
+    if (status.textContent.includes('Écoute en cours')) {
+      status.textContent = 'Clique et parle !';
+    }
+  };
+});
 
 // Appelle ces fonctions aux bons endroits :
 // Après un conseil IA : updateStatsAfterAdvice({ species: species, lures: conseil.lures });
