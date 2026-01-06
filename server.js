@@ -1248,6 +1248,19 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+const path = require('path');
+
+// Serve les fichiers statiques depuis /public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Catch-all : pour TOUTES les routes non-API, renvoie index.html
+app.get('*', (req, res) => {
+  // Exclut les routes API pour éviter les conflits
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Route API non trouvée' });
+  }
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
