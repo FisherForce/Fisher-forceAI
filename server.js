@@ -1237,6 +1237,16 @@ app.post('/api/activate-premium', (req, res) => {
     res.status(401).json({ error: 'Token invalide' });
   }
 });
+// === SERVEUR STATIQUE + CATCH-ALL POUR SPA (IMPORTANT !) ===
+app.use(express.static('public')); // si tes fichiers sont dans /public
+
+// Route catch-all : pour toutes les URLs qui ne sont pas /api/*, renvoie index.html
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API route not found' });
+  }
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
