@@ -680,7 +680,25 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
       <label>Température (°C)<br><input type="number" id="temperature" placeholder="15"></label>
       <div style="margin-top:15px;">
         <button id="getAdvice">Obtenir des conseils</button>
-        <button id="voiceBtn">Commande vocale</button>
+<!-- BOUTON COMMANDE VOCALE (micro stylé) -->
+<button id="voiceCommandBtn" style="
+  background: linear-gradient(45deg, #00d4aa, #009977);
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0,212,170,0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px auto;
+">
+  🎤 Commande vocale
+  <span id="voiceStatus" style="font-size:14px; opacity:0.8;">Clique et parle !</span>
+</button>
         <button id="clearBtn">Réinitialiser</button>
       </div>
     </section>
