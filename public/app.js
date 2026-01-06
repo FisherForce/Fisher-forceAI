@@ -786,6 +786,50 @@ function showBlacklistPop(lureName) {
   document.body.appendChild(pop);
   setTimeout(() => pop.remove(), 2200);
 }
+// === FONCTION PREMIUM CODE ===
+document.addEventListener('DOMContentLoaded', () => {
+  const premiumButton = document.getElementById('premium-button');
+  
+  if (premiumButton) {
+    premiumButton.addEventListener('click', () => {
+      // Vérifie si déjà premium
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Tu dois être connecté pour activer Premium !");
+        return;
+      }
+
+      const code = prompt('🔑 Entrez votre code Premium :');
+      if (!code || code.trim() === '') return;
+
+      fetch('/api/activate-premium', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        },
+        body: JSON.stringify({ code: code.trim().toUpperCase() })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('🎉 ' + data.message + '\nTu es maintenant Premium !');
+          // Refresh le profil
+          readUser(); // ou ta fonction qui met à jour l'affichage
+          premiumButton.textContent = '✅ Premium Activé';
+          premiumButton.disabled = true;
+          premiumButton.style.background = 'green';
+        } else {
+          alert('❌ ' + data.error);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Erreur réseau. Réessaie plus tard.');
+      });
+    });
+  }
+});
 
 // Appelle ces fonctions aux bons endroits :
 // Après un conseil IA : updateStatsAfterAdvice({ species: species, lures: conseil.lures });
