@@ -91,6 +91,11 @@
   🚫 Blacklist
   <span id="blacklistCount" style="position:absolute;top:-8px;right:-8px;background:#ff0000;color:white;border-radius:50%;width:24px;height:24px;font-size:12px;display:flex;align-items:center;justify-content:center;">0</span>
 </button>
+
+    <!-- Bouton dans le profil -->
+<button id="openLureBox">🎒 Ma Boîte à Leurres (<span id="lureCount">0</span>)</button>
+
+
     
   </div>
 </div>
@@ -510,6 +515,17 @@ document.addEventListener('DOMContentLoaded', () => {
   displayBlacklist();
 });
 </script>
+      <!-- Modale Ma Boîte -->
+<div id="lureBoxModal" class="modal">
+  <div class="modal-content">
+    <span class="close">×</span>
+    <h2>Ma Boîte à Leurres</h2>
+    <input type="text" id="lureSearch" placeholder="Rechercher un leurre...">
+    <div id="knownLuresList" style="max-height: 300px; overflow-y: auto; margin: 10px 0;"></div>
+    <h3>Mes leurres (<span id="myLureCount">0</span>)</h3>
+    <ul id="myLuresList"></ul>
+  </div>
+</div>
       <button id="logoutBtn" style="background:#e74c3c;color:white;border:none;padding:8px 14px;border-radius:25px;font-size:12px;cursor:pointer;">Déconnexion</button>
              
     </div>
