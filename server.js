@@ -1211,6 +1211,32 @@ app.post('/api/advice', (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+app.post('/api/activate-premium', (req, res) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ error: 'Non autorisé' });
+  try {
+    const { pseudo } = jwt.verify(token, secretKey);
+    const { code } = req.body;
+
+    if (!code) return res.status(400).json({ error: 'Code requis' });
+
+    const codes = db.get('premiumCodes').value();
+    const codeEntry = codes.find(c => c.code === code && !c.used);
+
+    if (!codeEntry) return res.status(400).json({ error: 'Code invalide ou déjà utilisé' });
+
+    // Marque le code comme utilisé
+    db.get('premiumCodes').find({ code }).assign({ used: true }).write();
+
+    // Upgrade l'utilisateur à premium + XP
+    const user = db.get('users').find({ pseudo }).value();
+    db.get('users').find({ pseudo }).assign({ premium: true, xp: user.xp + 100 }).write();
+
+    res.json({ success: true, message: 'Premium activé ! +100 XP' });
+  } catch (e) {
+    res.status(401).json({ error: 'Token invalide' });
+  }
+});
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
