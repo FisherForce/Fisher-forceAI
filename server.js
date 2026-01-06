@@ -1248,7 +1248,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-const path = require('path');
+
 
 // Serve les fichiers statiques depuis /public
 app.use(express.static(path.join(__dirname, 'public')));
