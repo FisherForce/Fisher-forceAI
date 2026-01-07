@@ -867,31 +867,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mots clés par champ
     const speciesKeywords = {
-      brochet: ['brochet', 'bec', 'pike'],
-      perche: ['perche', 'perches'],
+      brochet: ['brochet', 'bec', 'pike','broc'],
+      perche: ['perche', 'perches','perchette','perch','zébrées'],
       sandre: ['sandre', 'zander'],
-      blackbass: ['blackbass', 'black-bass', 'bass', 'achigan'],
-      chevesne: ['chevesne', 'chevenne'],
+      blackbass: ['blackbass', 'black-bass', 'bass', 'achigan','diable vert'],
+      chevesne: ['chevesne', 'chevenne','chub','chubby','cheub','cheubby'],
       aspe: ['aspe'],
-      silure: ['silure', 'catfish'],
-      truite: ['truite', 'truites']
+      silure: ['silure', 'catfish','glane','moustachu'],
+      truite: ['truite', 'truites','trout']
     };
 
     const structureKeywords = {
       nénuphars: ['nénuphars', 'nénuphar', 'nénufar', 'lily pads'],
       herbiers: ['herbiers', 'herbe', 'herbes', 'weeds'],
-      bois: ['bois', 'bois noyés', 'branches', 'snags', 'wood'],
-      arbre: ['arbre', 'arbres', 'fallen tree'],
+      bois: ['bois', 'branchage','bois noyés', 'branches', 'snags', 'wood'],
+      arbre: ['arbre', 'arbres','arbuste', 'fallen tree'],
       tombants: ['tombants', 'drop off', 'cassures'],
-      rochers: ['rochers', 'rocks'],
+      rochers: ['rochers','cailloux','pierreux','pierre', 'rocks'],
       gravier: ['gravier', 'gravel'],
       fond: ['fond', 'bottom']
     };
 
     const conditionsKeywords = {
       pluie: ['pluie', 'pluvieux', 'rain'],
-      nuageux: ['nuageux', 'nuages', 'cloudy'],
-      soleil: ['soleil', 'ensoleillé', 'sunny', 'clair'],
+      nuageux: ['nuageux','couvert', 'nuages', 'cloudy'],
+      soleil: ['soleil', 'ensoleillé', 'sunny', 'clair','dégagé'],
       vent: ['vent', 'venteux', 'windy'],
       nuit: ['nuit', 'soirée', 'night', 'crépuscule']
     };
