@@ -1211,6 +1211,34 @@ app.post('/api/advice', (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+app.post('/api/compare-lure', async (req, res) => {
+  const { lure } = req.body;
+  if (!lure) return res.status(400).json({ error: 'Nom du leurre requis' });
+
+  try {
+    // Recherche Google pour trouver des sites de vente
+    const searchQuery = `acheter ${lure} pas cher site:.fr OR site:.com OR site:.eu`;
+
+    // Ici tu peux utiliser une vraie API comme SerpAPI (clé gratuite pour tests)
+    // Pour l'instant on simule des résultats réalistes (remplace par vraie recherche plus tard)
+    const deals = [
+      { site: "Amazon.fr", price: "12,99 €", link: `https://www.amazon.fr/s?k=${encodeURIComponent(lure)}` },
+      { site: "Decathlon.fr", price: "14,99 €", link: `https://www.decathlon.fr/search?q=${encodeURIComponent(lure)}` },
+      { site: "TackleDirect", price: "11,50 €", link: `https://www.tackledirect.com/search?q=${encodeURIComponent(lure)}` },
+      { site: "eBay.fr", price: "9,99 €", link: `https://www.ebay.fr/sch/i.html?_nkw=${encodeURIComponent(lure)}` }
+    ];
+
+    // Tri par prix (simulation)
+    deals.sort((a, b) => parseFloat(a.price.replace(/[^0-9.,]/g, '').replace(',', '.')) - parseFloat(b.price.replace(/[^0-9.,]/g, '').replace(',', '.')));
+
+    // Image (simulation – plus tard utilise une vraie recherche image)
+    const image = "https://example.com/lure-image.jpg"; // À remplacer par vraie recherche image
+
+    res.json({ deals: deals.slice(0, 4), image });
+  } catch (error) {
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
 app.post('/api/activate-premium', (req, res) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ error: 'Non autorisé' });
