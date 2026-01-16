@@ -1211,38 +1211,56 @@ app.post('/api/advice', (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
+const fetch = require('node-fetch'); // Assure-toi d'avoir installé node-fetch si pas déjà fait : npm install node-fetch
+
 app.post('/api/compare-lure', async (req, res) => {
   const { lure } = req.body;
   if (!lure) return res.status(400).json({ error: 'Nom du leurre requis' });
 
   try {
-    // Recherche Google pour sites de vente
-    const searchQuery = `cheapest ${lure} buy online france`;
-    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}&num=10`;
+    const apiKey = process.env.GOOGLE_API_KEY;
+    const cx = process.env.GOOGLE_CX;
 
-    // Fetch et parse simple (simulation avancée – pour réel, utilise SerpAPI)
-    // Ici, on simule avec résultats réels de ma recherche
-    const deals = [
-      { site: 'Fishingshop.kiwi', price: '10.3 €', link: 'https://fishingshop.kiwi/fr/category/Lures/Woblers/Rapala/x-rap-series/x-rap' },
-      { site: 'PriceRunner UK', price: '10.10 £ (~11.80 €)', link: 'https://www.pricerunner.com/pl/647-4274550/Fishing-Equipment/Rapala-X-Rap-10cm-Silver-S-Compare-Prices' },
-      { site: 'Discount Tackle (US)', price: '12.74 $ (~11.73 €)', link: 'https://discounttackle.com/collections/rapala-x-rap' },
-      { site: 'Tackle-Deals.eu', price: '12.24 €', link: 'https://www.tackle-deals.eu/RAPALA-X-Rap-10cm-13g-Scoop_1' },
-      { site: 'ADH Fishing', price: '13.90 €', link: 'https://www.adh-fishing.com/rapala-x-rap-10-cm' }
-    ];
+    if (!apiKey || !cx) {
+      return res.status(500).json({ error: 'Configuration Google API manquante' });
+    }
 
-    // Tri par prix (numérique)
-    deals.sort((a, b) => {
-      const priceA = parseFloat(a.price.match(/\d+\.?\d*/)[0]);
-      const priceB = parseFloat(b.price.match(/\d+\.?\d*/)[0]);
-      return priceA - priceB;
-    });
+    // Recherche Google via Custom Search JSON API
+    const searchQuery = `acheter ${lure} pas cher site:.fr OR site:.com OR site:.eu`;
+    const url = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(searchQuery)}&num=10`;
 
-    // Image (de recherche réelle)
-    const image = 'https://img.tacklewarehouse.com/watermark/rs.php?path=RXR-CRYS-1.jpg&nw=455';
+    const response = await fetch(url);
+    const data = await response.json();
 
-    res.json({ deals: deals.slice(0, 5), image });
+    if (data.error) {
+      console.error('Erreur Google API:', data.error);
+      return res.status(500).json({ error: 'Erreur recherche Google' });
+    }
+
+    const deals = [];
+    if (data.items && data.items.length > 0) {
+      data.items.slice(0, 5).forEach(item => {
+        // Extraction prix approximatif depuis snippet (pas parfait, mais rapide)
+        const priceMatch = item.snippet.match(/€\d+[,.]?\d*/);
+        deals.push({
+          site: item.title,
+          link: item.link,
+          price: priceMatch ? priceMatch[0] : 'Prix non trouvé (clique pour voir)'
+        });
+      });
+    }
+
+    // Recherche image rapide (premier résultat Google Images)
+    const imageQuery = `${lure} fishing lure`;
+    const imageUrl = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${cx}&q=${encodeURIComponent(imageQuery)}&searchType=image&num=1`;
+    const imageResponse = await fetch(imageUrl);
+    const imageData = await imageResponse.json();
+    const image = imageData.items && imageData.items[0] ? imageData.items[0].link : null;
+
+    res.json({ deals, image });
   } catch (error) {
-    res.status(500).json({ error: 'Erreur recherche' });
+    console.error('Erreur serveur:', error);
+    res.status(500).json({ error: 'Erreur lors de la recherche' });
   }
 });
 app.post('/api/activate-premium', (req, res) => {
