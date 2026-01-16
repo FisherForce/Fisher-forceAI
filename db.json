@@ -1,18 +1,14 @@
 {
-  "users": [],
-  "learningData": [],
   "premiumCodes": [
     {
+      "code": "PREMIUM2026",
+      "used": false,
+      "usedBy": null
+    },
+    {
       "code": "THAO2026",
-      "used": false
-    },
-    {
-      "code": "PREMIUMTHAO",
-      "used": false
-    },
-    {
-      "code": "VIPFISHER",
-      "used": false
+      "used": true,
+      "usedBy": "Thao"
     }
   ]
 }
