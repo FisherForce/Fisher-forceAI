@@ -1266,23 +1266,35 @@ app.post('/api/compare-lure', async (req, res) => {
 app.post('/api/activate-premium', (req, res) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ error: 'Non autorisé' });
+
   try {
     const { pseudo } = jwt.verify(token, secretKey);
     const { code } = req.body;
 
     if (!code) return res.status(400).json({ error: 'Code requis' });
 
-    const codes = db.get('premiumCodes').value();
-    const codeEntry = codes.find(c => c.code === code && !c.used);
+    // Recherche du code
+    const codeEntry = db.get('premiumCodes').find({ code }).value();
 
-    if (!codeEntry) return res.status(400).json({ error: 'Code invalide ou déjà utilisé' });
+    if (!codeEntry) {
+      return res.status(400).json({ error: 'Code invalide' });
+    }
 
-    // Marque le code comme utilisé
-    db.get('premiumCodes').find({ code }).assign({ used: true }).write();
+    if (codeEntry.used) {
+      return res.status(400).json({ error: 'Ce code a déjà été utilisé par un autre compte' });
+    }
 
-    // Upgrade l'utilisateur à premium + XP
-    const user = db.get('users').find({ pseudo }).value();
-    db.get('users').find({ pseudo }).assign({ premium: true, xp: user.xp + 100 }).write();
+    // Marque comme utilisé + associe au compte
+    db.get('premiumCodes')
+      .find({ code })
+      .assign({ used: true, usedBy: pseudo })
+      .write();
+
+    // Upgrade l'utilisateur
+    db.get('users')
+      .find({ pseudo })
+      .assign({ premium: true })
+      .write();
 
     res.json({ success: true, message: 'Premium activé ! +100 XP' });
   } catch (e) {
