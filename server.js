@@ -1268,37 +1268,52 @@ app.post('/api/activate-premium', (req, res) => {
   if (!token) return res.status(401).json({ error: 'Non autorisé' });
 
   try {
-    const { pseudo } = jwt.verify(token, secretKey);
-    const { code } = req.body;
+    const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
+    const pseudo = decoded.pseudo;
 
+    if (!pseudo) return res.status(401).json({ error: 'Utilisateur non identifié' });
+
+    const { code } = req.body;
     if (!code) return res.status(400).json({ error: 'Code requis' });
 
-    // Recherche du code
-    const codeEntry = db.get('premiumCodes').find({ code }).value();
+    const codeUpper = code.trim().toUpperCase();
+
+    // Recherche exacte du code (case-insensitive)
+    const codeEntry = db.get('premiumCodes').find(c => c.code.toUpperCase() === codeUpper).value();
 
     if (!codeEntry) {
       return res.status(400).json({ error: 'Code invalide' });
     }
 
     if (codeEntry.used) {
-      return res.status(400).json({ error: 'Ce code a déjà été utilisé par un autre compte' });
+      return res.status(400).json({ 
+        error: 'Ce code a déjà été utilisé par un autre compte' 
+      });
     }
 
-    // Marque comme utilisé + associe au compte
+    // Marque comme utilisé + associe au compte actuel
     db.get('premiumCodes')
-      .find({ code })
-      .assign({ used: true, usedBy: pseudo })
+      .find({ code: codeEntry.code })
+      .assign({ 
+        used: true, 
+        usedBy: pseudo,
+        usedAt: new Date().toISOString()
+      })
       .write();
 
-    // Upgrade l'utilisateur
+    // Upgrade l'utilisateur à premium
     db.get('users')
       .find({ pseudo })
       .assign({ premium: true })
       .write();
 
-    res.json({ success: true, message: 'Premium activé ! +100 XP' });
+    res.json({ 
+      success: true, 
+      message: 'Premium activé avec succès ! +100 XP' 
+    });
   } catch (e) {
-    res.status(401).json({ error: 'Token invalide' });
+    console.error('Erreur activation premium:', e);
+    res.status(401).json({ error: 'Token invalide ou expiré' });
   }
 });
 // === SERVEUR STATIQUE + CATCH-ALL POUR SPA (IMPORTANT !) ===
