@@ -1530,6 +1530,94 @@ if ('applicationCache' in window === false && 'serviceWorker' in navigator) {
   });
 }
 </script>
+  <!-- ================================================= -->
+<!-- FONCTION COMPARATEUR DE PRIX DE LEURRES (tout-en-un) -->
+<!-- Colle ce bloc où tu veux dans index.html            -->
+<!-- ================================================= -->
+
+<div id="lureCompareBlock" style="margin: 30px auto; max-width: 600px; padding: 20px; background: #1a1a1a; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,212,170,0.2);">
+  <h3 style="text-align: center; color: #00d4aa; margin-bottom: 15px;">Comparer le prix d'un leurre</h3>
+  <p style="text-align: center; color: #aaa; margin-bottom: 20px; font-size: 14px;">
+    Tape le nom exact (marque + modèle), ex : "Rapala X-Rap 10" ou "Fox Rage Replicant 18"
+  </p>
+
+  <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+    <input 
+      type="text" 
+      id="lureNameInput" 
+      placeholder="Nom du leurre (ex: Rapala X-Rap 10)" 
+      style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #222; color: white; font-size: 16px;"
+    />
+    <button 
+      id="compareLureBtn" 
+      style="background: linear-gradient(45deg, #00d4aa, #009977); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer;"
+    >
+      Rechercher
+    </button>
+  </div>
+
+  <div id="compareLoading" style="display: none; text-align: center; color: #00d4aa; margin: 20px 0;">
+    Recherche des meilleurs prix en cours...
+  </div>
+
+  <div id="compareResults" style="margin-top: 20px; color: white;"></div>
+</div>
+
+<script>
+// Script autonome – pas besoin de modifier app.js
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('lureNameInput');
+  const btn = document.getElementById('compareLureBtn');
+  const loading = document.getElementById('compareLoading');
+  const results = document.getElementById('compareResults');
+
+  btn.addEventListener('click', async () => {
+    const lure = input.value.trim();
+    if (!lure) return alert('Entrez un nom de leurre !');
+
+    loading.style.display = 'block';
+    results.innerHTML = '';
+
+    try {
+      const response = await fetch('/api/compare-lure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lure })
+      });
+
+      const data = await response.json();
+
+      loading.style.display = 'none';
+
+      if (data.error) {
+        results.innerHTML = `<p style="color: #ff4444;">${data.error}</p>`;
+      } else if (!data.deals || data.deals.length === 0) {
+        results.innerHTML = '<p>Aucun prix trouvé pour ce leurre.</p>';
+      } else {
+        let html = '<h4>Meilleurs prix trouvés :</h4><ul style="list-style: none; padding: 0;">';
+        data.deals.forEach(deal => {
+          html += `
+            <li style="margin: 12px 0; padding: 12px; background: #222; border-radius: 8px;">
+              <strong>${deal.site}</strong> — <span style="color: #00ff99;">${deal.price}</span><br>
+              <a href="${deal.link}" target="_blank" style="color: #00d4aa;">Voir l'offre →</a>
+            </li>`;
+        });
+        html += '</ul>';
+
+        if (data.image) {
+          html += `<img src="${data.image}" alt="${lure}" style="max-width: 100%; border-radius: 8px; margin-top: 15px;">`;
+        }
+
+        results.innerHTML = html;
+      }
+    } catch (err) {
+      loading.style.display = 'none';
+      results.innerHTML = '<p style="color: #ff4444;">Erreur lors de la recherche.</p>';
+      console.error(err);
+    }
+  });
+});
+</script>
   <!-- POP-UP CONNEXION GOOGLE — UNIQUEMENT SI NON CONNECTÉ -->
 <div id="googleLoginPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:99999;justify-content:center;align-items:center;flex-direction:column;">
   <div style="background:#001122;padding:30px;border-radius:20px;max-width:500px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,255,157,0.4);position:relative;">
@@ -1655,6 +1743,14 @@ document.addEventListener('DOMContentLoaded', () => {
     <h3 style="margin:0; color:#00b7ff; font-size:22px;">🚩 Mes spots poissons migrateurs</h3>
     <p style="margin:5px 0 0; color:#aaa;">Aloses, lamproies, anguilles... tes zones perso</p>
   </div>
+  <h2 style="text-align:center; color:#00d4aa; font-size:28px; margin-bottom:40px;">
+    🎣 Fonctions Leurres
+  </h2>
+    <div class="menu-item" onclick="showSection('lureCompareBlock')" style="background: rgba(0,212,170,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #00d4aa; transition: all 0.3s;">
+    <h3 style="margin:0; color:#00ff9d; font-size:22px;">🪝Compare leurres</h3>
+    <p style="margin:5px 0 0; color:#aaa;">Trouve les leurres que tu veut acheter pour le meilleur prix </p>
+  </div>
+
 </div>
 
 <script>
@@ -1718,6 +1814,7 @@ function showSection(sectionId) {
 <style>
   #spotAnalysisResult,
   #fraieStatus,
+  #lureCompareBlock
   #migrateursMap {
     display: none; /* CACHÉES tant que pas cliqué sur le menu */
   }
