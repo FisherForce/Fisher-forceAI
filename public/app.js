@@ -786,49 +786,30 @@ function showBlacklistPop(lureName) {
   document.body.appendChild(pop);
   setTimeout(() => pop.remove(), 2200);
 }
-// === FONCTION PREMIUM CODE ===
-document.addEventListener('DOMContentLoaded', () => {
-  const premiumButton = document.getElementById('premium-button');
-  
-  if (premiumButton) {
-    premiumButton.addEventListener('click', () => {
-      // Vérifie si déjà premium
-      const token = localStorage.getItem('token');
-      if (!token) {
-        alert("Tu dois être connecté pour activer Premium !");
-        return;
-      }
+// Bouton Activer Premium (déjà dans ton profil)
+document.getElementById('premium-button').addEventListener('click', () => {
+  const code = prompt('🔑 Entrez votre code Premium :');
+  if (!code) return;
 
-      const code = prompt('🔑 Entrez votre code Premium :');
-      if (!code || code.trim() === '') return;
-
-      fetch('/api/activate-premium', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token
-        },
-        body: JSON.stringify({ code: code.trim().toUpperCase() })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          alert('🎉 ' + data.message + '\nTu es maintenant Premium !');
-          // Refresh le profil
-          readUser(); // ou ta fonction qui met à jour l'affichage
-          premiumButton.textContent = '✅ Premium Activé';
-          premiumButton.disabled = true;
-          premiumButton.style.background = 'green';
-        } else {
-          alert('❌ ' + data.error);
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert('Erreur réseau. Réessaie plus tard.');
-      });
-    });
-  }
+  fetch('/api/activate-premium', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': localStorage.getItem('token')
+    },
+    body: JSON.stringify({ code: code.trim().toUpperCase() })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert('🎉 ' + data.message);
+      // Refresh profil
+      location.reload();
+    } else {
+      alert('❌ ' + data.error);
+    }
+  })
+  .catch(() => alert('Erreur réseau'));
 });
 // === COMMANDE VOCALE INTELLIGENTE (français, remplissage auto des champs) ===
 document.addEventListener('DOMContentLoaded', () => {
