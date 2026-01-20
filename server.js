@@ -1225,6 +1225,70 @@ app.get('/api/premium-feature', requirePremium, (req, res) => {
 });
 
 // === ROUTES ===
+// Middleware Premium
+function requirePremium(req, res, next) {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ error: 'Non autorisé' });
+
+  try {
+    const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
+    const user = db.get('users').find({ pseudo: decoded.pseudo }).value();
+
+    if (!user || !user.premium) {
+      return res.status(403).json({ error: 'Exclusivité Premium' });
+    }
+    next();
+  } catch (e) {
+    res.status(401).json({ error: 'Token invalide' });
+  }
+}
+
+// Route protégée Météo
+app.post('/api/premium-weather-advice', requirePremium, async (req, res) => {
+  const { targetSpecies, spotType, structure } = req.body;
+
+  try {
+    // Ici ton code météo réel (geolocation + open-meteo + conseil)
+    // Pour l'exemple on simule un résultat
+    res.json({
+      success: true,
+      targetSpecies,
+      temp: 18,
+      vent: 12,
+      pluie: false,
+      nuages: true,
+      pression: 1013,
+      jour: true,
+      conditionsText: "nuageux",
+      conseil: { lures: ["Chatterbait 14g", "Spinnerbait willow", "Shad 10cm"] }
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Erreur météo' });
+  }
+});
+
+// Route protégée Analyse Carte
+app.post('/api/premium-spot-analysis', requirePremium, async (req, res) => {
+  const { bounds } = req.body;
+
+  try {
+    // Ici ton code Overpass réel
+    // Simulation pour l'exemple
+    const spots = [
+      { lat: 47.2, lon: -1.55 },
+      { lat: 47.21, lon: -1.54 },
+      { lat: 47.19, lon: -1.56 }
+    ];
+
+    res.json({
+      success: true,
+      spotCount: spots.length,
+      spots
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'Erreur analyse carte' });
+  }
+});
 app.post('/api/suggest', (req, res) => {
   let { targetSpecies: species = "", structure, conditions, spotType, temperature } = req.body;
   const result = suggestLures(species, structure, conditions, spotType, temperature);
