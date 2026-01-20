@@ -1163,6 +1163,12 @@ const randomParEspece = {
 
   return { lures: list, depthAdvice };
 }
+const admin = require('firebase-admin');
+admin.initializeApp({
+  credential: admin.credential.cert(require('./firebase-service-account.json')) // ta clé service account
+});
+
+const db = admin.firestore();
 
 // === ROUTES ===
 app.post('/api/suggest', (req, res) => {
@@ -1263,7 +1269,7 @@ app.post('/api/compare-lure', async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de la recherche' });
   }
 });
-app.post('/api/activate-premium', (req, res) => {
+app.post('/api/activate-premium', async (req, res) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ error: 'Non autorisé' });
 
@@ -1271,49 +1277,39 @@ app.post('/api/activate-premium', (req, res) => {
     const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
     const pseudo = decoded.pseudo;
 
-    if (!pseudo) return res.status(401).json({ error: 'Utilisateur non identifié' });
-
     const { code } = req.body;
     if (!code) return res.status(400).json({ error: 'Code requis' });
 
     const codeUpper = code.trim().toUpperCase();
 
-    // Recherche exacte du code (case-insensitive)
-    const codeEntry = db.get('premiumCodes').find(c => c.code.toUpperCase() === codeUpper).value();
+    // Recherche dans Firestore
+    const codeRef = db.collection('premiumCodes').doc(codeUpper);
+    const codeDoc = await codeRef.get();
 
-    if (!codeEntry) {
+    if (!codeDoc.exists) {
       return res.status(400).json({ error: 'Code invalide' });
     }
 
-    if (codeEntry.used) {
-      return res.status(400).json({ 
-        error: 'Ce code a déjà été utilisé par un autre compte' 
-      });
+    const codeData = codeDoc.data();
+    if (codeData.used) {
+      return res.status(400).json({ error: 'Ce code a déjà été utilisé par un autre compte' });
     }
 
-    // Marque comme utilisé + associe au compte actuel
-    db.get('premiumCodes')
-      .find({ code: codeEntry.code })
-      .assign({ 
-        used: true, 
-        usedBy: pseudo,
-        usedAt: new Date().toISOString()
-      })
-      .write();
-
-    // Upgrade l'utilisateur à premium
-    db.get('users')
-      .find({ pseudo })
-      .assign({ premium: true })
-      .write();
-
-    res.json({ 
-      success: true, 
-      message: 'Premium activé avec succès ! +100 XP' 
+    // Marque comme utilisé
+    await codeRef.update({
+      used: true,
+      usedBy: pseudo,
+      usedAt: admin.firestore.FieldValue.serverTimestamp()
     });
+
+    // Upgrade l'utilisateur (met à jour ton db.json ou Firestore users)
+    // Exemple avec db.json :
+    db.get('users').find({ pseudo }).assign({ premium: true }).write();
+
+    res.json({ success: true, message: 'Premium activé ! +100 XP' });
   } catch (e) {
-    console.error('Erreur activation premium:', e);
-    res.status(401).json({ error: 'Token invalide ou expiré' });
+    console.error('Erreur activation:', e);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 // === SERVEUR STATIQUE + CATCH-ALL POUR SPA (IMPORTANT !) ===
