@@ -529,10 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
 <div id="subscriptionBadge" style="padding: 8px 16px; border-radius: 20px; font-weight: bold; color: white; background: #888888; display: inline-block;">
   Gratuit
 </div>
-<!-- Bouton Activer Premium -->
-<button id="activatePremiumBtn" style="background: linear-gradient(45deg, #ffd700, #ff6b00); color: black; border: none; padding: 12px 24px; border-radius: 30px; font-weight: bold; cursor: pointer; margin-left: 15px;">
-  Passer à Premium
-</button>
+
 
     </div>
   </header>
@@ -1037,6 +1034,17 @@ Merci d'intervenir rapidement.
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <!-- CARTE FRAYÈRES BROCHET (période de fermeture + signalement) -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#1a0033,#330066);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(102,0,204,0.6);">
+  <h3 style="margin:0 0 20px;color:#cc00ff;font-size:24px;">
+    CARTE FRAYÈRES BROCHET
+  </h3>
+  <p style="font-size:16px;margin:15px 0;">
+    <span id="fraieStatus" style="font-weight:bold;"></span><br>
+    Double-clique pour signaler une frayère active (photo obligatoire)
+  </p>
+  <div id="fraieMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
+</div>
 <script>
 // === CARTE LEAFLET + ANALYSE EAU / SPOTS + MARQUEURS (tout gratuit maintenant) ===
 let spotMap = null;
@@ -1104,6 +1112,7 @@ document.getElementById('analyzeSpotBtn').addEventListener('click', async () => 
 
 document.addEventListener('DOMContentLoaded', initSpotMap);
 </script>
+<script>      
 // === CARTE FRAYÈRES COLLABORATIVE — VERSION CORRIGÉE & FIABLE ===
 let fraieMap = null;
 let userFraieSpots = JSON.parse(localStorage.getItem('fraieSpots') || '[]');
