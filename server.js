@@ -1269,7 +1269,7 @@ app.post('/api/compare-lure', async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de la recherche' });
   }
 });
-app.post('/api/activate-premium', async (req, res) => {
+app.post('/api/activate-premium', (req, res) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ error: 'Non autorisé' });
 
@@ -1282,34 +1282,23 @@ app.post('/api/activate-premium', async (req, res) => {
 
     const codeUpper = code.trim().toUpperCase();
 
-    // Recherche dans Firestore
-    const codeRef = db.collection('premiumCodes').doc(codeUpper);
-    const codeDoc = await codeRef.get();
+    // Recherche le code
+    const codeEntry = db.get('premiumCodes').find({ code: codeUpper }).value();
 
-    if (!codeDoc.exists) {
-      return res.status(400).json({ error: 'Code invalide' });
+    if (!codeEntry) {
+      return res.status(400).json({ error: 'Code incorrect' });
     }
 
-    const codeData = codeDoc.data();
-    if (codeData.used) {
-      return res.status(400).json({ error: 'Ce code a déjà été utilisé par un autre compte' });
-    }
+    // Supprime le code de la base (plus valable pour personne)
+    db.get('premiumCodes').remove({ code: codeUpper }).write();
 
-    // Marque comme utilisé
-    await codeRef.update({
-      used: true,
-      usedBy: pseudo,
-      usedAt: admin.firestore.FieldValue.serverTimestamp()
-    });
+    // Upgrade l'utilisateur à premium + XP bonus
+    db.get('users').find({ pseudo }).assign({ premium: true, xp: (db.get('users').find({ pseudo }).value().xp || 0) + 100 }).write();
 
-    // Upgrade l'utilisateur (met à jour ton db.json ou Firestore users)
-    // Exemple avec db.json :
-    db.get('users').find({ pseudo }).assign({ premium: true }).write();
-
-    res.json({ success: true, message: 'Premium activé ! +100 XP' });
+    res.json({ success: true, message: 'Premium activé ! +100 XP. Le code a été supprimé pour éviter les réutilisations.' });
   } catch (e) {
     console.error('Erreur activation:', e);
-    res.status(500).json({ error: 'Erreur serveur' });
+    res.status(401).json({ error: 'Token invalide' });
   }
 });
 // === SERVEUR STATIQUE + CATCH-ALL POUR SPA (IMPORTANT !) ===
