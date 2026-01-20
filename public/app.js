@@ -809,6 +809,67 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 });
+// Fonction pour appeler une route protégée premium
+async function callPremiumFeature() {
+  try {
+    const response = await fetch('/api/premium-feature', {
+      headers: { 'Authorization': localStorage.getItem('token') }
+    });
+    const data = await response.json();
+
+    if (data.success) {
+      document.getElementById('premiumStatus').textContent = data.message;
+    } else {
+      alert(data.error);
+      showActivatePremium();
+    }
+  } catch (err) {
+    alert('Erreur connexion');
+  }
+}
+
+// Bouton Activer Premium
+document.getElementById('activatePremiumBtn').addEventListener('click', () => {
+  showActivatePremium();
+});
+
+function showActivatePremium() {
+  const code = prompt('🔑 Entrez votre code Premium :');
+  if (!code) return;
+
+  fetch('/api/activate-premium', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': localStorage.getItem('token')
+    },
+    body: JSON.stringify({ code: code.trim().toUpperCase() })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      location.reload(); // Refresh pour mettre à jour badge
+    } else {
+      alert(data.error);
+    }
+  })
+  .catch(() => alert('Erreur réseau'));
+}
+
+// Optionnel : Badge dynamique au chargement
+async function updateBadge() {
+  try {
+    const res = await fetch('/api/user', { headers: { 'Authorization': localStorage.getItem('token') } });
+    const user = await res.json();
+    const badge = document.getElementById('subscriptionBadge');
+    if (badge) {
+      badge.textContent = user.premium ? 'Premium' : 'Gratuit';
+      badge.style.background = user.premium ? '#ffd700' : '#888888';
+    }
+  } catch (e) {}
+}
+updateBadge();
 
 // Appelle ces fonctions aux bons endroits :
 // Après un conseil IA : updateStatsAfterAdvice({ species: species, lures: conseil.lures });
