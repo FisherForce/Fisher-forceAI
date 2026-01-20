@@ -135,18 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(s);
   }
   el('getAdvice')?.addEventListener('click', async () => {
-    // LIMITE CONSEILS UNIQUEMENT POUR GRATUIT
-    if (currentSubscription !== 'premium' && dailyAdviceCount >= 5) {
-      alert("Limite de 5 conseils par jour atteinte (compte Gratuit) !\nPasse Premium pour conseils illimités.");
-      showSubscriptionUpgrade();
-      return;
-    }
 
-    // Incrémente seulement si Gratuit
-    if (currentSubscription !== 'premium') {
-      dailyAdviceCount++;
-      localStorage.setItem('dailyAdviceCount', dailyAdviceCount.toString());
-    }
 
     const input = readForm();
     const spotName = (input.spotName || "").trim().toLowerCase();
@@ -210,12 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // === RÉCEPTION DES RÉSULTATS + RÉACTIONS IA + SAUVEGARDE GPS ===
   window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
-      // LIMITE RÉSULTATS UNIQUEMENT POUR GRATUIT
-      if (currentSubscription !== 'premium' && dailyResultCount >= 6) {
-        alert("Limite de 6 sessions enregistrées par jour atteinte (compte Gratuit) !\nPasse Premium pour enregistrements illimités.");
-        showSubscriptionUpgrade();
-        return;
-      }
+
 
       // Incrémente seulement si Gratuit
       if (currentSubscription !== 'premium') {
