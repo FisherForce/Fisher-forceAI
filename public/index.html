@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
     MÉTÉO + CONSEIL IA EN DIRECT
     <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
   </h3>
-  
+ 
   <select id="targetSpeciesSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
     <option value="Brochet">Brochet</option>
     <option value="Perche">Perche</option>
@@ -557,14 +557,14 @@ document.addEventListener('DOMContentLoaded', () => {
     <option value="Truite">Truite</option>
     <option value="Chevesne">Chevesne</option>
   </select>
-  
+ 
   <select id="spotTypeSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
     <option value="Étang">Étang</option>
     <option value="Rivière">Rivière</option>
     <option value="Canal">Canal</option>
     <option value="Lac">Lac</option>
   </select>
-  
+ 
   <select id="structureSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
     <option value="Herbiers">Herbiers</option>
     <option value="Bois morts">Bois morts</option>
@@ -573,93 +573,95 @@ document.addEventListener('DOMContentLoaded', () => {
     <option value="Mixte">Mixte</option>
     <option value="Aucun">Aucun</option>
   </select>
-  
+ 
   <button id="weatherAdviceBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
     ANALYSER MÉTÉO + MEILLEUR LEURRE
   </button>
-  
+ 
   <!-- RÉSULTAT MÉTÉO -->
   <div id="weatherResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;">
   </div>
-  
+ 
   <!-- MASQUE TEASING FLOU (s'affiche si gratuit) -->
   <div id="premiumTeasingMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">
     <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
     <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Le meilleur leurre en direct selon la météo réelle à ton spot...</p>
-<button onclick="alert('Système premium mis à jour ! Utilise le nouveau bouton.')">Passer à Premium</button>
+    <button onclick="alert('Système premium mis à jour ! Utilise le nouveau bouton.')">Passer à Premium</button>
   </div>
 </div>
 
 <script>
-// === MÉTÉO AUTO + TEASING FLOU PREMIUM (serveur-side) ===
+// === MÉTÉO AUTO + TEASING FLOU PREMIUM ===
 document.getElementById('weatherAdviceBtn').addEventListener('click', async () => {
   const resultDiv = document.getElementById('weatherResult');
   const teasingMask = document.getElementById('premiumTeasingMask');
-
-  // On masque le résultat et on montre le loading
   resultDiv.style.display = 'block';
-  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Vérification Premium...</p>`;
-  teasingMask.style.display = 'none';
-
-  try {
-    // On appelle le serveur pour vérifier si Premium ET récupérer le résultat
-    const res = await fetch('/api/premium-weather-advice', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('token')
-      },
-      body: JSON.stringify({
-        targetSpecies: document.getElementById('targetSpeciesSelect').value,
-        spotType: document.getElementById('spotTypeSelect').value,
-        structure: document.getElementById('structureSelect').value
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.success && data.error.includes('Premium')) {
-      // Non Premium → teasing
-      resultDiv.innerHTML = `
-        <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
-          <b style="color:#00ff9d;">Potentiel météo détecté !</b><br>
-          <span style="font-size:18px;">Température, vent, pluie... tout est prêt.</span><br>
-          <i style="color:#aaa;">Résultat complet + meilleur leurre en Premium</i>
-        </div>
-      `;
-      teasingMask.style.display = 'flex';
-      return;
-    }
-
-    if (data.error) {
-      resultDiv.innerHTML = `<p style="color:#e74c3c;">${data.error}</p>`;
-      return;
-    }
-
-    // Premium OK → affichage complet
-    const { temp, vent, pluie, nuages, pression, jour, conditionsText, conseil } = data;
-
-    resultDiv.innerHTML = `
-      <div style="background:#003366;padding:18px;border-radius:12px;margin:15px 0;">
-        <b style="color:#00ff9d;font-size:22px;">${data.targetSpecies.toUpperCase()}</b><br>
-        <span style="font-size:20px;">${temp}°C • ${vent} km/h • ${conditionsText} • ${pression} hPa</span>
-      </div>
-      <div style="background:#001f3f;padding:22px;border-radius:15px;margin:15px 0;font-size:21px;line-height:1.6;">
-        <b style="color:#FFD700;">MEILLEUR LEURRE MAINTENANT :</b><br>
-        ${conseil.lures.map(l => `<span style="color:#00ff9d;font-size:26px;font-weight:bold;">${l}</span><br>`).join('')}
-      </div>
-      <p style="color:#888;font-size:14px;margin-top:20px;">
-        IA FisherForce — mise à jour toutes les 10 min • Précision 98,7 %
-      </p>
-    `;
-
-    // Cache le masque Premium
-    teasingMask.style.display = 'none';
-
-  } catch (e) {
-    resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
-    teasingMask.style.display = 'none';
+  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Détection position + météo en cours…</p>`;
+  if (!navigator.geolocation) {
+    resultDiv.innerHTML = "Géolocalisation non supportée";
+    return;
   }
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const species = document.getElementById('targetSpeciesSelect').value;
+    const spotType = document.getElementById('spotTypeSelect').value;
+    const structure = document.getElementById('structureSelect').value;
+    try {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover,pressure_msl,is_day&timezone=Europe/Paris`);
+      const meteo = await res.json();
+      const c = meteo.current;
+      const temp = Math.round(c.temperature_2m);
+      const vent = Math.round(c.wind_speed_10m);
+      const pluie = c.precipitation > 0.5;
+      const nuages = c.cloud_cover > 70;
+      const pression = Math.round(c.pressure_msl);
+      const jour = c.is_day === 1;
+      let conditionsText = "";
+      if (pluie) conditionsText = "pluie";
+      else if (nuages) conditionsText = "nuageux";
+      else conditionsText = "soleil";
+      if (!jour) conditionsText += " nuit";
+      const adviceRes = await fetch('/api/advice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetSpecies: species,
+          structure: structure,
+          conditions: conditionsText,
+          spotType: spotType,
+          temperature: temp
+        })
+      });
+      const conseil = await adviceRes.json();
+      resultDiv.innerHTML = `
+        <div style="background:#003366;padding:18px;border-radius:12px;margin:15px 0;">
+          <b style="color:#00ff9d;font-size:22px;">${species.toUpperCase()}</b><br>
+          <span style="font-size:20px;">${temp}°C • ${vent} km/h • ${conditionsText} • ${pression} hPa</span>
+        </div>
+        <div style="background:#001f3f;padding:22px;border-radius:15px;margin:15px 0;font-size:21px;line-height:1.6;">
+          <b style="color:#FFD700;">MEILLEUR LEURRE MAINTENANT :</b><br>
+          ${conseil.lures.map(l => `<span style="color:#00ff9d;font-size:26px;font-weight:bold;">${l}</span><br>`).join('')}
+        </div>
+        <p style="color:#888;font-size:14px;margin-top:20px;">
+          IA FisherForce — mise à jour toutes les 10 min • Précision 98,7 %
+        </p>
+      `;
+      // TEASING FLOU SI GRATUIT
+      if (currentSubscription !== 'premium') {
+        teasingMask.style.display = 'flex';
+      } else {
+        teasingMask.style.display = 'none';
+      }
+      setTimeout(() => document.getElementById('weatherAdviceBtn').click(), 600000);
+    } catch (e) {
+      resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
+      teasingMask.style.display = 'none';
+    }
+  }, () => {
+    resultDiv.innerHTML = `<p style="color:#ff6b00;">Active la localisation pour un conseil ultra-précis</p>`;
+    teasingMask.style.display = 'none';
+  });
 });
 </script>
 <div id="weatherResult" style="margin:20px;padding:20px;background:#001122;border-radius:15px;color:white;text-align:center;display:none;"></div>
@@ -1020,121 +1022,97 @@ Merci d'intervenir rapidement.
     ANALYSE CARTE SPOT PÊCHE
     <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
   </h3>
- 
   <p style="font-size:16px;margin:15px 0;">L’IA analyse la carte visible pour détecter l’eau et spots potentiels</p>
- 
   <div id="spotMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
- 
   <button id="analyzeSpotBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
     ANALYSER LA CARTE (Détecter eau / spots)
   </button>
- 
   <div id="spotAnalysisResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;"></div>
-
   <!-- MASQUE TEASING FLOU PREMIUM -->
   <div id="spotPremiumMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
     <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
     <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Analyse complète de la carte avec marqueurs sur les spots potentiels d’eau...</p>
-<button onclick="alert('Système premium mis à jour ! Utilise le nouveau bouton.')">Passer à Premium</button>
+    <button onclick="alert('Système premium mis à jour ! Utilise le nouveau bouton.')">Passer à Premium</button>
   </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
 <script>
-// === CARTE LEAFLET + ANALYSE EAU / SPOTS + MARQUEURS + MASQUE PREMIUM (serveur-side) ===
+// === CARTE LEAFLET + ANALYSE EAU / SPOTS + MARQUEURS + MASQUE PREMIUM ===
 let spotMap = null;
 let waterMarkersGroup = L.layerGroup();
-
 function initSpotMap() {
   spotMap = L.map('spotMap').setView([46.8, 1.7], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(spotMap);
   waterMarkersGroup.addTo(spotMap);
-
+  // Géoloc auto
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
       spotMap.setView([pos.coords.latitude, pos.coords.longitude], 12);
     });
   }
 }
-
 document.getElementById('analyzeSpotBtn').addEventListener('click', async () => {
   const resultDiv = document.getElementById('spotAnalysisResult');
   const teasingMask = document.getElementById('spotPremiumMask');
-
   resultDiv.style.display = 'block';
-  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Vérification Premium...</p>`;
-  teasingMask.style.display = 'none';
-
-  try {
-    // On appelle le serveur pour vérifier Premium ET récupérer l'analyse
-    const res = await fetch('/api/premium-spot-analysis', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': localStorage.getItem('token')
-      },
-      body: JSON.stringify({
-        // On envoie les bounds actuels de la carte pour l'analyse serveur
-        bounds: spotMap.getBounds().toBBoxString()
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.success && data.error.includes('Premium')) {
-      // Non Premium → teasing + teaser texte
-      resultDiv.innerHTML = `
-        <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
-          <b style="color:#00ff9d;">Potentiel spot pêche détecté !</b><br>
-          <span style="font-size:18px;">Plusieurs zones d'eau trouvées sur la carte visible.</span><br>
-          <i style="color:#aaa;">Marqueurs et analyse détaillée en Premium</i>
-        </div>
-      `;
-      teasingMask.style.display = 'flex';
-      return;
-    }
-
-    if (data.error) {
-      resultDiv.innerHTML = `<p style="color:#e74c3c;">${data.error}</p>`;
-      return;
-    }
-
-    // Premium OK → masque caché + affichage marqueurs
-    teasingMask.style.display = 'none';
-    waterMarkersGroup.clearLayers();
-
-    // Place les marqueurs renvoyés par le serveur
-    data.spots.forEach(spot => {
-      L.circleMarker([spot.lat, spot.lon], {
-        radius: 14,
-        color: '#00d4ff',
-        fillColor: '#00ff9d',
-        fillOpacity: 0.9,
-        weight: 4
-      }).addTo(waterMarkersGroup)
-        .bindPopup(`<b style="color:#00ff9d;">Spot potentiel détecté !</b><br>Eau présente ici`);
-    });
-
+  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Analyse de la carte en cours…</p>`;
+  // VÉRIFICATION PREMIUM
+  if (currentSubscription !== 'premium') {
     resultDiv.innerHTML = `
       <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
         <b style="color:#00ff9d;">Potentiel spot pêche détecté !</b><br>
-        <span style="font-size:18px;">${data.spotCount} zone(s) d'eau détectées.</span><br>
-        <i style="color:#aaa;">Marqueurs bleus placés sur chaque spot</i><br>
-        <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce – Analyse Overpass OSM</p>
+        <span style="font-size:18px;">Plusieurs zones d'eau trouvées sur la carte visible.</span><br>
+        <i style="color:#aaa;">Marqueurs et analyse détaillée en Premium</i>
       </div>
     `;
-
+    teasingMask.style.display = 'flex';
+    return;
+  }
+  // Si Premium → masque caché + analyse complète
+  teasingMask.style.display = 'none';
+  waterMarkersGroup.clearLayers();
+  // Récupère les bounds visibles de la carte
+  const bounds = spotMap.getBounds();
+  const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
+  try {
+    // Requête Overpass API pour détecter eau (natural=water, waterway=*)
+    const query = `[out:json];(way["natural"="water"](${bbox});node["natural"="water"](${bbox});relation["natural"="water"](${bbox});way["waterway"](${bbox});node["waterway"](${bbox});relation["waterway"](${bbox}););out center;`;
+    const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
+    const data = await res.json();
+    const waterFeatures = data.elements;
+    let spotCount = 0;
+    waterFeatures.forEach(feature => {
+      if (feature.lat && feature.lon) {
+        // MARQUEUR ROND BLEU FLUO
+        L.circleMarker([feature.lat, feature.lon], {
+          radius: 14,
+          color: '#00d4ff',
+          fillColor: '#00ff9d',
+          fillOpacity: 0.9,
+          weight: 4
+        }).addTo(waterMarkersGroup)
+          .bindPopup(`<b style="color:#00ff9d;">Spot potentiel détecté !</b><br>Eau présente ici`);
+        spotCount++;
+      }
+    });
+    if (spotCount > 0) {
+      resultDiv.innerHTML = `
+        <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
+          <b style="color:#00ff9d;">Potentiel spot pêche détecté !</b><br>
+          <span style="font-size:18px;">${spotCount} zone(s) d'eau détectées sur la carte visible.</span><br>
+          <i style="color:#aaa;">Marqueurs bleus placés sur chaque spot</i><br>
+          <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce – Analyse Overpass OSM</p>
+        </div>
+      `;
+    } else {
+      resultDiv.innerHTML = `<p style="color:#e74c3c;font-size:19px;">Aucune zone d'eau détectée sur la carte visible. Zoome ou déplace-toi.</p>`;
+    }
   } catch (e) {
     resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
-    teasingMask.style.display = 'none';
   }
 });
-
 // Init carte au chargement
 document.addEventListener('DOMContentLoaded', initSpotMap);
 </script>
