@@ -1429,6 +1429,50 @@ app.get('*', (req, res) => {
   }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+// Middleware pour compter les conseils/résultats
+app.use('/api/advice', (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ error: 'Non autorisé' });
+
+  try {
+    const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
+    const pseudo = decoded.pseudo;
+    const user = db.get('users').find({ pseudo }).value();
+
+    if (!user) return res.status(404).json({ error: 'Utilisateur non trouvé' });
+
+    const today = new Date().toISOString().split('T')[0]; // Date du jour (YYYY-MM-DD)
+
+    // Initialisation des compteurs si pas existants
+    if (!user.dailyCounts || user.dailyCounts.date !== today) {
+      db.get('users').find({ pseudo }).assign({ 
+        dailyCounts: { date: today, advice: 0, results: 0 }
+      }).write();
+    }
+
+    // Limites
+    const isPremium = user.premium;
+    const adviceLimit = isPremium ? Infinity : 5;
+    const resultsLimit = isPremium ? Infinity : 6;
+
+    // Incrémente le compteur pour ce type de requête (ex : advice)
+    const type = req.path.includes('advice') ? 'advice' : 'results'; // Adapte selon tes routes
+    user.dailyCounts[type] = (user.dailyCounts[type] || 0) + 1;
+    db.get('users').find({ pseudo }).assign({ dailyCounts: user.dailyCounts }).write();
+
+    if (user.dailyCounts.advice > adviceLimit || user.dailyCounts.results > resultsLimit) {
+      return res.status(403).json({ error: 'Limite journalière atteinte. Passe Premium pour illimité !' });
+    }
+
+    next();
+  } catch (e) {
+    res.status(401).json({ error: 'Token invalide' });
+  }
+});
+
+// Applique le middleware à tes routes premium/limitées
+app.post('/api/advice', [middlewareLimite, taRouteAdviceExistante]);
+app.post('/api/results', [middlewareLimite, taRouteResultsExistante]); // Adapte aux noms de tes routes
 
 
 
