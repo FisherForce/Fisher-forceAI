@@ -135,7 +135,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(s);
   }
   el('getAdvice')?.addEventListener('click', async () => {
+    // LIMITE CONSEILS UNIQUEMENT POUR GRATUIT
+    if (currentSubscription !== 'premium' && dailyAdviceCount >= 5) {
+      alert("Limite de 5 conseils par jour atteinte (compte Gratuit) !\nPasse Premium pour conseils illimités.");
+      showSubscriptionUpgrade();
+      return;
+    }
 
+    // Incrémente seulement si Gratuit
+    if (currentSubscription !== 'premium') {
+      dailyAdviceCount++;
+      localStorage.setItem('dailyAdviceCount', dailyAdviceCount.toString());
+    }
 
     const input = readForm();
     const spotName = (input.spotName || "").trim().toLowerCase();
@@ -199,7 +210,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // === RÉCEPTION DES RÉSULTATS + RÉACTIONS IA + SAUVEGARDE GPS ===
   window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
-
+      // LIMITE RÉSULTATS UNIQUEMENT POUR GRATUIT
+      if (currentSubscription !== 'premium' && dailyResultCount >= 6) {
+        alert("Limite de 6 sessions enregistrées par jour atteinte (compte Gratuit) !\nPasse Premium pour enregistrements illimités.");
+        showSubscriptionUpgrade();
+        return;
+      }
 
       // Incrémente seulement si Gratuit
       if (currentSubscription !== 'premium') {
@@ -532,7 +548,69 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   updateDashboard();
 });
-
+// === SYSTÈME D'ABONNEMENT FISHERFORCE AI (Gratuit / Inter / Premium) ===
+const subscriptionLevels = {
+  free: "Gratuit",
+  inter: "Intermédiaire",
+  premium: "Premium"
+};
+let currentSubscription = "free"; // par défaut
+const secretCodes = {
+  "THAO2026": "premium",
+  "INTER44": "inter",
+  "PREMIUM85": "premium",
+  "GARDIEN44": "premium",
+  "MAITREPECHE": "premium"
+};
+function loadSubscription() {
+  const saved = localStorage.getItem('fisherSubscription');
+  if (saved && subscriptionLevels[saved]) {
+    currentSubscription = saved;
+  } else {
+    currentSubscription = "free";
+  }
+  updateSubscriptionUI();
+}
+function setSubscription(level) {
+  currentSubscription = level;
+  localStorage.setItem('fisherSubscription', level);
+  if (window.currentUser && window.db) {
+    window.db.collection('users').doc(window.currentUser.uid).update({
+      subscription: level,
+      subscriptionDate: new Date().toISOString()
+    });
+  }
+  updateSubscriptionUI();
+  alert(`Abonnement passé en ${subscriptionLevels[level]} ! Toutes les fonctions sont débloquées.`);
+}
+function updateSubscriptionUI() {
+  const badge = document.getElementById('subscriptionBadge');
+  if (badge) {
+    badge.textContent = subscriptionLevels[currentSubscription];
+    badge.style.background = currentSubscription === "premium" ? "linear-gradient(45deg,#ffd700,#ff6b00)" :
+                            currentSubscription === "inter" ? "#00d4aa" : "#888888";
+  }
+}
+function showSubscriptionUpgrade() {
+  const code = prompt(`Ton abonnement actuel : ${subscriptionLevels[currentSubscription]}\n\nEntre un code pour passer à Intermédiaire ou Premium :`);
+  if (!code) return;
+  const level = secretCodes[code.trim().toUpperCase()];
+  if (level) {
+    setSubscription(level);
+  } else {
+    alert("Code invalide – réessaie ou reste en Gratuit pour l’instant.");
+  }
+}
+function requireSubscription(minLevel, featureName) {
+  if (currentSubscription === "premium") return true;
+  if (minLevel === "inter" && currentSubscription === "inter") return true;
+  alert(`La fonction "${featureName}" est réservée aux abonnés ${minLevel === "inter" ? "Intermédiaire" : "Premium"}.\n\nClique sur "Passer à Premium" pour entrer un code.`);
+  showSubscriptionUpgrade();
+  return false;
+}
+document.addEventListener('DOMContentLoaded', () => {
+  loadSubscription();
+});
 // === STATISTIQUES PERSONNELLES AVANCÉES (basées sur XP, conseils, poissons map) ===
 function updateStatsAfterAdvice(adviceData) {
   let stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
@@ -551,7 +629,60 @@ function updateStatsAfterFishOnMap(species) {
   stats.fishOnMapBySpecies[species] = (stats.fishOnMapBySpecies[species] || 0) + 1;
   localStorage.setItem('fisherAdvancedStats', JSON.stringify(stats));
 }
-
+function showAdvancedStats() {
+  if (currentSubscription !== 'premium') {
+    requireSubscription('premium', 'Statistiques avancées');
+    return;
+  }
+  const stats = JSON.parse(localStorage.getItem('fisherAdvancedStats') || '{}');
+  const xp = progress.xp || 0;
+  let topSpecies = "Aucune";
+  let topSpeciesCount = 0;
+  if (stats.adviceBySpecies) {
+    for (const [species, count] of Object.entries(stats.adviceBySpecies)) {
+      if (count > topSpeciesCount) {
+        topSpecies = species;
+        topSpeciesCount = count;
+      }
+    }
+  }
+  let topLure = "Aucun";
+  let topLureCount = 0;
+  if (stats.favoriteLures) {
+    for (const [lure, count] of Object.entries(stats.favoriteLures)) {
+      if (count > topLureCount) {
+        topLure = lure;
+        topLureCount = count;
+      }
+    }
+  }
+  let topFishMap = "Aucun";
+  let topFishMapCount = 0;
+  if (stats.fishOnMapBySpecies) {
+    for (const [species, count] of Object.entries(stats.fishOnMapBySpecies)) {
+      if (count > topFishMapCount) {
+        topFishMap = species;
+        topFishMapCount = count;
+      }
+    }
+  }
+  const display = document.getElementById('advancedStatsDisplay');
+  display.style.display = 'block';
+  display.innerHTML = `
+    <div style="background:#003366;padding:20px;border-radius:15px;text-align:left;">
+      <h4 style="color:#ffd700;text-align:center;margin-bottom:20px;">Tes stats Premium</h4>
+      <p><strong>XP total :</strong> ${xp} points</p>
+      <p><strong>Conseils demandés :</strong> ${stats.totalAdvice || 0}</p>
+      <p><strong>Espèce la plus demandée :</strong> ${topSpecies} (${topSpeciesCount})</p>
+      <p><strong>Leurre le plus conseillé :</strong> ${topLure} (${topLureCount})</p>
+      <p><strong>Poissons placés sur la map :</strong> ${stats.totalFishOnMap || 0}</p>
+      <p><strong>Espèce la plus placée sur map :</strong> ${topFishMap} (${topFishMapCount})</p>
+      <p style="color:#00ff9d;text-align:center;margin-top:30px;font-size:18px;font-weight:bold;">
+        Tu es un vrai traqueur ! Continue comme ça 🔥
+      </p>
+    </div>
+  `;
+}
 // === JOURNAL DE PÊCHE PERSONNEL ===
 document.addEventListener('DOMContentLoaded', () => {
   const openBtn = document.getElementById('openJournalBtn');
@@ -655,30 +786,49 @@ function showBlacklistPop(lureName) {
   document.body.appendChild(pop);
   setTimeout(() => pop.remove(), 2200);
 }
-// Bouton Activer Premium (déjà dans ton profil)
-document.getElementById('premium-button').addEventListener('click', () => {
-  const code = prompt('🔑 Entrez votre code Premium :');
-  if (!code) return;
+// === FONCTION PREMIUM CODE ===
+document.addEventListener('DOMContentLoaded', () => {
+  const premiumButton = document.getElementById('premium-button');
+  
+  if (premiumButton) {
+    premiumButton.addEventListener('click', () => {
+      // Vérifie si déjà premium
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Tu dois être connecté pour activer Premium !");
+        return;
+      }
 
-  fetch('/api/activate-premium', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': localStorage.getItem('token')
-    },
-    body: JSON.stringify({ code: code.trim().toUpperCase() })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert('🎉 ' + data.message);
-      // Refresh profil
-      location.reload();
-    } else {
-      alert('❌ ' + data.error);
-    }
-  })
-  .catch(() => alert('Erreur réseau'));
+      const code = prompt('🔑 Entrez votre code Premium :');
+      if (!code || code.trim() === '') return;
+
+      fetch('/api/activate-premium', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token
+        },
+        body: JSON.stringify({ code: code.trim().toUpperCase() })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert('🎉 ' + data.message + '\nTu es maintenant Premium !');
+          // Refresh le profil
+          readUser(); // ou ta fonction qui met à jour l'affichage
+          premiumButton.textContent = '✅ Premium Activé';
+          premiumButton.disabled = true;
+          premiumButton.style.background = 'green';
+        } else {
+          alert('❌ ' + data.error);
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Erreur réseau. Réessaie plus tard.');
+      });
+    });
+  }
 });
 // === COMMANDE VOCALE INTELLIGENTE (français, remplissage auto des champs) ===
 document.addEventListener('DOMContentLoaded', () => {
@@ -809,67 +959,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 });
-// Fonction pour appeler une route protégée premium
-async function callPremiumFeature() {
-  try {
-    const response = await fetch('/api/premium-feature', {
-      headers: { 'Authorization': localStorage.getItem('token') }
-    });
-    const data = await response.json();
-
-    if (data.success) {
-      document.getElementById('premiumStatus').textContent = data.message;
-    } else {
-      alert(data.error);
-      showActivatePremium();
-    }
-  } catch (err) {
-    alert('Erreur connexion');
-  }
-}
-
-// Bouton Activer Premium
-document.getElementById('activatePremiumBtn').addEventListener('click', () => {
-  showActivatePremium();
-});
-
-function showActivatePremium() {
-  const code = prompt('🔑 Entrez votre code Premium :');
-  if (!code) return;
-
-  fetch('/api/activate-premium', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': localStorage.getItem('token')
-    },
-    body: JSON.stringify({ code: code.trim().toUpperCase() })
-  })
-  .then(res => res.json())
-  .then(data => {
-    if (data.success) {
-      alert(data.message);
-      location.reload(); // Refresh pour mettre à jour badge
-    } else {
-      alert(data.error);
-    }
-  })
-  .catch(() => alert('Erreur réseau'));
-}
-
-// Optionnel : Badge dynamique au chargement
-async function updateBadge() {
-  try {
-    const res = await fetch('/api/user', { headers: { 'Authorization': localStorage.getItem('token') } });
-    const user = await res.json();
-    const badge = document.getElementById('subscriptionBadge');
-    if (badge) {
-      badge.textContent = user.premium ? 'Premium' : 'Gratuit';
-      badge.style.background = user.premium ? '#ffd700' : '#888888';
-    }
-  } catch (e) {}
-}
-updateBadge();
 
 // Appelle ces fonctions aux bons endroits :
 // Après un conseil IA : updateStatsAfterAdvice({ species: species, lures: conseil.lures });
