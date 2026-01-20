@@ -1165,6 +1165,64 @@ const randomParEspece = {
   return { lures: list, depthAdvice };
 }
 
+// Middleware pour vérifier si l'utilisateur est premium
+function requirePremium(req, res, next) {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ error: 'Non autorisé' });
+
+  try {
+    const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
+    const user = db.get('users').find({ pseudo: decoded.pseudo }).value();
+
+    if (!user || !user.premium) {
+      return res.status(403).json({ error: 'Réservé aux abonnés Premium. Tape un code pour passer Premium !' });
+    }
+    next();
+  } catch (e) {
+    res.status(401).json({ error: 'Token invalide' });
+  }
+}
+
+// Route pour activer un code premium (single-use, suppression après usage)
+app.post('/api/activate-premium', (req, res) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).json({ error: 'Non autorisé' });
+
+  try {
+    const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
+    const pseudo = decoded.pseudo;
+
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ error: 'Code requis' });
+
+    const codeUpper = code.trim().toUpperCase();
+
+    // Recherche le code
+    const codeEntry = db.get('premiumCodes').find({ code: codeUpper }).value();
+
+    if (!codeEntry) {
+      return res.status(400).json({ error: 'Code incorrect' });
+    }
+
+    // Supprime le code (single-use)
+    db.get('premiumCodes').remove({ code: codeUpper }).write();
+
+    // Upgrade l'utilisateur
+    db.get('users').find({ pseudo }).assign({ premium: true }).write();
+
+    res.json({ 
+      success: true, 
+      message: 'Premium activé ! +100 XP. Le code a été supprimé pour éviter les réutilisations.' 
+    });
+  } catch (e) {
+    res.status(401).json({ error: 'Token invalide' });
+  }
+});
+
+// Exemple de route protégée (ex : une fonction premium)
+app.get('/api/premium-feature', requirePremium, (req, res) => {
+  res.json({ success: true, message: 'Fonction Premium débloquée !' });
+});
 
 // === ROUTES ===
 app.post('/api/suggest', (req, res) => {
