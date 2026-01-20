@@ -1,7 +1,17 @@
 {
+  "users": [
+    {
+      "pseudo": "Thao",
+      "email": "thao@example.com",
+      "premium": false,
+      "xp": 150
+    }
+  ],
   "premiumCodes": [
-    {"code": "PREMIUM2026"},
-    {"code": "FISHERVIP123"},
-    {"code": "SUPERPREMIUM456"}
+    {"code": "THAO2026"},
+    {"code": "INTER44"},
+    {"code": "PREMIUM85"},
+    {"code": "GARDIEN44"},
+    {"code": "MAITREPECHE"}
   ]
 }
