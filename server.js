@@ -23,6 +23,12 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage });
+const admin = require('firebase-admin');
+admin.initializeApp({
+  credential: admin.credential.cert(require('./firebase-service-account.json')) // ta clé service account
+});
+
+const db = admin.firestore();
 
 // Crée dossier uploads
 if (!fs.existsSync('uploads')) fs.mkdirSync('uploads');
@@ -1163,12 +1169,7 @@ const randomParEspece = {
 
   return { lures: list, depthAdvice };
 }
-const admin = require('firebase-admin');
-admin.initializeApp({
-  credential: admin.credential.cert(require('./firebase-service-account.json')) // ta clé service account
-});
 
-const db = admin.firestore();
 
 // === ROUTES ===
 app.post('/api/suggest', (req, res) => {
