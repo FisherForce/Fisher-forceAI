@@ -1165,130 +1165,11 @@ const randomParEspece = {
   return { lures: list, depthAdvice };
 }
 
-// Middleware pour vérifier si l'utilisateur est premium
-function requirePremium(req, res, next) {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).json({ error: 'Non autorisé' });
 
-  try {
-    const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
-    const user = db.get('users').find({ pseudo: decoded.pseudo }).value();
 
-    if (!user || !user.premium) {
-      return res.status(403).json({ error: 'Réservé aux abonnés Premium. Tape un code pour passer Premium !' });
-    }
-    next();
-  } catch (e) {
-    res.status(401).json({ error: 'Token invalide' });
-  }
-}
-
-// Route pour activer un code premium (single-use, suppression après usage)
-app.post('/api/activate-premium', (req, res) => {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).json({ error: 'Non autorisé' });
-
-  try {
-    const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
-    const pseudo = decoded.pseudo;
-
-    const { code } = req.body;
-    if (!code) return res.status(400).json({ error: 'Code requis' });
-
-    const codeUpper = code.trim().toUpperCase();
-
-    // Recherche le code
-    const codeEntry = db.get('premiumCodes').find({ code: codeUpper }).value();
-
-    if (!codeEntry) {
-      return res.status(400).json({ error: 'Code incorrect' });
-    }
-
-    // Supprime le code (single-use)
-    db.get('premiumCodes').remove({ code: codeUpper }).write();
-
-    // Upgrade l'utilisateur
-    db.get('users').find({ pseudo }).assign({ premium: true }).write();
-
-    res.json({ 
-      success: true, 
-      message: 'Premium activé ! +100 XP. Le code a été supprimé pour éviter les réutilisations.' 
-    });
-  } catch (e) {
-    res.status(401).json({ error: 'Token invalide' });
-  }
-});
-
-// Exemple de route protégée (ex : une fonction premium)
-app.get('/api/premium-feature', requirePremium, (req, res) => {
-  res.json({ success: true, message: 'Fonction Premium débloquée !' });
-});
 
 // === ROUTES ===
-// Middleware Premium
-function requirePremium(req, res, next) {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).json({ error: 'Non autorisé' });
 
-  try {
-    const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
-    const user = db.get('users').find({ pseudo: decoded.pseudo }).value();
-
-    if (!user || !user.premium) {
-      return res.status(403).json({ error: 'Exclusivité Premium' });
-    }
-    next();
-  } catch (e) {
-    res.status(401).json({ error: 'Token invalide' });
-  }
-}
-
-// Route protégée Météo
-app.post('/api/premium-weather-advice', requirePremium, async (req, res) => {
-  const { targetSpecies, spotType, structure } = req.body;
-
-  try {
-    // Ici ton code météo réel (geolocation + open-meteo + conseil)
-    // Pour l'exemple on simule un résultat
-    res.json({
-      success: true,
-      targetSpecies,
-      temp: 18,
-      vent: 12,
-      pluie: false,
-      nuages: true,
-      pression: 1013,
-      jour: true,
-      conditionsText: "nuageux",
-      conseil: { lures: ["Chatterbait 14g", "Spinnerbait willow", "Shad 10cm"] }
-    });
-  } catch (e) {
-    res.status(500).json({ error: 'Erreur météo' });
-  }
-});
-
-// Route protégée Analyse Carte
-app.post('/api/premium-spot-analysis', requirePremium, async (req, res) => {
-  const { bounds } = req.body;
-
-  try {
-    // Ici ton code Overpass réel
-    // Simulation pour l'exemple
-    const spots = [
-      { lat: 47.2, lon: -1.55 },
-      { lat: 47.21, lon: -1.54 },
-      { lat: 47.19, lon: -1.56 }
-    ];
-
-    res.json({
-      success: true,
-      spotCount: spots.length,
-      spots
-    });
-  } catch (e) {
-    res.status(500).json({ error: 'Erreur analyse carte' });
-  }
-});
 app.post('/api/suggest', (req, res) => {
   let { targetSpecies: species = "", structure, conditions, spotType, temperature } = req.body;
   const result = suggestLures(species, structure, conditions, spotType, temperature);
@@ -1407,15 +1288,17 @@ app.post('/api/activate-premium', (req, res) => {
       return res.status(400).json({ error: 'Code incorrect' });
     }
 
-    // Supprime le code de la base (plus valable pour personne)
+    // Supprime le code (usage unique)
     db.get('premiumCodes').remove({ code: codeUpper }).write();
 
-    // Upgrade l'utilisateur à premium + XP bonus
-    db.get('users').find({ pseudo }).assign({ premium: true, xp: (db.get('users').find({ pseudo }).value().xp || 0) + 100 }).write();
+    // Upgrade l'utilisateur à premium
+    db.get('users').find({ pseudo }).assign({ premium: true }).write();
 
-    res.json({ success: true, message: 'Premium activé ! +100 XP. Le code a été supprimé pour éviter les réutilisations.' });
+    res.json({ 
+      success: true, 
+      message: 'Premium activé ! +100 XP. Le code a été supprimé pour éviter les réutilisations.' 
+    });
   } catch (e) {
-    console.error('Erreur activation:', e);
     res.status(401).json({ error: 'Token invalide' });
   }
 });
@@ -1429,50 +1312,7 @@ app.get('*', (req, res) => {
   }
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-// Middleware pour compter les conseils/résultats
-app.use('/api/advice', (req, res, next) => {
-  const token = req.headers['authorization'];
-  if (!token) return res.status(401).json({ error: 'Non autorisé' });
 
-  try {
-    const decoded = jwt.verify(token.replace('Bearer ', ''), secretKey);
-    const pseudo = decoded.pseudo;
-    const user = db.get('users').find({ pseudo }).value();
-
-    if (!user) return res.status(404).json({ error: 'Utilisateur non trouvé' });
-
-    const today = new Date().toISOString().split('T')[0]; // Date du jour (YYYY-MM-DD)
-
-    // Initialisation des compteurs si pas existants
-    if (!user.dailyCounts || user.dailyCounts.date !== today) {
-      db.get('users').find({ pseudo }).assign({ 
-        dailyCounts: { date: today, advice: 0, results: 0 }
-      }).write();
-    }
-
-    // Limites
-    const isPremium = user.premium;
-    const adviceLimit = isPremium ? Infinity : 5;
-    const resultsLimit = isPremium ? Infinity : 6;
-
-    // Incrémente le compteur pour ce type de requête (ex : advice)
-    const type = req.path.includes('advice') ? 'advice' : 'results'; // Adapte selon tes routes
-    user.dailyCounts[type] = (user.dailyCounts[type] || 0) + 1;
-    db.get('users').find({ pseudo }).assign({ dailyCounts: user.dailyCounts }).write();
-
-    if (user.dailyCounts.advice > adviceLimit || user.dailyCounts.results > resultsLimit) {
-      return res.status(403).json({ error: 'Limite journalière atteinte. Passe Premium pour illimité !' });
-    }
-
-    next();
-  } catch (e) {
-    res.status(401).json({ error: 'Token invalide' });
-  }
-});
-
-// Applique le middleware à tes routes premium/limitées
-app.post('/api/advice', [middlewareLimite, taRouteAdviceExistante]);
-app.post('/api/results', [middlewareLimite, taRouteResultsExistante]); // Adapte aux noms de tes routes
 
 
 
