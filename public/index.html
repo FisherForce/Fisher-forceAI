@@ -525,12 +525,14 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="container">
       <h1>Fisher-Force AI</h1>
       <p class="tagline">La 1ère IA de pêche 100% Française</p>
-      <!-- BADGE ABONNEMENT (à côté du pseudo) -->
-<span id="subscriptionBadge" style="padding:6px 14px;border-radius:50px;font-weight:bold;font-size:14px;margin-left:10px;">
+<!-- Badge abonnement -->
+<div id="subscriptionBadge" style="padding: 8px 16px; border-radius: 20px; font-weight: bold; color: white; background: #888888; display: inline-block;">
   Gratuit
-</span>
-      <button onclick="alert('Système premium mis à jour ! Utilise le nouveau bouton.')">Passer à Premium</button>
-
+</div>
+<!-- Bouton Activer Premium -->
+<button id="activatePremiumBtn" style="background: linear-gradient(45deg, #ffd700, #ff6b00); color: black; border: none; padding: 12px 24px; border-radius: 30px; font-weight: bold; cursor: pointer; margin-left: 15px;">
+  Passer à Premium
+</button>
 
     </div>
   </header>
