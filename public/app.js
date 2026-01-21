@@ -210,18 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // === RÉCEPTION DES RÉSULTATS + RÉACTIONS IA + SAUVEGARDE GPS ===
   window.addEventListener('message', async (e) => {
     if (e.data?.type === 'ADD_XP') {
-      // LIMITE RÉSULTATS UNIQUEMENT POUR GRATUIT
-      if (currentSubscription !== 'premium' && dailyResultCount >= 6) {
-        alert("Limite de 6 sessions enregistrées par jour atteinte (compte Gratuit) !\nPasse Premium pour enregistrements illimités.");
-        showSubscriptionUpgrade();
-        return;
-      }
-
-      // Incrémente seulement si Gratuit
-      if (currentSubscription !== 'premium') {
-        dailyResultCount++;
-        localStorage.setItem('dailyResultCount', dailyResultCount.toString());
-      }
 
       const { success, speciesName, spotName, lure = "Inconnu", poids = 0, photo = null } = e.data;
 
