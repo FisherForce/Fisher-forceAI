@@ -79,9 +79,10 @@
 
   <!-- BOUTONS CACHÉS (apparaissent au clic) -->
   <div id="menuDropdown" style="display:none;position:absolute;top:60px;right:0;background:#001122;border:2px solid #00d4aa;border-radius:18px;padding:15px;box-shadow:0 15px 40px rgba(0,212,170,0.5);z-index:9999;white-space:nowrap;">
-    <button id="openJournalBtn" style="display:block;width:100%;background:#003366;color:#00ff9d;padding:15px 20px;border:none;border-radius:15px;font-weight:bold;font-size:18px;margin-bottom:10px;cursor:pointer;box-shadow:0 8px 20px rgba(0,255,157,0.3);">
-      📔 Voir mon Journal de pêche
-    </button>
+<!-- JOURNAL DE PÊCHE – VERSION PARFAITE (comme le dashboard) -->
+<button id="openJournalBtn" style="position:fixed;bottom:90px;right:20px;background:#00d4aa;color:white;border:none;padding:16px 20px;border-radius:50%;font-size:28px;box-shadow:0 8px 25px rgba(0,212,170,0.6);z-index:9998;cursor:pointer;">
+  📔
+</button>
     
     <button id="openAlbumBtn" style="display:block;width:100%;background:#ff6b00;color:white;padding:15px 20px;border:none;border-radius:15px;font-weight:bold;font-size:18px;cursor:pointer;box-shadow:0 8px 20px rgba(255,107,0,0.4);">
       📸 Voir mon Album photos
@@ -128,156 +129,96 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-<!-- MODAL JOURNAL DE PÊCHE AVEC PHOTOS + STATS -->
-<div id="journalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.92);z-index:99999;justify-content:center;align-items:flex-start;overflow-y:auto;">
-  <div style="background:#001122;padding:25px;border-radius:20px;max-width:800px;width:95%;margin:20px auto;box-shadow:0 20px 60px rgba(0,255,157,0.4);position:relative;">
-    <button id="closeJournalBtn" style="position:absolute;top:15px;right:20px;background:none;border:none;color:#888;font-size:34px;cursor:pointer;z-index:10;">&times;</button>
-    
-    <h2 style="color:#00ff9d;text-align:center;font-size:30px;margin:20px 0 30px;">📔 Mon Journal de Pêche</h2>
-    
-    <!-- STATISTIQUES PERSONNELLES -->
-    <div id="journalStats" style="background:#003366;padding:20px;border-radius:15px;margin:20px 0;text-align:center;">
-      <p style="color:#ffd700;font-size:20px;font-weight:bold;margin:10px 0;">Statistiques de ton journal</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:15px;margin-top:15px;">
-        <div style="background:#001f3f;padding:15px;border-radius:12px;">
-          <p style="color:#aaa;font-size:14px;margin:0;">Total sessions</p>
-          <p id="statTotal" style="color:#00ff9d;font-size:24px;font-weight:bold;margin:8px 0 0;">0</p>
+<div id="journalModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:99999;overflow-y:auto;">
+  <div style="max-width:800px;margin:20px auto;padding:20px;">
+    <button style="position:fixed;top:20px;right:20px;background:#e74c3c;color:white;padding:12px 20px;border:none;border-radius:50px;font-weight:bold;cursor:pointer;z-index:100;">Fermer</button>
+
+    <h2 style="text-align:center;color:#00d4aa;font-size:32px;margin:30px 0;">📔 Mon Journal de Pêche</h2>
+
+    <!-- STATS COMME LE DASHBOARD -->
+    <div class="dashboard" style="background:linear-gradient(135deg,#00d4aa,#00a085);padding:25px;border-radius:20px;margin:20px 0;box-shadow:0 12px 40px rgba(0,212,170,0.4);">
+      <h3 style="margin:0 0 20px;color:white;font-size:26px;text-align:center;">Mes Statistiques</h3>
+      <div class="stats-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:15px;">
+        <div class="stat-item" style="background:rgba(255,255,255,0.2);padding:15px;border-radius:15px;text-align:center;">
+          <p style="margin:0;color:#ffd700;font-size:14px;">Spots tentés</p>
+          <p id="journalSpots" style="margin:8px 0 0;font-size:28px;font-weight:bold;color:white;">0</p>
         </div>
-        <div style="background:#001f3f;padding:15px;border-radius:12px;">
-          <p style="color:#aaa;font-size:14px;margin:0;">Taux de réussite</p>
-          <p id="statRate" style="color:#00ff9d;font-size:24px;font-weight:bold;margin:8px 0 0;">0%</p>
+        <div class="stat-item" style="background:rgba(255,255,255,0.2);padding:15px;border-radius:15px;text-align:center;">
+          <p style="margin:0;color:#ffd700;font-size:14px;">Taux de réussite</p>
+          <p id="journalRate" style="margin:8px 0 0;font-size:28px;font-weight:bold;color:white;">0%</p>
         </div>
-        <div style="background:#001f3f;padding:15px;border-radius:12px;">
-          <p style="color:#aaa;font-size:14px;margin:0;">Espèce star</p>
-          <p id="statSpecies" style="color:#00ff9d;font-size:20px;font-weight:bold;margin:8px 0 0;">Aucune</p>
-        </div>
-        <div style="background:#001f3f;padding:15px;border-radius:12px;">
-          <p style="color:#aaa;font-size:14px;margin:0;">Meilleur mois</p>
-          <p id="statMonth" style="color:#00ff9d;font-size:20px;font-weight:bold;margin:8px 0 0;">-</p>
+        <div class="stat-item" style="background:rgba(255,255,255,0.2);padding:15px;border-radius:15px;text-align:center;">
+          <p style="margin:0;color:#ffd700;font-size:14px;">Espèces différentes</p>
+          <p id="journalSpecies" style="margin:8px 0 0;font-size:28px;font-weight:bold;color:white;">0</p>
         </div>
       </div>
     </div>
-    
-    <div id="journalEntries" style="color:white;font-size:18px;line-height:1.8;max-height:60vh;overflow-y:auto;padding-right:10px;">
-      <style>
-        #journalEntries::-webkit-scrollbar { width: 12px; }
-        #journalEntries::-webkit-scrollbar-track { background: #001122; border-radius: 10px; }
-        #journalEntries::-webkit-scrollbar-thumb { background: #00d4aa; border-radius: 10px; }
-        #journalEntries::-webkit-scrollbar-thumb:hover { background: #00ff9d; }
-      </style>
-      <p style="text-align:center;color:#888;font-size:20px;padding:80px 0;">Ton journal est vide pour l’instant...<br><br>Enregistre tes sessions pour le remplir !</p>
-    </div>
-    
-    <div style="text-align:center;margin-top:30px;">
-      <button onclick="document.getElementById('journalModal').style.display='none'" style="background:#e74c3c;color:white;padding:12px 30px;border:none;border-radius:50px;font-weight:bold;font-size:18px;cursor:pointer;">
-        Fermer le journal
-      </button>
-    </div>
+
+    <!-- LISTE DES SESSIONS -->
+    <div id="journalEntries" style="margin-top:30px;"></div>
   </div>
 </div>
 
 <script>
-// === JOURNAL DE PÊCHE AVEC PHOTOS + STATS (VERSION FINALE) ===
+// === JOURNAL DE PÊCHE – VERSION PARFAITE & SIMPLE ===
 document.addEventListener('DOMContentLoaded', () => {
-  const openBtn = document.getElementById('openJournalBtn');
   const modal = document.getElementById('journalModal');
-  const closeBtn = document.getElementById('closeJournalBtn');
-  const entriesDiv = document.getElementById('journalEntries');
+  const openBtn = document.getElementById('openJournalBtn');
+  const closeBtn = modal.querySelector('button');
 
-  if (!openBtn || !modal || !closeBtn || !entriesDiv) return;
-
-  openBtn.addEventListener('click', () => {
-    modal.style.display = 'flex';
-    modal.scrollTop = 0;
+  openBtn.onclick = () => {
+    modal.style.display = 'block';
     displayJournal();
-  });
-
-  closeBtn.addEventListener('click', () => modal.style.display = 'none');
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+  };
+  closeBtn.onclick = () => modal.style.display = 'none';
+  modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
 
   function displayJournal() {
     const sessions = JSON.parse(localStorage.getItem('fishingSessions') || '[]');
-    
+    const entriesDiv = document.getElementById('journalEntries');
+
+    // Calcul stats
+    const spots = new Set(sessions.map(s => s.spot)).size;
+    const successes = sessions.filter(s => s.success).length;
+    const rate = sessions.length ? Math.round((successes / sessions.length) * 100) : 0;
+    const species = new Set(sessions.filter(s => s.species).map(s => s.species)).size;
+
+    document.getElementById('journalSpots').textContent = spots;
+    document.getElementById('journalRate').textContent = rate + '%';
+    document.getElementById('journalSpecies').textContent = species;
+
     if (sessions.length === 0) {
-      entriesDiv.innerHTML = `<div style="text-align:center;padding:100px 20px;"><p style="font-size:24px;color:#00ff9d;">🎣</p><p style="color:#888;font-size:20px;">Ton journal est vide...</p><p style="color:#666;font-size:16px;margin-top:20px;">Enregistre tes premières sessions !</p></div>`;
-      updateStats(0, 0, 'Aucune', '-');
+      entriesDiv.innerHTML = '<p style="text-align:center;color:#888;font-size:22px;padding:100px 0;">Aucune session enregistrée...<br>Commence à pêcher ! 🎣</p>';
       return;
     }
 
-    // Tri par date décroissante
     sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // Calcul stats
-    const successes = sessions.filter(s => s.success).length;
-    const rate = Math.round((successes / sessions.length) * 100);
-
-    const speciesCount = {};
-    sessions.filter(s => s.success && s.species).forEach(s => {
-      speciesCount[s.species] = (speciesCount[s.species] || 0) + 1;
-    });
-    const topSpecies = Object.keys(speciesCount).length ? Object.entries(speciesCount).sort((a,b) => b[1]-a[1])[0][0] : 'Aucune';
-
-    const monthCount = {};
-    sessions.filter(s => s.success).forEach(s => {
-      const month = new Date(s.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
-      monthCount[month] = (monthCount[month] || 0) + 1;
-    });
-    const bestMonth = Object.keys(monthCount).length ? Object.entries(monthCount).sort((a,b) => b[1]-a[1])[0][0] : '-';
-
-    updateStats(sessions.length, rate, topSpecies, bestMonth);
-
-    // Affichage entrées avec photos
     let html = '';
-    sessions.forEach((session, index) => {
-      const date = new Date(session.date).toLocaleDateString('fr-FR', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
-      });
-      const successEmoji = session.success ? '🎣💥' : '😔';
-      const resultText = session.success ? 'PRISE VALIDÉE' : 'BREDOUILLE';
-      const poidsText = session.poids > 0 ? `<strong>${session.poids}g</strong>` : 'Aucun poisson';
+    sessions.forEach(s => {
+      const date = new Date(s.date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+      const emoji = s.success ? '🎣' : '😔';
+      const result = s.success ? 'PRISE' : 'BREDOUILLE';
+      const poids = s.poids > 0 ? `${s.poids}g` : '—';
 
       html += `
-        <div style="background:#003366;padding:22px;border-radius:18px;margin:15px 0;border-left:6px solid ${session.success ? '#00ff9d' : '#e74c3c'};">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-            <p style="margin:0;color:#ffd700;font-weight:bold;font-size:20px;">
-              ${successEmoji} ${resultText}
-            </p>
-            <p style="margin:0;color:#aaa;font-size:14px;">
-              ${date}
-            </p>
+        <div style="background:#001122;padding:20px;border-radius:18px;margin:15px 0;border-left:6px solid ${s.success ? '#00ff9d' : '#e74c3c'};box-shadow:0 8px 20px rgba(0,0,0,0.5);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <p style="margin:0;color:#00ff9d;font-size:22px;font-weight:bold;">${emoji} ${result}</p>
+            <p style="margin:0;color:#aaa;font-size:14px;">${date}</p>
           </div>
-          <div style="margin:8px 0;line-height:1.7;">
-            <p style="margin:4px 0;"><strong>Espèce :</strong> ${session.species || 'Aucune'}</p>
-            <p style="margin:4px 0;"><strong>Poids :</strong> ${poidsText}</p>
-            <p style="margin:4px 0;"><strong>Spot :</strong> ${session.spot}</p>
-            <p style="margin:4px 0;"><strong>Leurre :</strong> ${session.lure}</p>
-          </div>`;
-
-      // === AFFICHAGE DE LA PHOTO SI EXISTE ===
-      if (session.photo) {
-        html += `
-          <div style="margin:20px 0;text-align:center;">
-            <img src="${session.photo}" style="width:100%;max-height:450px;object-fit:cover;border-radius:15px;box-shadow:0 15px 40px rgba(0,0,0,0.6);">
-            <p style="color:#00d4aa;margin-top:10px;font-size:14px;font-style:italic;">📸 Ta prise immortalisée !</p>
-          </div>`;
-      }
-
-      html += `
-          <p style="margin:10px 0 0;color:#888;font-size:14px;font-style:italic;">
-            Session n°${sessions.length - index} — Par ${session.pseudo}
-          </p>
+          <div style="margin:10px 0;line-height:1.8;color:white;">
+            <p><strong>Espèce :</strong> ${s.species || '—'}</p>
+            <p><strong>Poids :</strong> ${poids}</p>
+            <p><strong>Spot :</strong> ${s.spot}</p>
+            <p><strong>Leurre :</strong> ${s.lure || '—'}</p>
+            <p style="font-size:14px;color:#888;margin-top:10px;">Par ${s.pseudo}</p>
+          </div>
         </div>
       `;
     });
 
     entriesDiv.innerHTML = html;
-  }
-
-  function updateStats(total, rate, topSpecies, bestMonth) {
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statRate').textContent = rate + '%';
-    document.getElementById('statSpecies').textContent = topSpecies;
-    document.getElementById('statMonth').textContent = bestMonth;
   }
 });
 </script>
