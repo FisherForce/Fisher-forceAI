@@ -1436,42 +1436,48 @@ if ('applicationCache' in window === false && 'serviceWorker' in navigator) {
 </div>
 
 <script>
-// === POP-UP CONNEXION GOOGLE — S'AFFICHE UNIQUEMENT SI NON CONNECTÉ ===
+// === POP-UP CONNEXION GOOGLE – N’AFFICHE QUE SI NON CONNECTÉ ===
 document.addEventListener('DOMContentLoaded', () => {
   const popup = document.getElementById('googleLoginPopup');
+  if (!popup) return;
+
   const closeBtn = document.getElementById('closePopupBtn');
   const loginBtn = document.getElementById('popupLoginBtn');
 
-  // Fermer le pop-up avec la croix
+  // Fermer avec la croix
   if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      popup.style.display = 'none';
-    });
+    closeBtn.onclick = () => popup.style.display = 'none';
   }
 
-  // Bouton connexion Google dans le pop-up
+  // Bouton connexion Google
   if (loginBtn) {
-    loginBtn.addEventListener('click', () => {
+    loginBtn.onclick = () => {
       if (typeof firebase !== 'undefined' && firebase.auth) {
         firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
       } else {
         alert("Firebase non chargé – recharge la page");
       }
-    });
+    };
   }
 
-  // Vérifie l'état de connexion toutes les 500ms jusqu'à ce que currentUser soit défini
-  const checkConnection = setInterval(() => {
-    if (typeof window.currentUser !== 'undefined') {
-      clearInterval(checkConnection);
-
-      // SI L’UTILISATEUR N’EST PAS CONNECTÉ → affiche le pop-up
-      if (!window.currentUser) {
+  // Vérifie l'état de connexion Firebase
+  if (typeof firebase !== 'undefined' && firebase.auth) {
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        // Déjà connecté → on cache la popup et on met à jour le profil
+        popup.style.display = 'none';
+        // Optionnel : mets à jour le nom/pseudo si besoin
+        const userNameEl = document.getElementById('userPseudo');
+        if (userNameEl) userNameEl.textContent = user.displayName?.split(' ')[0] || 'Connecté';
+      } else {
+        // Pas connecté → affiche la popup
         popup.style.display = 'flex';
       }
-      // Sinon (connecté) → rien, le pop-up reste caché
-    }
-  }, 500);
+    });
+  } else {
+    // Si Firebase n’est pas chargé du tout → on affiche quand même la popup
+    popup.style.display = 'flex';
+  }
 });
 </script>
 <!-- BOUTON MENU HAMBURGER (maintenant en haut gauche, discret) -->
