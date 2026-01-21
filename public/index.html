@@ -1439,44 +1439,57 @@ if ('applicationCache' in window === false && 'serviceWorker' in navigator) {
 // === POP-UP CONNEXION GOOGLE – N’AFFICHE QUE SI NON CONNECTÉ ===
 document.addEventListener('DOMContentLoaded', () => {
   const popup = document.getElementById('googleLoginPopup');
-  if (!popup) return;
+  if (!popup) {
+    console.warn("Popup Google non trouvée dans le DOM");
+    return;
+  }
 
+  // Fonction pour gérer la popup une fois Firebase prêt
+  function checkAuthAndShowPopup() {
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+      console.warn("Firebase pas chargé – on réessaie dans 500ms");
+      setTimeout(checkAuthAndShowPopup, 500);
+      return;
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        // Déjà connecté → cache popup et met à jour pseudo
+        popup.style.display = 'none';
+        const userPseudoEl = document.getElementById('userPseudo');
+        if (userPseudoEl) {
+          userPseudoEl.textContent = user.displayName?.split(' ')[0] || user.email?.split('@')[0] || 'Connecté';
+        }
+        console.log("Utilisateur déjà connecté :", user.displayName);
+      } else {
+        // Pas connecté → affiche popup
+        popup.style.display = 'flex';
+        console.log("Pas de connexion → popup affichée");
+      }
+    });
+  }
+
+  // Lance la vérification
+  checkAuthAndShowPopup();
+
+  // Bouton fermer
   const closeBtn = document.getElementById('closePopupBtn');
-  const loginBtn = document.getElementById('popupLoginBtn');
-
-  // Fermer avec la croix
   if (closeBtn) {
     closeBtn.onclick = () => popup.style.display = 'none';
   }
 
-  // Bouton connexion Google
+  // Bouton connexion
+  const loginBtn = document.getElementById('popupLoginBtn');
   if (loginBtn) {
     loginBtn.onclick = () => {
       if (typeof firebase !== 'undefined' && firebase.auth) {
-        firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider());
+        firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
+          .then(() => popup.style.display = 'none')
+          .catch(err => console.error("Erreur connexion Google :", err));
       } else {
         alert("Firebase non chargé – recharge la page");
       }
     };
-  }
-
-  // Vérifie l'état de connexion Firebase
-  if (typeof firebase !== 'undefined' && firebase.auth) {
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        // Déjà connecté → on cache la popup et on met à jour le profil
-        popup.style.display = 'none';
-        // Optionnel : mets à jour le nom/pseudo si besoin
-        const userNameEl = document.getElementById('userPseudo');
-        if (userNameEl) userNameEl.textContent = user.displayName?.split(' ')[0] || 'Connecté';
-      } else {
-        // Pas connecté → affiche la popup
-        popup.style.display = 'flex';
-      }
-    });
-  } else {
-    // Si Firebase n’est pas chargé du tout → on affiche quand même la popup
-    popup.style.display = 'flex';
   }
 });
 </script>
