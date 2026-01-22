@@ -4,14 +4,12 @@
       "pseudo": "Thao",
       "email": "thao@example.com",
       "premium": false,
-      "xp": 150
+      "xp": 150,
+      "followers": [], // liste des pseudos qui te suivent
+      "following": [], // liste des pseudos que tu suis
+      "profileVisible": true, // si profil public
+      "journal": [] // prises publiques
     }
   ],
-  "premiumCodes": [
-    {"code": "THAO2026"},
-    {"code": "INTER44"},
-    {"code": "PREMIUM85"},
-    {"code": "GARDIEN44"},
-    {"code": "MAITREPECHE"}
-  ]
+  "messages": [] // pour DM : [{from: "Thao", to: "Autre", text: "Salut !", date: "..."}]
 }
