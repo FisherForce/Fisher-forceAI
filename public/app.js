@@ -947,6 +947,83 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 });
+// Voir profil d'un autre utilisateur
+async function viewProfile(targetPseudo) {
+  try {
+    const res = await fetch(`/api/user/${targetPseudo}`);
+    const data = await res.json();
+    if (data.error) {
+      alert(data.error);
+      return;
+    }
+
+    alert(`Profil de ${data.pseudo}:\nXP: ${data.xp}\nFollowers: ${data.followers}\nFollowing: ${data.following}\nJournal: ${data.journal.length} prises`);
+  } catch (e) {
+    alert('Erreur réseau');
+  }
+}
+
+// Suivre un utilisateur
+async function followUser(targetPseudo) {
+  const token = localStorage.getItem('token');
+  if (!token) return alert('Connecte-toi d’abord !');
+
+  try {
+    const res = await fetch('/api/follow', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': token },
+      body: JSON.stringify({ target: targetPseudo })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+    } else {
+      alert(data.error);
+    }
+  } catch (e) {
+    alert('Erreur réseau');
+  }
+}
+
+// Envoyer message privé
+async function sendMessage(to, text) {
+  const token = localStorage.getItem('token');
+  if (!token) return alert('Connecte-toi d’abord !');
+
+  try {
+    const res = await fetch('/api/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': token },
+      body: JSON.stringify({ to, text })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(data.message);
+    } else {
+      alert(data.error);
+    }
+  } catch (e) {
+    alert('Erreur réseau');
+  }
+}
+
+// Voir conversation avec un utilisateur
+async function viewMessages(withPseudo) {
+  const token = localStorage.getItem('token');
+  if (!token) return alert('Connecte-toi d’abord !');
+
+  try {
+    const res = await fetch(`/api/messages/${withPseudo}`, { headers: { 'Authorization': token } });
+    const messages = await res.json();
+    let chat = 'Conversation avec ' + withPseudo + '\n';
+    messages.forEach(m => {
+      chat += `${m.from}: ${m.text} (${m.date})\n`;
+    });
+    alert(chat);
+  } catch (e) {
+    alert('Erreur réseau');
+  }
+}
 
 // Appelle ces fonctions aux bons endroits :
 // Après un conseil IA : updateStatsAfterAdvice({ species: species, lures: conseil.lures });
