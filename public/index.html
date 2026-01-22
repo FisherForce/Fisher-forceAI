@@ -1278,10 +1278,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-    <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <div style="
   width:340px;
@@ -1335,10 +1334,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ===============================
    INIT MAP
 ================================ */
-const ffMap = L.map("ff-map", {
-  zoomControl:true,
-  attributionControl:true
-}).setView([46.8,2.5],6);
+const ffMap = L.map("ff-map").setView([46.8,2.5],6);
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom:18
@@ -1355,7 +1351,7 @@ function ffAnalyserCarte() {
     1500
   );
 
-  const query = `
+  const queryEau = `
   [out:json];
   (
     way["natural"="water"](around:${rayon},${centre.lat},${centre.lng});
@@ -1366,29 +1362,74 @@ function ffAnalyserCarte() {
 
   fetch("https://overpass-api.de/api/interpreter", {
     method:"POST",
-    body:query
+    body:queryEau
   })
   .then(r => r.json())
   .then(data => {
     data.elements.forEach(el => {
       if (!el.geometry || el.geometry.length < 5) return;
-
       const c = ffCentrePolygone(el.geometry);
-
-      L.circleMarker([c.lat,c.lon],{
-        radius:6,
-        color:"#00ffcc",
-        fillOpacity:0.9
-      })
-      .addTo(ffMap)
-      .bindPopup("🎣 Spot potentiel détecté");
+      analyserUrbanisation(c, rayon);
     });
   });
 }
 
 /* ===============================
-   OUTIL
+   SCORE URBAIN / SAUVAGE
 ================================ */
+function analyserUrbanisation(centre, rayon) {
+  const query = `
+  [out:json];
+  (
+    way["building"](around:300,${centre.lat},${centre.lon});
+    way["highway"](around:300,${centre.lat},${centre.lon});
+  );
+  out body;
+  `;
+
+  fetch("https://overpass-api.de/api/interpreter", {
+    method:"POST",
+    body:query
+  })
+  .then(r => r.json())
+  .then(data => {
+    let batiments = 0;
+    let routes = 0;
+
+    data.elements.forEach(e => {
+      if (e.tags?.building) batiments++;
+      if (e.tags?.highway) routes++;
+    });
+
+    const score = calculScoreSauvage(batiments, routes);
+    const label = score > 70 ? "🌲 Sauvage" : score > 40 ? "⚖️ Mixte" : "🏙️ Urbain";
+
+    L.circleMarker([centre.lat, centre.lon], {
+      radius:7,
+      color: score > 70 ? "#00ff66" : score > 40 ? "#ffd700" : "#ff5555",
+      fillOpacity:0.9
+    })
+    .addTo(ffMap)
+    .bindPopup(`
+      🎣 <b>Spot détecté</b><br>
+      🏠 Bâtiments : ${batiments}<br>
+      🛣️ Routes : ${routes}<br>
+      🌍 Score : <b>${score}/100</b><br>
+      📍 Type : <b>${label}</b>
+    `);
+  });
+}
+
+/* ===============================
+   OUTILS
+================================ */
+function calculScoreSauvage(batiments, routes) {
+  let score = 100;
+  score -= batiments * 2;
+  score -= routes * 3;
+  return Math.max(0, Math.min(100, score));
+}
+
 function ffCentrePolygone(coords) {
   let lat=0, lon=0;
   coords.forEach(p => {
@@ -1401,6 +1442,8 @@ function ffCentrePolygone(coords) {
   };
 }
 </script>
+<!-- FIN MODULE -->
+
 <!-- FIN MODULE -->
 
   </main>
