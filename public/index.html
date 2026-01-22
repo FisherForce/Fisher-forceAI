@@ -1278,6 +1278,131 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+    <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+<div style="
+  width:340px;
+  margin:20px auto;
+  padding:15px;
+  border-radius:18px;
+  background:linear-gradient(180deg,#003366,#001a33);
+  color:white;
+  font-family:Arial,sans-serif;
+  box-shadow:0 10px 25px rgba(0,0,0,0.45);
+">
+
+  <div style="text-align:center;">
+    <div style="color:#00ffcc;font-weight:bold;font-size:16px;">
+      ANALYSE CARTE SPOT PÊCHE
+    </div>
+    <div style="color:#ffd700;font-size:12px;margin-top:2px;">
+      (Exclusivité Premium)
+    </div>
+    <div style="font-size:12px;opacity:0.9;margin-top:6px;">
+      L'IA analyse la carte visible pour détecter l'eau et les spots potentiels
+    </div>
+  </div>
+
+  <div id="ff-map" style="
+    width:100%;
+    height:200px;
+    margin-top:10px;
+    border-radius:12px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.15);
+  "></div>
+
+  <button onclick="ffAnalyserCarte()" style="
+    width:100%;
+    margin-top:12px;
+    padding:12px;
+    border:none;
+    border-radius:25px;
+    background:#ffd700;
+    color:#000;
+    font-weight:bold;
+    font-size:14px;
+    cursor:pointer;
+  ">
+    ANALYSER LA CARTE (Détecter eau / spots)
+  </button>
+</div>
+
+<script>
+/* ===============================
+   INIT MAP
+================================ */
+const ffMap = L.map("ff-map", {
+  zoomControl:true,
+  attributionControl:true
+}).setView([46.8,2.5],6);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom:18
+}).addTo(ffMap);
+
+/* ===============================
+   ANALYSE CARTE VISIBLE
+================================ */
+function ffAnalyserCarte() {
+  const bounds = ffMap.getBounds();
+  const centre = bounds.getCenter();
+  const rayon = Math.min(
+    centre.distanceTo(bounds.getNorthEast()),
+    1500
+  );
+
+  const query = `
+  [out:json];
+  (
+    way["natural"="water"](around:${rayon},${centre.lat},${centre.lng});
+    way["waterway"](around:${rayon},${centre.lat},${centre.lng});
+  );
+  out geom;
+  `;
+
+  fetch("https://overpass-api.de/api/interpreter", {
+    method:"POST",
+    body:query
+  })
+  .then(r => r.json())
+  .then(data => {
+    data.elements.forEach(el => {
+      if (!el.geometry || el.geometry.length < 5) return;
+
+      const c = ffCentrePolygone(el.geometry);
+
+      L.circleMarker([c.lat,c.lon],{
+        radius:6,
+        color:"#00ffcc",
+        fillOpacity:0.9
+      })
+      .addTo(ffMap)
+      .bindPopup("🎣 Spot potentiel détecté");
+    });
+  });
+}
+
+/* ===============================
+   OUTIL
+================================ */
+function ffCentrePolygone(coords) {
+  let lat=0, lon=0;
+  coords.forEach(p => {
+    lat += p.lat;
+    lon += p.lon;
+  });
+  return {
+    lat: lat / coords.length,
+    lon: lon / coords.length
+  };
+}
+</script>
+<!-- FIN MODULE -->
+
   </main>
 
   <!-- BOUTON CARTE -->
