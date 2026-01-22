@@ -1325,7 +1325,6 @@ document.addEventListener('DOMContentLoaded', () => {
     font-weight:bold;
     font-size:14px;
     cursor:pointer;
-    transition:opacity 0.3s;
   ">
     ANALYSER LA CARTE (Détecter eau / spots)
   </button>
@@ -1341,22 +1340,24 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 }).addTo(ffMap);
 
 let analyseEnCours = false;
+let animInterval = null;
+let animationActive = false;
 
 /* ===============================
    ANALYSE CARTE
 ================================ */
 function ffAnalyserCarte() {
   if (analyseEnCours) return;
-
   analyseEnCours = true;
+
   const btn = document.getElementById("ff-btn");
-  const originalText = btn.innerHTML;
+  const texteInitial = btn.innerHTML;
 
-  btn.innerHTML = "🔍 Analyse en cours";
-  btn.style.opacity = "0.7";
-
+  animationActive = true;
   let dots = 0;
-  const anim = setInterval(() => {
+
+  btn.style.opacity = "0.7";
+  animInterval = setInterval(() => {
     dots = (dots + 1) % 4;
     btn.innerHTML = "🔍 Analyse en cours" + ".".repeat(dots);
   }, 500);
@@ -1383,35 +1384,18 @@ function ffAnalyserCarte() {
   })
   .then(r => r.json())
   .then(data => {
-    let pending = data.elements.length;
-    if (pending === 0) fin();
-
     data.elements.forEach(el => {
-      if (!el.geometry || el.geometry.length < 5) {
-        pending--;
-        if (pending === 0) fin();
-        return;
-      }
+      if (!el.geometry || el.geometry.length < 5) return;
       const c = ffCentrePolygone(el.geometry);
-      analyserUrbanisation(c, () => {
-        pending--;
-        if (pending === 0) fin();
-      });
+      analyserUrbanisation(c, texteInitial);
     });
   });
-
-  function fin() {
-    clearInterval(anim);
-    btn.innerHTML = originalText;
-    btn.style.opacity = "1";
-    analyseEnCours = false;
-  }
 }
 
 /* ===============================
    SCORE URBAIN / SAUVAGE
 ================================ */
-function analyserUrbanisation(centre, callback) {
+function analyserUrbanisation(centre, texteInitial) {
   const query = `
   [out:json];
   (
@@ -1450,7 +1434,15 @@ function analyserUrbanisation(centre, callback) {
       📍 Type : <b>${label}</b>
     `);
 
-    callback();
+    /* 🔥 STOP ANIMATION AU PREMIER RÉSULTAT */
+    if (animationActive) {
+      clearInterval(animInterval);
+      const btn = document.getElementById("ff-btn");
+      btn.innerHTML = texteInitial;
+      btn.style.opacity = "1";
+      animationActive = false;
+      analyseEnCours = false;
+    }
   });
 }
 
@@ -1465,7 +1457,7 @@ function calculScoreSauvage(batiments, routes) {
 }
 
 function ffCentrePolygone(coords) {
-  let lat=0, lon=0;
+  let lat = 0, lon = 0;
   coords.forEach(p => {
     lat += p.lat;
     lon += p.lon;
@@ -1478,12 +1470,6 @@ function ffCentrePolygone(coords) {
 </script>
 <!-- FIN MODULE -->
 
-<!-- FIN MODULE -->
-
-
-<!-- FIN MODULE -->
-
-<!-- FIN MODULE -->
 
   </main>
 
