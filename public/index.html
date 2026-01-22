@@ -1291,7 +1291,6 @@ document.addEventListener('DOMContentLoaded', () => {
   color:white;
   font-family:Arial,sans-serif;
   box-shadow:0 10px 25px rgba(0,0,0,0.45);
-  position:relative;
 ">
 
   <div style="text-align:center;">
@@ -1326,51 +1325,11 @@ document.addEventListener('DOMContentLoaded', () => {
     font-weight:bold;
     font-size:14px;
     cursor:pointer;
+    transition:opacity 0.3s;
   ">
     ANALYSER LA CARTE (Détecter eau / spots)
   </button>
-
-  <!-- OVERLAY CHARGEMENT -->
-  <div id="ff-loading" style="
-    display:none;
-    position:absolute;
-    inset:0;
-    background:rgba(0,0,0,0.65);
-    border-radius:18px;
-    z-index:10;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-  ">
-    <div style="
-      width:40px;
-      height:40px;
-      border:4px solid rgba(255,255,255,0.2);
-      border-top:4px solid #00ffcc;
-      border-radius:50%;
-      animation:spin 1s linear infinite;
-    "></div>
-
-    <div style="
-      margin-top:12px;
-      font-size:13px;
-      text-align:center;
-    ">
-      🔍 Analyse IA en cours…<br>
-      <span style="font-size:11px;opacity:0.8;">
-        Scan de l’eau & environnement
-      </span>
-    </div>
-  </div>
 </div>
-
-<style>
-@keyframes spin {
-  from { transform:rotate(0deg); }
-  to { transform:rotate(360deg); }
-}
-</style>
 
 <script>
 /* ===============================
@@ -1381,12 +1340,26 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom:18
 }).addTo(ffMap);
 
+let analyseEnCours = false;
+
 /* ===============================
    ANALYSE CARTE
 ================================ */
 function ffAnalyserCarte() {
-  document.getElementById("ff-loading").style.display = "flex";
-  document.getElementById("ff-btn").disabled = true;
+  if (analyseEnCours) return;
+
+  analyseEnCours = true;
+  const btn = document.getElementById("ff-btn");
+  const originalText = btn.innerHTML;
+
+  btn.innerHTML = "🔍 Analyse en cours";
+  btn.style.opacity = "0.7";
+
+  let dots = 0;
+  const anim = setInterval(() => {
+    dots = (dots + 1) % 4;
+    btn.innerHTML = "🔍 Analyse en cours" + ".".repeat(dots);
+  }, 500);
 
   const bounds = ffMap.getBounds();
   const centre = bounds.getCenter();
@@ -1411,21 +1384,28 @@ function ffAnalyserCarte() {
   .then(r => r.json())
   .then(data => {
     let pending = data.elements.length;
-    if (pending === 0) finAnalyse();
+    if (pending === 0) fin();
 
     data.elements.forEach(el => {
       if (!el.geometry || el.geometry.length < 5) {
         pending--;
-        if (pending === 0) finAnalyse();
+        if (pending === 0) fin();
         return;
       }
       const c = ffCentrePolygone(el.geometry);
       analyserUrbanisation(c, () => {
         pending--;
-        if (pending === 0) finAnalyse();
+        if (pending === 0) fin();
       });
     });
   });
+
+  function fin() {
+    clearInterval(anim);
+    btn.innerHTML = originalText;
+    btn.style.opacity = "1";
+    analyseEnCours = false;
+  }
 }
 
 /* ===============================
@@ -1475,14 +1455,6 @@ function analyserUrbanisation(centre, callback) {
 }
 
 /* ===============================
-   FIN ANALYSE
-================================ */
-function finAnalyse() {
-  document.getElementById("ff-loading").style.display = "none";
-  document.getElementById("ff-btn").disabled = false;
-}
-
-/* ===============================
    OUTILS
 ================================ */
 function calculScoreSauvage(batiments, routes) {
@@ -1505,6 +1477,7 @@ function ffCentrePolygone(coords) {
 }
 </script>
 <!-- FIN MODULE -->
+
 
 
 
