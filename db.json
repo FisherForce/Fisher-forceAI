@@ -4,12 +4,8 @@
       "pseudo": "Thao",
       "email": "thao@example.com",
       "premium": false,
-      "xp": 150,
-      "followers": [], // liste des pseudos qui te suivent
-      "following": [], // liste des pseudos que tu suis
-      "profileVisible": true, // si profil public
-      "journal": [] // prises publiques
+      "xp": 150
     }
   ],
-  "messages": [] // pour DM : [{from: "Thao", to: "Autre", text: "Salut !", date: "..."}]
+  "posts": []
 }
