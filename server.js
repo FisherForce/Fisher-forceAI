@@ -1346,65 +1346,7 @@ app.get('/api/user/:pseudo', (req, res) => {
   });
 });
 
-// Suivre un utilisateur
-app.post('/api/follow', authenticateToken, (req, res) => {
-  const follower = req.user.pseudo;
-  const { target } = req.body;
 
-  if (!target) return res.status(400).json({ error: 'Utilisateur cible requis' });
-
-  const targetUser = db.get('users').find({ pseudo: target }).value();
-  if (!targetUser) return res.status(404).json({ error: 'Utilisateur non trouvé' });
-
-  // Ajoute au following du follower
-  const followerPath = db.get('users').find({ pseudo: follower });
-  let following = followerPath.value().following || [];
-  if (!following.includes(target)) {
-    following.push(target);
-    followerPath.assign({ following }).write();
-  }
-
-  // Ajoute au followers du target
-  let followers = targetUser.followers || [];
-  if (!followers.includes(follower)) {
-    followers.push(follower);
-    db.get('users').find({ pseudo: target }).assign({ followers }).write();
-  }
-
-  res.json({ success: true, message: 'Suivi !' });
-});
-
-// Envoyer message privé
-app.post('/api/message', authenticateToken, (req, res) => {
-  const from = req.user.pseudo;
-  const { to, text } = req.body;
-
-  if (!to || !text) return res.status(400).json({ error: 'Destinataire et message requis' });
-
-  const targetUser = db.get('users').find({ pseudo: to }).value();
-  if (!targetUser) return res.status(404).json({ error: 'Destinataire non trouvé' });
-
-  db.get('messages').push({
-    from,
-    to,
-    text,
-    date: new Date().toISOString()
-  }).write();
-
-  res.json({ success: true, message: 'Message envoyé !' });
-});
-
-// Voir messages avec un utilisateur
-app.get('/api/messages/:with', authenticateToken, (req, res) => {
-  const pseudo = req.user.pseudo;
-  const withPseudo = req.params.with;
-
-  const messages = db.get('messages').filter(m => {
-    return (m.from === pseudo && m.to === withPseudo) || (m.from === withPseudo && m.to === pseudo);
-  }).sortBy('date').value();
-
-  res.json(messages);
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
