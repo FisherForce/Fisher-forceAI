@@ -772,6 +772,39 @@ function renderRealForecastFallback() {
 getUserLocationAndForecast();
 setInterval(getUserLocationAndForecast, 6 * 3600000); // refresh 6h
 </script>
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#1b2b3a,#0d1a26);color:white;
+font-family:Arial;box-shadow:0 10px 25px rgba(0,0,0,.45);">
+
+  <div style="text-align:center">
+    <div style="color:#4fd1c5;font-weight:bold">MÉTÉO LIVE DU SPOT</div>
+    <div style="font-size:12px;opacity:.8">
+      Suivi météo en temps réel
+    </div>
+  </div>
+
+  <div id="live-meteo-map" style="
+    height:180px;
+    margin-top:10px;
+    border-radius:12px;
+    overflow:hidden;
+  "></div>
+
+  <div id="live-meteo-result" style="
+    margin-top:10px;
+    font-size:13px;
+    line-height:1.4;
+  ">
+    🎯 Clique sur la carte pour suivre un spot
+  </div>
+
+  <div style="margin-top:8px;font-size:11px;opacity:.7;text-align:center">
+    🔄 Actualisation automatique toutes les 60 secondes
+  </div>
+</div>
 
 
       <!-- SIGNALER BRACONNAGE – VERSION RÉELLE ET PUISSANTE -->
@@ -1281,39 +1314,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
-background:linear-gradient(180deg,#1b2b3a,#0d1a26);color:white;
-font-family:Arial;box-shadow:0 10px 25px rgba(0,0,0,.45);">
-
-  <div style="text-align:center">
-    <div style="color:#4fd1c5;font-weight:bold">MÉTÉO LIVE DU SPOT</div>
-    <div style="font-size:12px;opacity:.8">
-      Suivi météo en temps réel
-    </div>
-  </div>
-
-  <div id="live-meteo-map" style="
-    height:180px;
-    margin-top:10px;
-    border-radius:12px;
-    overflow:hidden;
-  "></div>
-
-  <div id="live-meteo-result" style="
-    margin-top:10px;
-    font-size:13px;
-    line-height:1.4;
-  ">
-    🎯 Clique sur la carte pour suivre un spot
-  </div>
-
-  <div style="margin-top:8px;font-size:11px;opacity:.7;text-align:center">
-    🔄 Actualisation automatique toutes les 60 secondes
-  </div>
-</div>
 
 <script>
 let liveMap = L.map("live-meteo-map").setView([46.8, 2.5], 5);
