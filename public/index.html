@@ -1295,11 +1295,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   <div style="text-align:center;">
     <div style="color:#00ffcc;font-weight:bold;font-size:16px;">
-      ANALYSE DE PRESSION DE PÊCHE
+      ANALYSE CARTE SPOT PÊCHE
     </div>
-
+    <div style="color:#ffd700;font-size:12px;margin-top:2px;">
+      (Exclusivité Premium)
+    </div>
     <div style="font-size:12px;opacity:0.9;margin-top:6px;">
-      L'IA analyse la carte visible pour détecter l'eau et évaluer les spots
+      Analyse IA des spots et de la pression de pêche
     </div>
   </div>
 
@@ -1342,7 +1344,7 @@ let animInterval = null;
 let animationActive = false;
 
 /* ===============================
-   ANALYSE OPTIMISÉE (1 REQUÊTE)
+   ANALYSE
 ================================ */
 function ffAnalyserCarte() {
   if (analyseEnCours) return;
@@ -1374,6 +1376,7 @@ function ffAnalyserCarte() {
     way["waterway"](around:${rayon},${centre.lat},${centre.lng});
     way["building"](around:${rayon},${centre.lat},${centre.lng});
     way["highway"](around:${rayon},${centre.lat},${centre.lng});
+    way["highway"="path"](around:${rayon},${centre.lat},${centre.lng});
   );
   out geom;
   `;
@@ -1384,46 +1387,52 @@ function ffAnalyserCarte() {
   })
   .then(r => r.json())
   .then(data => {
+
     const eaux = [];
     const batiments = [];
     const routes = [];
+    const chemins = [];
 
     data.elements.forEach(el => {
       if (!el.geometry) return;
       if (el.tags?.natural === "water" || el.tags?.waterway) eaux.push(el);
       if (el.tags?.building) batiments.push(el);
-      if (el.tags?.highway) routes.push(el);
+      if (el.tags?.highway && el.tags.highway !== "path") routes.push(el);
+      if (el.tags?.highway === "path") chemins.push(el);
     });
 
-    let spotsAffiches = 0;
+    let spots = 0;
 
     eaux.forEach(el => {
-      if (spotsAffiches >= 5) return;
+      if (spots >= 5) return;
 
       const centreSpot = centrePolygone(el.geometry);
+
       const b = compterProches(batiments, centreSpot, 300);
       const r = compterProches(routes, centreSpot, 300);
+      const c = compterProches(chemins, centreSpot, 300);
 
-      const score = calculScoreSauvage(b, r);
-      const label = score > 70 ? "🌲 Sauvage" : score > 40 ? "⚖️ Mixte" : "🏙️ Urbain";
+      const scoreSauvage = calculScoreSauvage(b, r);
+      const pression = calculPressionPeche(b, r, c, scoreSauvage);
+
+      const type = scoreSauvage > 70 ? "🌲 Sauvage" :
+                   scoreSauvage > 40 ? "⚖️ Mixte" : "🏙️ Urbain";
 
       L.circleMarker([centreSpot.lat, centreSpot.lon], {
         radius:7,
-        color: score > 70 ? "#00ff66" : score > 40 ? "#ffd700" : "#ff5555",
+        color: pression < 30 ? "#00ff66" : pression < 60 ? "#ffd700" : "#ff5555",
         fillOpacity:0.9
       })
       .addTo(ffMap)
       .bindPopup(`
         🎣 <b>Spot détecté</b><br>
-        🌍 Score : <b>${score}/100</b><br>
-        📍 Type : <b>${label}</b>
+        🌍 Biotope : <b>${type}</b><br>
+        🌲 Sauvage : <b>${scoreSauvage}/100</b><br>
+        🎣 Pression : <b>${pression}/100</b>
       `);
 
-      spotsAffiches++;
-
-      if (animationActive) {
-        stopAnimation(btn, texteInitial);
-      }
+      spots++;
+      if (animationActive) stopAnimation(btn, texteInitial);
     });
 
     stopAnimation(btn, texteInitial);
@@ -1470,14 +1479,24 @@ function distance(a, b) {
   return Math.sqrt(x*x + y*y) * R;
 }
 
-function calculScoreSauvage(batiments, routes) {
+function calculScoreSauvage(b, r) {
   let score = 100;
-  score -= batiments * 2;
-  score -= routes * 3;
+  score -= b * 2;
+  score -= r * 3;
   return Math.max(0, Math.min(100, score));
+}
+
+function calculPressionPeche(b, r, c, sauvage) {
+  let pression = 0;
+  pression += b * 3;
+  pression += r * 4;
+  pression += c * 5;
+  pression += (100 - sauvage) * 0.4;
+  return Math.max(0, Math.min(100, Math.round(pression)));
 }
 </script>
 <!-- FIN MODULE -->
+
 
 
   </main>
