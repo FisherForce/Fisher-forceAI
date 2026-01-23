@@ -981,26 +981,101 @@ Merci d'intervenir rapidement.
   });
 }
 </script>
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<!-- ANALYSE CARTE SPOT PÊCHE – EXCLUSIVITÉ PREMIUM (marqueurs + teasing flou) -->
-<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
-  <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
-    ANALYSE CARTE SPOT PÊCHE
-    <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
-  </h3>
-  <p style="font-size:16px;margin:15px 0;">L’IA analyse la carte visible pour détecter l’eau et spots potentiels</p>
-  <div id="spotMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
-  <button id="analyzeSpotBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
-    ANALYSER LA CARTE (Détecter eau / spots)
-  </button>
-  <div id="spotAnalysisResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;"></div>
-  <!-- MASQUE TEASING FLOU PREMIUM -->
-  <div id="spotPremiumMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
-    <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
-    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Analyse complète de la carte avec marqueurs sur les spots potentiels d’eau...</p>
-    <button onclick="alert('Système premium mis à jour ! Utilise le nouveau bouton.')">Passer à Premium</button>
+<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#003366,#001a33);
+color:white;font-family:Arial;
+box-shadow:0 10px 25px rgba(0,0,0,.45);">
+
+  <div style="text-align:center">
+    <div style="color:#00ffcc;font-weight:bold">DÉTECTION RAPIDE DE SPOTS POTENTIELS</div>
+    <div style="font-size:12px;opacity:.8">
+      Spots potentiels immédiats
+    </div>
   </div>
+
+  <div id="water-map" style="
+    height:200px;
+    margin-top:10px;
+    border-radius:12px;
+    overflow:hidden;
+  "></div>
+
+  <button onclick="detecterEau()" style="
+    width:100%;
+    margin-top:12px;
+    padding:12px;
+    border:none;
+    border-radius:25px;
+    background:#00ffcc;
+    color:#002;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    DÉTECTER LE SPOT
+  </button>
 </div>
+
+<script>
+let waterMap = L.map("water-map").setView([46.8, 2.5], 6);
+let waterMarkers = [];
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 18
+}).addTo(waterMap);
+
+// Correctif Leaflet module compact
+setTimeout(() => waterMap.invalidateSize(), 300);
+
+function detecterEau() {
+  // Nettoyage anciens points
+  waterMarkers.forEach(m => waterMap.removeLayer(m));
+  waterMarkers = [];
+
+  const center = waterMap.getCenter();
+  const radius = 600; // rapide & efficace
+
+  const query = `
+  [out:json][timeout:10];
+  (
+    way["natural"="water"](around:${radius},${center.lat},${center.lng});
+    way["waterway"](around:${radius},${center.lat},${center.lng});
+  );
+  out center;
+  `;
+
+  fetch("https://overpass-api.de/api/interpreter", {
+    method: "POST",
+    body: query
+  })
+  .then(r => r.json())
+  .then(data => {
+    data.elements.slice(0, 10).forEach(e => {
+      if (!e.center) return;
+
+      const m = L.circleMarker(
+        [e.center.lat, e.center.lon],
+        {
+          radius: 7,
+          color: "#00ffcc",
+          fillOpacity: 0.9
+        }
+      ).addTo(waterMap)
+       .bindPopup("💧 Eau détectée<br>🎣 Spot potentiel");
+
+      waterMarkers.push(m);
+    });
+
+    if (waterMarkers.length === 0) {
+      alert("❌ Aucun plan d’eau détecté dans cette zone");
+    }
+  });
+}
+</script>
+
+
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -1015,73 +1090,7 @@ Merci d'intervenir rapidement.
   </p>
   <div id="fraieMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
 </div>
-<script>
-// === CARTE LEAFLET + ANALYSE EAU / SPOTS + MARQUEURS (tout gratuit maintenant) ===
-let spotMap = null;
-let waterMarkersGroup = L.layerGroup();
 
-function initSpotMap() {
-  spotMap = L.map('spotMap').setView([46.8, 1.7], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(spotMap);
-  waterMarkersGroup.addTo(spotMap);
-
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      spotMap.setView([pos.coords.latitude, pos.coords.longitude], 12);
-    });
-  }
-}
-
-document.getElementById('analyzeSpotBtn').addEventListener('click', async () => {
-  const resultDiv = document.getElementById('spotAnalysisResult');
-  resultDiv.style.display = 'block';
-  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Analyse de la carte en cours…</p>`;
-
-  waterMarkersGroup.clearLayers();
-
-  const bounds = spotMap.getBounds();
-  const bbox = `${bounds.getSouth()},${bounds.getWest()},${bounds.getNorth()},${bounds.getEast()}`;
-
-  try {
-    const query = `[out:json];(way["natural"="water"](${bbox});node["natural"="water"](${bbox});relation["natural"="water"](${bbox});way["waterway"](${bbox});node["waterway"](${bbox});relation["waterway"](${bbox}););out center;`;
-    const res = await fetch(`https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    const waterFeatures = data.elements;
-    let spotCount = 0;
-
-    waterFeatures.forEach(feature => {
-      if (feature.lat && feature.lon) {
-        L.circleMarker([feature.lat, feature.lon], {
-          radius: 14,
-          color: '#00d4ff',
-          fillColor: '#00ff9d',
-          fillOpacity: 0.9,
-          weight: 4
-        }).addTo(waterMarkersGroup)
-          .bindPopup(`<b style="color:#00ff9d;">Spot potentiel détecté !</b><br>Eau présente ici`);
-        spotCount++;
-      }
-    });
-
-    if (spotCount > 0) {
-      resultDiv.innerHTML = `
-        <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;font-size:20px;">
-          <b style="color:#00ff9d;">Potentiel spot pêche détecté !</b><br>
-          <span style="font-size:18px;">${spotCount} zone(s) d'eau détectées sur la carte visible.</span><br>
-          <i style="color:#aaa;">Marqueurs bleus placés sur chaque spot</i><br>
-          <p style="color:#888;font-size:14px;margin-top:20px;">IA FisherForce – Analyse Overpass OSM</p>
-        </div>
-      `;
-    } else {
-      resultDiv.innerHTML = `<p style="color:#e74c3c;font-size:19px;">Aucune zone d'eau détectée sur la carte visible. Zoome ou déplace-toi.</p>`;
-    }
-  } catch (e) {
-    resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
-  }
-});
-
-document.addEventListener('DOMContentLoaded', initSpotMap);
-</script>
 <script>      
 // === CARTE FRAYÈRES COLLABORATIVE — VERSION CORRIGÉE & FIABLE ===
 let fraieMap = null;
