@@ -1278,6 +1278,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+<!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -1288,109 +1289,122 @@ box-shadow:0 10px 25px rgba(0,0,0,0.45);">
   <div style="text-align:center">
     <div style="color:#00ffcc;font-weight:bold">ANALYSE CARTE SPOT PÊCHE</div>
     <div style="font-size:12px;opacity:.85">
-      IA • Saison • Météo • Gros poissons
+      IA • Saison • Gros poissons furtifs
     </div>
   </div>
 
-  <div id="ff-map" style="
-    height:200px;
-    margin-top:10px;
-    border-radius:12px;
-    overflow:hidden;
-  "></div>
+  <div id="ff-map" style="height:200px;margin-top:10px;border-radius:12px"></div>
 
-  <button id="ff-btn" onclick="ffAnalyserCarte()" style="
-    width:100%;
-    margin-top:12px;
-    padding:12px;
-    border:none;
-    border-radius:25px;
-    background:#ffd700;
-    font-weight:bold;
-    cursor:pointer;
-  ">
+  <button id="ff-btn" onclick="ffAnalyserCarte()" style="width:100%;margin-top:12px;
+  padding:12px;border:none;border-radius:25px;background:#ffd700;font-weight:bold">
     ANALYSER LA CARTE
   </button>
 </div>
 
 <script>
-let map;
+const map=L.map("ff-map").setView([46.8,2.5],6);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(map);
 
-setTimeout(() => {
-  map = L.map("ff-map").setView([46.8, 2.5], 6);
+let run=false,anim=null;
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 18
-  }).addTo(map);
+function ffAnalyserCarte(){
+ if(run) return; run=true;
+ const btn=document.getElementById("ff-btn");
+ const base=btn.innerHTML; let d=0;
+ anim=setInterval(()=>{d=(d+1)%4;btn.innerHTML="Analyse"+'.'.repeat(d)},400);
 
-  // 🔑 LIGNE CRITIQUE
-  setTimeout(() => {
-    map.invalidateSize();
-  }, 300);
+ const b=map.getBounds(),c=b.getCenter();
+ const r=Math.min(c.distanceTo(b.getNorthEast()),800);
 
-}, 100);
+ const q=`[out:json];(
+ way["natural"="water"](around:${r},${c.lat},${c.lng});
+ way["waterway"](around:${r},${c.lat},${c.lng});
+ way["building"](around:${r},${c.lat},${c.lng});
+ way["highway"](around:${r},${c.lat},${c.lng});
+ way["highway"="path"](around:${r},${c.lat},${c.lng});
+ );out geom;`;
 
-let run = false, anim = null;
-
-function ffAnalyserCarte() {
-  if (!map || run) return;
-  run = true;
-
-  const btn = document.getElementById("ff-btn");
-  const base = btn.innerHTML;
-  let d = 0;
-
-  anim = setInterval(() => {
-    d = (d + 1) % 4;
-    btn.innerHTML = "Analyse" + ".".repeat(d);
-  }, 400);
-
-  const bounds = map.getBounds();
-  const center = bounds.getCenter();
-  const rayon = Math.min(center.distanceTo(bounds.getNorthEast()), 800);
-
-  const query = `
-  [out:json];
-  (
-    way["natural"="water"](around:${rayon},${center.lat},${center.lng});
-    way["waterway"](around:${rayon},${center.lat},${center.lng});
-    way["building"](around:${rayon},${center.lat},${center.lng});
-    way["highway"](around:${rayon},${center.lat},${center.lng});
-    way["highway"="path"](around:${rayon},${center.lat},${center.lng});
-  );
-  out geom;
-  `;
-
-  fetch("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    body: query
-  })
-  .then(r => r.json())
-  .then(data => {
-    clearInterval(anim);
-    btn.innerHTML = base;
-    run = false;
-
-    data.elements
-      .filter(e => e.geometry && (e.tags?.natural === "water" || e.tags?.waterway))
-      .slice(0, 5)
-      .forEach(e => {
-        const c = centre(e.geometry);
-        L.circleMarker([c.lat, c.lon], {
-          radius: 7,
-          color: "#00ffcc",
-          fillOpacity: 0.9
-        }).addTo(map).bindPopup("🎣 Spot détecté");
-      });
+ fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q})
+ .then(r=>r.json()).then(d=>{
+  const eaux=[],bat=[],rts=[],pth=[];
+  d.elements.forEach(e=>{
+   if(!e.geometry) return;
+   if(e.tags?.natural==="water"||e.tags?.waterway) eaux.push(e);
+   if(e.tags?.building) bat.push(e);
+   if(e.tags?.highway==="path") pth.push(e);
+   if(e.tags?.highway && e.tags.highway!=="path") rts.push(e);
   });
+
+  let n=0;
+  eaux.forEach(e=>{
+   if(n>=5) return;
+   const cs=ctr(e.geometry);
+   const B=cnt(bat,cs),R=cnt(rts,cs),P=cnt(pth,cs);
+
+   const sauvage=clamp(100-B*2-R*3);
+   const pression=clamp(B*3+R*4+P*5+(100-sauvage)*0.4);
+   const horaire=pressionHoraire(pression,sauvage);
+
+   const saison=getSaison();
+   const creneauSaison=creneauParSaison(saison,horaire);
+   const furtif=modeFurtif(horaire,sauvage,B+R+P);
+
+   L.circleMarker([cs.lat,cs.lon],{
+    radius:7,
+    color:furtif?"#b36bff":horaire<30?"#0f6":horaire<60?"#fd0":"#f55",
+    fillOpacity:.9
+   }).addTo(map).bindPopup(`
+    🎣 <b>Spot détecté</b><br>
+    🌲 Sauvage : <b>${sauvage}/100</b><br>
+    🎣 Pression : <b>${pression}/100</b><br>
+    ⏰ Pression horaire : <b>${horaire}/100</b><br>
+    🍂 Saison : <b>${saison}</b><br>
+    ⭐ <b>Créneau idéal :</b><br>${creneauSaison}<br>
+    ${furtif?`<br>🐟 <b>MODE FURTIF GROS POISSON</b><br>
+    Approche discrète • horaires extrêmes`:""}
+   `);
+   n++;
+  });
+
+  clearInterval(anim); btn.innerHTML=base; run=false;
+ });
 }
 
-function centre(g) {
-  let lat = 0, lon = 0;
-  g.forEach(p => { lat += p.lat; lon += p.lon; });
-  return { lat: lat / g.length, lon: lon / g.length };
+/* ========= LOGIQUE ========= */
+function getSaison(){
+ const m=new Date().getMonth()+1;
+ if(m<=2||m===12) return "Hiver";
+ if(m<=5) return "Printemps";
+ if(m<=8) return "Été";
+ return "Automne";
+}
+
+function creneauParSaison(s,h){
+ if(s==="Hiver") return h<60?"☀️ 11h–15h":"🌤️ 12h–14h";
+ if(s==="Printemps") return "🌅 6h–9h / 🌇 18h–21h";
+ if(s==="Été") return "🌌 22h–4h / 🌅 5h–7h";
+ return "🌅 7h–10h / 🌇 17h–20h";
+}
+
+function modeFurtif(h,s,acc){
+ return h>=50 && s>=50 && acc>=6;
+}
+
+/* ========= UTILS ========= */
+function ctr(g){let a=0,o=0;g.forEach(p=>{a+=p.lat;o+=p.lon});return{lat:a/g.length,lon:o/g.length}}
+function cnt(l,c){return l.filter(e=>dst(ctr(e.geometry),c)<=300).length}
+function dst(a,b){const R=6371000,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
+return Math.sqrt(dLat*dLat+dLon*dLon)*R}
+function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
+function pressionHoraire(p,s){
+ let h=new Date().getHours(),j=new Date().getDay(),k=1;
+ if(h>=6&&h<=9)k+=.4;if(h>=17&&h<=21)k+=.5;
+ if(j===0||j===6)k+=.4;if(s>70)k-=.3;
+ return clamp(p*k);
 }
 </script>
+<!-- FIN MODULE -->
+
 
 
 
