@@ -1404,6 +1404,94 @@ function pressionHoraire(p,s){
 }
 </script>
 <!-- FIN MODULE -->
+    <div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#1b2b3a,#0d1a26);color:white;
+font-family:Arial;box-shadow:0 10px 25px rgba(0,0,0,.45);">
+
+  <div style="text-align:center">
+    <div style="color:#4fd1c5;font-weight:bold">MÉTÉO PÊCHE TEMPS RÉEL</div>
+    <div style="font-size:12px;opacity:.8">
+      Action immédiate • ultra précis
+    </div>
+  </div>
+
+  <div id="meteo-result" style="
+    margin-top:12px;
+    font-size:13px;
+    line-height:1.4;
+  ">
+    📡 En attente de données météo…
+  </div>
+
+  <button onclick="chargerMeteoPeche()" style="
+    width:100%;
+    margin-top:12px;
+    padding:12px;
+    border:none;
+    border-radius:25px;
+    background:#4fd1c5;
+    color:#002;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    ANALYSER LA MÉTÉO
+  </button>
+</div>
+
+<script>
+function chargerMeteoPeche() {
+  const box = document.getElementById("meteo-result");
+  box.innerHTML = "⏳ Analyse météo en cours…";
+
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,wind_speed_10m,wind_direction_10m,pressure_msl`)
+      .then(r => r.json())
+      .then(d => {
+        const m = d.current;
+
+        const score = scoreMeteo(m);
+        const reco = recoMeteo(score, m);
+
+        box.innerHTML = `
+          🌡️ <b>Température :</b> ${m.temperature_2m}°C<br>
+          🌬️ <b>Vent :</b> ${m.wind_speed_10m} km/h (${directionVent(m.wind_direction_10m)})<br>
+          🌧️ <b>Pluie :</b> ${m.precipitation} mm<br>
+          📉 <b>Pression :</b> ${m.pressure_msl} hPa<br><br>
+
+          🎯 <b>Score météo pêche :</b> ${score}/100<br>
+          👉 <b>${reco}</b>
+        `;
+      });
+  });
+}
+
+function scoreMeteo(m) {
+  let s = 100;
+
+  if (m.wind_speed_10m > 25) s -= 30;
+  if (m.precipitation > 1) s -= 25;
+  if (m.pressure_msl < 1005) s -= 20;
+  if (m.temperature_2m < 5 || m.temperature_2m > 30) s -= 15;
+
+  return Math.max(10, s);
+}
+
+function recoMeteo(score, m) {
+  if (score >= 80) return "🔥 CONDITIONS IDÉALES — fonce pêcher";
+  if (score >= 60) return "✅ Bonnes conditions — adapte ta stratégie";
+  if (score >= 40) return "⚠️ Conditions moyennes — pêche lente";
+  return "❌ Mauvaise météo — attendre";
+}
+
+function directionVent(deg) {
+  const d = ["N","NE","E","SE","S","SO","O","NO"];
+  return d[Math.round(deg / 45) % 8];
+}
+</script>
+
 
 
 
