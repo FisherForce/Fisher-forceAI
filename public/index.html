@@ -805,6 +805,89 @@ font-family:Arial;box-shadow:0 10px 25px rgba(0,0,0,.45);">
     🔄 Actualisation automatique toutes les 60 secondes
   </div>
 </div>
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+let liveMap = L.map("live-meteo-map").setView([46.8, 2.5], 5);
+let liveMarker = null;
+let liveTimer = null;
+let currentSpot = null;
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 18
+}).addTo(liveMap);
+
+// Correctif Leaflet widget
+setTimeout(() => liveMap.invalidateSize(), 300);
+
+liveMap.on("click", e => {
+  if (liveMarker) liveMap.removeLayer(liveMarker);
+  if (liveTimer) clearInterval(liveTimer);
+
+  currentSpot = e.latlng;
+
+  liveMarker = L.circleMarker(currentSpot, {
+    radius: 7,
+    color: "#4fd1c5",
+    fillOpacity: 0.9
+  }).addTo(liveMap);
+
+  // Première analyse immédiate
+  analyserMeteoLive();
+
+  // Rafraîchissement automatique
+  liveTimer = setInterval(analyserMeteoLive, 60000);
+});
+
+function analyserMeteoLive() {
+  if (!currentSpot) return;
+
+  const box = document.getElementById("live-meteo-result");
+  box.innerHTML = "📡 Mise à jour météo en cours…";
+
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,wind_direction_10m,pressure_msl`)
+    .then(r => r.json())
+    .then(d => {
+      const m = d.current;
+      const score = scoreMeteoLive(m);
+      const reco = recoMeteoLive(score);
+
+      const heure = new Date().toLocaleTimeString();
+
+      box.innerHTML = `
+        ⏱️ <b>Dernière maj :</b> ${heure}<br><br>
+        🌡️ ${m.temperature_2m}°C<br>
+        🌬️ ${m.wind_speed_10m} km/h (${dirVent(m.wind_direction_10m)})<br>
+        🌧️ ${m.precipitation} mm<br>
+        📉 ${m.pressure_msl} hPa<br><br>
+
+        🎯 <b>Score météo live :</b> ${score}/100<br>
+        👉 <b>${reco}</b>
+      `;
+    });
+}
+
+function scoreMeteoLive(m) {
+  let s = 100;
+  if (m.wind_speed_10m > 25) s -= 30;
+  if (m.precipitation > 1) s -= 25;
+  if (m.pressure_msl < 1005) s -= 20;
+  if (m.temperature_2m < 5 || m.temperature_2m > 30) s -= 15;
+  return Math.max(10, s);
+}
+
+function recoMeteoLive(score) {
+  if (score >= 80) return "🔥 EXCELLENT — activité max";
+  if (score >= 60) return "✅ BON — stratégie adaptée";
+  if (score >= 40) return "⚠️ FAIBLE — pêche lente";
+  return "❌ DÉFAVORABLE — attendre";
+}
+
+function dirVent(d) {
+  const r = ["N","NE","E","SE","S","SO","O","NO"];
+  return r[Math.round(d / 45) % 8];
+}
+          });
+</script>
 
 
       <!-- SIGNALER BRACONNAGE – VERSION RÉELLE ET PUISSANTE -->
@@ -1316,87 +1399,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<script>
-let liveMap = L.map("live-meteo-map").setView([46.8, 2.5], 5);
-let liveMarker = null;
-let liveTimer = null;
-let currentSpot = null;
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 18
-}).addTo(liveMap);
-
-// Correctif Leaflet widget
-setTimeout(() => liveMap.invalidateSize(), 300);
-
-liveMap.on("click", e => {
-  if (liveMarker) liveMap.removeLayer(liveMarker);
-  if (liveTimer) clearInterval(liveTimer);
-
-  currentSpot = e.latlng;
-
-  liveMarker = L.circleMarker(currentSpot, {
-    radius: 7,
-    color: "#4fd1c5",
-    fillOpacity: 0.9
-  }).addTo(liveMap);
-
-  // Première analyse immédiate
-  analyserMeteoLive();
-
-  // Rafraîchissement automatique
-  liveTimer = setInterval(analyserMeteoLive, 60000);
-});
-
-function analyserMeteoLive() {
-  if (!currentSpot) return;
-
-  const box = document.getElementById("live-meteo-result");
-  box.innerHTML = "📡 Mise à jour météo en cours…";
-
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,wind_direction_10m,pressure_msl`)
-    .then(r => r.json())
-    .then(d => {
-      const m = d.current;
-      const score = scoreMeteoLive(m);
-      const reco = recoMeteoLive(score);
-
-      const heure = new Date().toLocaleTimeString();
-
-      box.innerHTML = `
-        ⏱️ <b>Dernière maj :</b> ${heure}<br><br>
-        🌡️ ${m.temperature_2m}°C<br>
-        🌬️ ${m.wind_speed_10m} km/h (${dirVent(m.wind_direction_10m)})<br>
-        🌧️ ${m.precipitation} mm<br>
-        📉 ${m.pressure_msl} hPa<br><br>
-
-        🎯 <b>Score météo live :</b> ${score}/100<br>
-        👉 <b>${reco}</b>
-      `;
-    });
-}
-
-function scoreMeteoLive(m) {
-  let s = 100;
-  if (m.wind_speed_10m > 25) s -= 30;
-  if (m.precipitation > 1) s -= 25;
-  if (m.pressure_msl < 1005) s -= 20;
-  if (m.temperature_2m < 5 || m.temperature_2m > 30) s -= 15;
-  return Math.max(10, s);
-}
-
-function recoMeteoLive(score) {
-  if (score >= 80) return "🔥 EXCELLENT — activité max";
-  if (score >= 60) return "✅ BON — stratégie adaptée";
-  if (score >= 40) return "⚠️ FAIBLE — pêche lente";
-  return "❌ DÉFAVORABLE — attendre";
-}
-
-function dirVent(d) {
-  const r = ["N","NE","E","SE","S","SO","O","NO"];
-  return r[Math.round(d / 45) % 8];
-}
-</script>
           <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
