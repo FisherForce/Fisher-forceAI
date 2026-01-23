@@ -1412,76 +1412,93 @@ background:linear-gradient(180deg,#1b2b3a,#0d1a26);color:white;
 font-family:Arial;box-shadow:0 10px 25px rgba(0,0,0,.45);">
 
   <div style="text-align:center">
-    <div style="color:#4fd1c5;font-weight:bold">MÉTÉO CIBLÉE SPOT</div>
+    <div style="color:#4fd1c5;font-weight:bold">MÉTÉO LIVE DU SPOT</div>
     <div style="font-size:12px;opacity:.8">
-      Clique sur la carte pour analyser
+      Suivi météo en temps réel
     </div>
   </div>
 
-  <div id="meteo-map" style="
+  <div id="live-meteo-map" style="
     height:180px;
     margin-top:10px;
     border-radius:12px;
     overflow:hidden;
   "></div>
 
-  <div id="meteo-result" style="
+  <div id="live-meteo-result" style="
     margin-top:10px;
     font-size:13px;
     line-height:1.4;
   ">
-    🎯 Sélectionne un point sur la carte
+    🎯 Clique sur la carte pour suivre un spot
+  </div>
+
+  <div style="margin-top:8px;font-size:11px;opacity:.7;text-align:center">
+    🔄 Actualisation automatique toutes les 60 secondes
   </div>
 </div>
 
 <script>
-let meteoMap = L.map("meteo-map").setView([46.8, 2.5], 5);
-let meteoMarker = null;
+let liveMap = L.map("live-meteo-map").setView([46.8, 2.5], 5);
+let liveMarker = null;
+let liveTimer = null;
+let currentSpot = null;
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
   maxZoom: 18
-}).addTo(meteoMap);
+}).addTo(liveMap);
 
 // Correctif Leaflet widget
-setTimeout(() => meteoMap.invalidateSize(), 300);
+setTimeout(() => liveMap.invalidateSize(), 300);
 
-meteoMap.on("click", e => {
-  if (meteoMarker) meteoMap.removeLayer(meteoMarker);
+liveMap.on("click", e => {
+  if (liveMarker) liveMap.removeLayer(liveMarker);
+  if (liveTimer) clearInterval(liveTimer);
 
-  meteoMarker = L.circleMarker(e.latlng, {
+  currentSpot = e.latlng;
+
+  liveMarker = L.circleMarker(currentSpot, {
     radius: 7,
     color: "#4fd1c5",
     fillOpacity: 0.9
-  }).addTo(meteoMap);
+  }).addTo(liveMap);
 
-  analyserMeteoPoint(e.latlng.lat, e.latlng.lng);
+  // Première analyse immédiate
+  analyserMeteoLive();
+
+  // Rafraîchissement automatique
+  liveTimer = setInterval(analyserMeteoLive, 60000);
 });
 
-function analyserMeteoPoint(lat, lon) {
-  const box = document.getElementById("meteo-result");
-  box.innerHTML = "⏳ Analyse météo du spot…";
+function analyserMeteoLive() {
+  if (!currentSpot) return;
 
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,precipitation,wind_speed_10m,wind_direction_10m,pressure_msl`)
+  const box = document.getElementById("live-meteo-result");
+  box.innerHTML = "📡 Mise à jour météo en cours…";
+
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,wind_direction_10m,pressure_msl`)
     .then(r => r.json())
     .then(d => {
       const m = d.current;
-      const score = scoreMeteo(m);
-      const reco = recoMeteo(score);
+      const score = scoreMeteoLive(m);
+      const reco = recoMeteoLive(score);
+
+      const heure = new Date().toLocaleTimeString();
 
       box.innerHTML = `
-        📍 <b>Spot analysé</b><br><br>
+        ⏱️ <b>Dernière maj :</b> ${heure}<br><br>
         🌡️ ${m.temperature_2m}°C<br>
         🌬️ ${m.wind_speed_10m} km/h (${dirVent(m.wind_direction_10m)})<br>
         🌧️ ${m.precipitation} mm<br>
         📉 ${m.pressure_msl} hPa<br><br>
 
-        🎯 <b>Score météo :</b> ${score}/100<br>
+        🎯 <b>Score météo live :</b> ${score}/100<br>
         👉 <b>${reco}</b>
       `;
     });
 }
 
-function scoreMeteo(m) {
+function scoreMeteoLive(m) {
   let s = 100;
   if (m.wind_speed_10m > 25) s -= 30;
   if (m.precipitation > 1) s -= 25;
@@ -1490,11 +1507,11 @@ function scoreMeteo(m) {
   return Math.max(10, s);
 }
 
-function recoMeteo(score) {
-  if (score >= 80) return "🔥 Conditions idéales — fonce";
-  if (score >= 60) return "✅ Bonnes conditions — adapte";
-  if (score >= 40) return "⚠️ Moyen — pêche lente";
-  return "❌ Mauvais timing";
+function recoMeteoLive(score) {
+  if (score >= 80) return "🔥 EXCELLENT — activité max";
+  if (score >= 60) return "✅ BON — stratégie adaptée";
+  if (score >= 40) return "⚠️ FAIBLE — pêche lente";
+  return "❌ DÉFAVORABLE — attendre";
 }
 
 function dirVent(d) {
@@ -1502,6 +1519,7 @@ function dirVent(d) {
   return r[Math.round(d / 45) % 8];
 }
 </script>
+
 
 
 
