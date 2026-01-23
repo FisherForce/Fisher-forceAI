@@ -1288,7 +1288,9 @@ box-shadow:0 10px 25px rgba(0,0,0,0.45);">
 
   <div style="text-align:center">
     <div style="color:#00ffcc;font-weight:bold">ANALYSE CARTE SPOT PÊCHE</div>
-    <div style="font-size:12px;opacity:.85">IA • Pression • Créneau idéal</div>
+    <div style="font-size:12px;opacity:.85">
+      IA • Saison • Gros poissons furtifs
+    </div>
   </div>
 
   <div id="ff-map" style="height:200px;margin-top:10px;border-radius:12px"></div>
@@ -1342,16 +1344,24 @@ function ffAnalyserCarte(){
    const sauvage=clamp(100-B*2-R*3);
    const pression=clamp(B*3+R*4+P*5+(100-sauvage)*0.4);
    const horaire=pressionHoraire(pression,sauvage);
-   const creneau=meilleurCreneau(horaire,sauvage);
+
+   const saison=getSaison();
+   const creneauSaison=creneauParSaison(saison,horaire);
+   const furtif=modeFurtif(horaire,sauvage,B+R+P);
 
    L.circleMarker([cs.lat,cs.lon],{
-    radius:7,color:horaire<30?"#0f6":horaire<60?"#fd0":"#f55",fillOpacity:.9
+    radius:7,
+    color:furtif?"#b36bff":horaire<30?"#0f6":horaire<60?"#fd0":"#f55",
+    fillOpacity:.9
    }).addTo(map).bindPopup(`
     🎣 <b>Spot détecté</b><br>
-    🌲 Sauvage : <b>${Math.round(sauvage)}/100</b><br>
-    🎣 Pression : <b>${Math.round(pression)}/100</b><br>
+    🌲 Sauvage : <b>${sauvage}/100</b><br>
+    🎣 Pression : <b>${pression}/100</b><br>
     ⏰ Pression horaire : <b>${horaire}/100</b><br>
-    ⭐ <b>Meilleur créneau :</b><br>${creneau}
+    🍂 Saison : <b>${saison}</b><br>
+    ⭐ <b>Créneau idéal :</b><br>${creneauSaison}<br>
+    ${furtif?`<br>🐟 <b>MODE FURTIF GROS POISSON</b><br>
+    Approche discrète • horaires extrêmes`:""}
    `);
    n++;
   });
@@ -1360,30 +1370,41 @@ function ffAnalyserCarte(){
  });
 }
 
+/* ========= LOGIQUE ========= */
+function getSaison(){
+ const m=new Date().getMonth()+1;
+ if(m<=2||m===12) return "Hiver";
+ if(m<=5) return "Printemps";
+ if(m<=8) return "Été";
+ return "Automne";
+}
+
+function creneauParSaison(s,h){
+ if(s==="Hiver") return h<60?"☀️ 11h–15h":"🌤️ 12h–14h";
+ if(s==="Printemps") return "🌅 6h–9h / 🌇 18h–21h";
+ if(s==="Été") return "🌌 22h–4h / 🌅 5h–7h";
+ return "🌅 7h–10h / 🌇 17h–20h";
+}
+
+function modeFurtif(h,s,acc){
+ return h>=50 && s>=50 && acc>=6;
+}
+
+/* ========= UTILS ========= */
 function ctr(g){let a=0,o=0;g.forEach(p=>{a+=p.lat;o+=p.lon});return{lat:a/g.length,lon:o/g.length}}
 function cnt(l,c){return l.filter(e=>dst(ctr(e.geometry),c)<=300).length}
 function dst(a,b){const R=6371000,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
 return Math.sqrt(dLat*dLat+dLon*dLon)*R}
 function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
-
 function pressionHoraire(p,s){
  let h=new Date().getHours(),j=new Date().getDay(),k=1;
  if(h>=6&&h<=9)k+=.4;if(h>=17&&h<=21)k+=.5;
  if(j===0||j===6)k+=.4;if(s>70)k-=.3;
  return clamp(p*k);
 }
-
-function meilleurCreneau(ph,s){
- if(ph<30) return "🌅 Aube (6h–9h)<br>🌇 Crépuscule (19h–22h)";
- if(ph<60) return s>60 ?
- "🌅 Très tôt (5h30–7h30)" :
- "🌇 Soir tardif (21h–23h)";
- return s>70 ?
- "🌌 Nuit profonde (23h–4h)" :
- "⛔ Éviter — pression trop forte";
-}
 </script>
 <!-- FIN MODULE -->
+
 
 
 
