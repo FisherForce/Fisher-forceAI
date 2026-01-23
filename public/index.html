@@ -1301,7 +1301,7 @@ document.addEventListener('DOMContentLoaded', () => {
       (Exclusivité Premium)
     </div>
     <div style="font-size:12px;opacity:0.9;margin-top:6px;">
-      Analyse IA des spots et de la pression de pêche
+      Analyse IA + pression horaire
     </div>
   </div>
 
@@ -1331,168 +1331,118 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
-/* ===============================
-   INIT MAP
-================================ */
 const ffMap = L.map("ff-map").setView([46.8,2.5],6);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom:18
-}).addTo(ffMap);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(ffMap);
 
-let analyseEnCours = false;
-let animInterval = null;
-let animationActive = false;
+let analyseEnCours=false, animInterval=null, animationActive=false;
 
-/* ===============================
-   ANALYSE
-================================ */
-function ffAnalyserCarte() {
-  if (analyseEnCours) return;
-  analyseEnCours = true;
+function ffAnalyserCarte(){
+  if(analyseEnCours) return;
+  analyseEnCours=true;
 
-  const btn = document.getElementById("ff-btn");
-  const texteInitial = btn.innerHTML;
+  const btn=document.getElementById("ff-btn");
+  const txt=btn.innerHTML;
+  animationActive=true; btn.style.opacity="0.7";
+  let d=0;
+  animInterval=setInterval(()=>{d=(d+1)%4;btn.innerHTML="🔍 Analyse"+ ".".repeat(d);},500);
 
-  animationActive = true;
-  let dots = 0;
-  btn.style.opacity = "0.7";
+  const b=ffMap.getBounds(), c=b.getCenter();
+  const rayon=Math.min(c.distanceTo(b.getNorthEast()),800);
 
-  animInterval = setInterval(() => {
-    dots = (dots + 1) % 4;
-    btn.innerHTML = "🔍 Analyse en cours" + ".".repeat(dots);
-  }, 500);
+  const q=`[out:json];(
+    way["natural"="water"](around:${rayon},${c.lat},${c.lng});
+    way["waterway"](around:${rayon},${c.lat},${c.lng});
+    way["building"](around:${rayon},${c.lat},${c.lng});
+    way["highway"](around:${rayon},${c.lat},${c.lng});
+    way["highway"="path"](around:${rayon},${c.lat},${c.lng});
+  );out geom;`;
 
-  const bounds = ffMap.getBounds();
-  const centre = bounds.getCenter();
-  const rayon = Math.min(
-    centre.distanceTo(bounds.getNorthEast()),
-    800
-  );
-
-  const query = `
-  [out:json];
-  (
-    way["natural"="water"](around:${rayon},${centre.lat},${centre.lng});
-    way["waterway"](around:${rayon},${centre.lat},${centre.lng});
-    way["building"](around:${rayon},${centre.lat},${centre.lng});
-    way["highway"](around:${rayon},${centre.lat},${centre.lng});
-    way["highway"="path"](around:${rayon},${centre.lat},${centre.lng});
-  );
-  out geom;
-  `;
-
-  fetch("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    body: query
-  })
-  .then(r => r.json())
-  .then(data => {
-
-    const eaux = [];
-    const batiments = [];
-    const routes = [];
-    const chemins = [];
-
-    data.elements.forEach(el => {
-      if (!el.geometry) return;
-      if (el.tags?.natural === "water" || el.tags?.waterway) eaux.push(el);
-      if (el.tags?.building) batiments.push(el);
-      if (el.tags?.highway && el.tags.highway !== "path") routes.push(el);
-      if (el.tags?.highway === "path") chemins.push(el);
+  fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q})
+  .then(r=>r.json()).then(data=>{
+    const eaux=[],bat=[],routes=[],paths=[];
+    data.elements.forEach(e=>{
+      if(!e.geometry) return;
+      if(e.tags?.natural==="water"||e.tags?.waterway) eaux.push(e);
+      if(e.tags?.building) bat.push(e);
+      if(e.tags?.highway==="path") paths.push(e);
+      if(e.tags?.highway && e.tags.highway!=="path") routes.push(e);
     });
 
-    let spots = 0;
+    let n=0;
+    eaux.forEach(e=>{
+      if(n>=5) return;
+      const cs=centrePolygone(e.geometry);
+      const bC=compter(bat,cs,300);
+      const rC=compter(routes,cs,300);
+      const pC=compter(paths,cs,300);
 
-    eaux.forEach(el => {
-      if (spots >= 5) return;
+      const sauvage=scoreSauvage(bC,rC);
+      const pression=scorePression(bC,rC,pC,sauvage);
+      const horaire=scorePressionHoraire(pression,sauvage);
 
-      const centreSpot = centrePolygone(el.geometry);
-
-      const b = compterProches(batiments, centreSpot, 300);
-      const r = compterProches(routes, centreSpot, 300);
-      const c = compterProches(chemins, centreSpot, 300);
-
-      const scoreSauvage = calculScoreSauvage(b, r);
-      const pression = calculPressionPeche(b, r, c, scoreSauvage);
-
-      const type = scoreSauvage > 70 ? "🌲 Sauvage" :
-                   scoreSauvage > 40 ? "⚖️ Mixte" : "🏙️ Urbain";
-
-      L.circleMarker([centreSpot.lat, centreSpot.lon], {
+      L.circleMarker([cs.lat,cs.lon],{
         radius:7,
-        color: pression < 30 ? "#00ff66" : pression < 60 ? "#ffd700" : "#ff5555",
+        color:horaire<30?"#00ff66":horaire<60?"#ffd700":"#ff5555",
         fillOpacity:0.9
-      })
-      .addTo(ffMap)
-      .bindPopup(`
+      }).addTo(ffMap).bindPopup(`
         🎣 <b>Spot détecté</b><br>
-        🌍 Biotope : <b>${type}</b><br>
-        🌲 Sauvage : <b>${scoreSauvage}/100</b><br>
-        🎣 Pression : <b>${pression}/100</b>
+        🌲 Sauvage : <b>${sauvage}/100</b><br>
+        🎣 Pression globale : <b>${pression}/100</b><br>
+        ⏰ Pression horaire : <b>${horaire}/100</b>
       `);
 
-      spots++;
-      if (animationActive) stopAnimation(btn, texteInitial);
+      n++; stopAnim(btn,txt);
     });
-
-    stopAnimation(btn, texteInitial);
+    stopAnim(btn,txt);
   });
 }
 
-/* ===============================
-   OUTILS
-================================ */
-function stopAnimation(btn, texteInitial) {
-  if (!animationActive) return;
+function stopAnim(b,t){
+  if(!animationActive) return;
   clearInterval(animInterval);
-  btn.innerHTML = texteInitial;
-  btn.style.opacity = "1";
-  animationActive = false;
-  analyseEnCours = false;
+  b.innerHTML=t; b.style.opacity="1";
+  animationActive=false; analyseEnCours=false;
 }
 
-function centrePolygone(coords) {
-  let lat = 0, lon = 0;
-  coords.forEach(p => {
-    lat += p.lat;
-    lon += p.lon;
-  });
-  return { lat: lat / coords.length, lon: lon / coords.length };
+function centrePolygone(g){
+  let la=0,lo=0;
+  g.forEach(p=>{la+=p.lat;lo+=p.lon});
+  return{lat:la/g.length,lon:lo/g.length};
 }
 
-function compterProches(liste, centre, rayon) {
-  return liste.filter(el => {
-    const c = centrePolygone(el.geometry);
-    return distance(c, centre) <= rayon;
-  }).length;
+function compter(l,c,r){
+  return l.filter(e=>dist(centrePolygone(e.geometry),c)<=r).length;
 }
 
-function distance(a, b) {
-  const R = 6371000;
-  const dLat = (b.lat - a.lat) * Math.PI / 180;
-  const dLon = (b.lon - a.lon) * Math.PI / 180;
-  const lat1 = a.lat * Math.PI / 180;
-  const lat2 = b.lat * Math.PI / 180;
-
-  const x = dLat;
-  const y = dLon * Math.cos((lat1 + lat2) / 2);
-  return Math.sqrt(x*x + y*y) * R;
+function dist(a,b){
+  const R=6371000;
+  const dLat=(b.lat-a.lat)*Math.PI/180;
+  const dLon=(b.lon-a.lon)*Math.PI/180;
+  return Math.sqrt(dLat*dLat + dLon*dLon)*R;
 }
 
-function calculScoreSauvage(b, r) {
-  let score = 100;
-  score -= b * 2;
-  score -= r * 3;
-  return Math.max(0, Math.min(100, score));
+function scoreSauvage(b,r){
+  return Math.max(0,Math.min(100,100-b*2-r*3));
 }
 
-function calculPressionPeche(b, r, c, sauvage) {
-  let pression = 0;
-  pression += b * 3;
-  pression += r * 4;
-  pression += c * 5;
-  pression += (100 - sauvage) * 0.4;
-  return Math.max(0, Math.min(100, Math.round(pression)));
+function scorePression(b,r,p,s){
+  return Math.max(0,Math.min(100,Math.round(
+    b*3+r*4+p*5+(100-s)*0.4
+  )));
+}
+
+function scorePressionHoraire(pression,sauvage){
+  const now=new Date();
+  const h=now.getHours();
+  const j=now.getDay(); // 0 = dimanche
+  let coef=1;
+
+  if(h>=6 && h<=9) coef+=0.4;
+  if(h>=17 && h<=21) coef+=0.5;
+  if(j===0 || j===6) coef+=0.4;
+  if(sauvage>70) coef-=0.3;
+
+  return Math.max(0,Math.min(100,Math.round(pression*coef)));
 }
 </script>
 <!-- FIN MODULE -->
