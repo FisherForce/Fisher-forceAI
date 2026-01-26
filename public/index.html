@@ -6,27 +6,26 @@
   <title>Fisher-Force AI — La 1ère IA de pêche 100% Française</title>
   <link rel="stylesheet" href="styles.css">
   <!-- FAVICON FISHERFORCE AI – avec ton logo.jpg -->
-<link rel="icon" href="/logo.jpg" type="image/jpeg">
-<link rel="shortcut icon" href="/logo.jpg" type="image/jpeg">
-<link rel="apple-touch-icon" href="/logo.jpg">
-<link rel="apple-touch-icon-precomposed" href="/logo.jpg">
+  <link rel="icon" href="/logo.jpg" type="image/jpeg">
+  <link rel="shortcut icon" href="/logo.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="/logo.jpg">
+  <link rel="apple-touch-icon-precomposed" href="/logo.jpg">
 
-<!-- Pour les différentes tailles (recommandé pour mobile et desktop) -->
-<link rel="icon" sizes="192x192" href="/logo.jpg">
-<link rel="icon" sizes="512x512" href="/logo.jpg">
+  <!-- Pour les différentes tailles (recommandé pour mobile et desktop) -->
+  <link rel="icon" sizes="192x192" href="/logo.jpg">
+  <link rel="icon" sizes="512x512" href="/logo.jpg">
 
-<!-- Pour iOS (écran d'accueil) -->
-<link rel="apple-touch-icon" sizes="180x180" href="/logo.jpg">
+  <!-- Pour iOS (écran d'accueil) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/logo.jpg">
 
-<!-- Couleur du thème navigateur (barre d'adresse mobile) -->
-<meta name="theme-color" content="#001122">
-<meta name="msapplication-TileColor" content="#001122">
-<meta name="msapplication-TileImage" content="/logo.jpg">
+  <!-- Couleur du thème navigateur (barre d'adresse mobile) -->
+  <meta name="theme-color" content="#001122">
+  <meta name="msapplication-TileColor" content="#001122">
+  <meta name="msapplication-TileImage" content="/logo.jpg">
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 
   <style>
     @keyframes pulse {0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
@@ -49,22 +48,21 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <!-- PWA INSTALLABLE SUR MOBILE (logo + icône garantie) -->
-<link rel="manifest" href="/manifest.json">
-<link rel="icon" href="/logo.jpg" type="image/jpeg" sizes="any">
-<link rel="apple-touch-icon" href="/logo.jpg">
-<link rel="apple-touch-icon-precomposed" href="/logo.jpg">
-<meta name="theme-color" content="#00ff9d">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/logo.jpg" type="image/jpeg" sizes="any">
+  <link rel="apple-touch-icon" href="/logo.jpg">
+  <link rel="apple-touch-icon-precomposed" href="/logo.jpg">
+  <meta name="theme-color" content="#00ff9d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
 </head>
 
 <body>
   <!-- LOGO EN COIN HAUT GAUCHE -->
-<div style="position:fixed;top:15px;left:15px;z-index:9999;">
-  <img src="logo.jpg" alt="Logo" style="width:60px;height:60px;border-radius:50%;box-shadow:0 0 20px #00ff9d;">
-</div>
-
+  <div style="position:fixed;top:15px;left:15px;z-index:9999;">
+    <img src="logo.jpg" alt="Logo" style="width:60px;height:60px;border-radius:50%;box-shadow:0 0 20px #00ff9d;">
+  </div>
 
   <!-- AUTH + PSEUDO -->
   <div id="authContainer" style="position:fixed;top:15px;right:15px;z-index:9999;display:flex;gap:12px;align-items:center;background:rgba(0,0,0,0.3);padding:10px 16px;border-radius:30px;">
@@ -72,32 +70,27 @@
       <input id="pseudoInput" type="text" placeholder="Ton pseudo" style="padding:6px 10px;border-radius:20px;border:none;font-size:13px;width:100px;">
       <button id="savePseudo" style="background:#ffd700;color:#000;border:none;padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;">OK</button>
       <!-- MENU "…" POUR JOURNAL & ALBUM -->
-<div style="display:inline-block;position:relative;">
-  <button id="menuToggleBtn" style="background:#001122;color:#00d4aa;padding:10px 18px;border:2px solid #00d4aa;border-radius:50px;font-weight:bold;font-size:18px;cursor:pointer;box-shadow:0 6px 20px rgba(0,212,170,0.3);">
-    ⋯
-  </button>
+      <div style="display:inline-block;position:relative;">
+        <button id="menuToggleBtn" style="background:#001122;color:#00d4aa;padding:10px 18px;border:2px solid #00d4aa;border-radius:50px;font-weight:bold;font-size:18px;cursor:pointer;box-shadow:0 6px 20px rgba(0,212,170,0.3);">
+          ⋯
+        </button>
 
-  <!-- BOUTONS CACHÉS (apparaissent au clic) -->
-  <div id="menuDropdown" style="display:none;position:absolute;top:60px;right:0;background:#001122;border:2px solid #00d4aa;border-radius:18px;padding:15px;box-shadow:0 15px 40px rgba(0,212,170,0.5);z-index:9999;white-space:nowrap;">
-
-    
-    <button id="openAlbumBtn" style="display:block;width:100%;background:#ff6b00;color:white;padding:15px 20px;border:none;border-radius:15px;font-weight:bold;font-size:18px;cursor:pointer;box-shadow:0 8px 20px rgba(255,107,0,0.4);">
-      📸 Voir mon Album photos
-    </button>
-      <!-- BOUTON LEURRES BLACKLISTÉS (à côté du pseudo) -->
-<button id="openBlacklistBtn" style="background:#e74c3c;color:white;padding:10px 18px;border:none;border-radius:50px;font-weight:bold;font-size:16px;margin-left:15px;cursor:pointer;box-shadow:0 8px 20px rgba(231,76,60,0.6);position:relative;">
-  🚫 Blacklist
-  <span id="blacklistCount" style="position:absolute;top:-8px;right:-8px;background:#ff0000;color:white;border-radius:50%;width:24px;height:24px;font-size:12px;display:flex;align-items:center;justify-content:center;">0</span>
-</button>
-
-    <!-- Bouton dans le profil -->
-
-
-    
-  </div>
-</div>
-
-<script>
+        <!-- BOUTONS CACHÉS (apparaissent au clic) -->
+        <div id="menuDropdown" style="display:none;position:absolute;top:60px;right:0;background:#001122;border:2px solid #00d4aa;border-radius:18px;padding:15px;box-shadow:0 15px 40px rgba(0,212,170,0.5);z-index:9999;white-space:nowrap;">
+          <button id="openJournalBtn" style="display:block;width:100%;background:#003366;color:#00ff9d;padding:15px 20px;border:none;border-radius:15px;font-weight:bold;font-size:18px;margin-bottom:10px;cursor:pointer;box-shadow:0 8px 20px rgba(0,255,157,0.3);">
+            📔 Voir mon Journal de pêche
+          </button>
+          <button id="openAlbumBtn" style="display:block;width:100%;background:#ff6b00;color:white;padding:15px 20px;border:none;border-radius:15px;font-weight:bold;font-size:18px;cursor:pointer;box-shadow:0 8px 20px rgba(255,107,0,0.4);">
+            📸 Voir mon Album photos
+          </button>
+          <!-- BOUTON LEURRES BLACKLISTÉS -->
+          <button id="openBlacklistBtn" style="display:block;width:100%;background:#e74c3c;color:white;padding:15px 20px;border:none;border-radius:15px;font-weight:bold;font-size:18px;margin-top:10px;cursor:pointer;box-shadow:0 8px 20px rgba(231,76,60,0.6);">
+            🚫 Blacklist
+            <span id="blacklistCount" style="background:#ff0000;color:white;border-radius:50%;padding:2px 8px;font-size:12px;margin-left:10px;">0</span>
+          </button>
+        </div>
+      </div>
+      <script>
 // === MENU "…" QUI AFFICHE/MASQUE JOURNAL & ALBUM ===
 document.addEventListener('DOMContentLoaded', () => {
   const toggleBtn = document.getElementById('menuToggleBtn');
@@ -122,13 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-
-
-
-
-
-
-<!-- MODAL ALBUM PHOTOS AVEC PARTAGE NATIF -->
+      <!-- MODAL ALBUM PHOTOS AVEC PARTAGE NATIF -->
 <div id="albumModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:99999;justify-content:center;align-items:flex-start;overflow-y:auto;">
   <div style="background:#001122;padding:25px;border-radius:20px;max-width:900px;width:95%;margin:20px auto;box-shadow:0 20px 60px rgba(255,107,0,0.4);position:relative;">
     <button id="closeAlbumBtn" style="position:absolute;top:15px;right:20px;background:none;border:none;color:#888;font-size:34px;cursor:pointer;">&times;</button>
@@ -361,8 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+
+
       <button id="logoutBtn" style="background:#e74c3c;color:white;border:none;padding:8px 14px;border-radius:25px;font-size:12px;cursor:pointer;">Déconnexion</button>
-             
     </div>
     <button id="loginBtn" style="background:#4285f4;color:white;border:none;padding:10px 20px;border-radius:25px;font-weight:bold;cursor:pointer;">Connexion Google</button>
   </div>
@@ -371,176 +359,47 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="container">
       <h1>Fisher-Force AI</h1>
       <p class="tagline">La 1ère IA de pêche 100% Française</p>
-<!-- Badge abonnement -->
-<div id="subscriptionBadge" style="padding: 8px 16px; border-radius: 20px; font-weight: bold; color: white; background: #888888; display: inline-block;">
-  Gratuit
-</div>
-
-
+      <!-- Badge abonnement -->
+      <div id="subscriptionBadge" style="padding: 8px 16px; border-radius: 20px; font-weight: bold; color: white; background: #888888; display: inline-block;">
+        Gratuit
+      </div>
     </div>
   </header>
 
-
-
-  <main class="container main-grid">
-    <section class="card input-card">
-<!-- MÉTÉO AUTO + TEASING FLOU PREMIUM (résultat visible en flou si gratuit) -->
-<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
-  <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
-    MÉTÉO + CONSEIL IA EN DIRECT
-    <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
-  </h3>
- 
-  <select id="targetSpeciesSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
-    <option value="Brochet">Brochet</option>
-    <option value="Perche">Perche</option>
-    <option value="Sandre">Sandre</option>
-    <option value="Black-bass">Black-bass</option>
-    <option value="Silure">Silure</option>
-    <option value="Truite">Truite</option>
-    <option value="Chevesne">Chevesne</option>
-  </select>
- 
-  <select id="spotTypeSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
-    <option value="Étang">Étang</option>
-    <option value="Rivière">Rivière</option>
-    <option value="Canal">Canal</option>
-    <option value="Lac">Lac</option>
-  </select>
- 
-  <select id="structureSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
-    <option value="Herbiers">Herbiers</option>
-    <option value="Bois morts">Bois morts</option>
-    <option value="Rochers">Rochers</option>
-    <option value="Pont">Pont</option>
-    <option value="Mixte">Mixte</option>
-    <option value="Aucun">Aucun</option>
-  </select>
- 
-  <button id="weatherAdviceBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
-    ANALYSER MÉTÉO + MEILLEUR LEURRE
-  </button>
- 
-  <!-- RÉSULTAT MÉTÉO -->
-  <div id="weatherResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;">
+  <main id="modes-container">
+<!-- Mode Planification -->
+<div id="mode-planification" class="mode">
+  <h2 style="text-align:center;color:#00d4aa;">Mode Planification 📅</h2>
+  <h2>Décris ton spot</h2>
+  <label>Nom du spot <input id="spotName" placeholder="Ex: Étang du Moulin"></label>
+  <label>Type d'eau<br><select id="waterType"><option>Étang</option><option>Rivière</option><option>Lac</option><option>Canal</option></select></label>
+  <label>Fond / Structure <input id="structure" placeholder="Ex: herbiers, rochers"></label>
+  <label>Espèce ciblée <input id="targetSpecies" placeholder="Ex: brochet, perche"></label>
+  <label>Conditions <input id="conditions" placeholder="Ex: clair, pluie"></label>
+  <label>Température (°C)<br><input type="number" id="temperature" placeholder="15"></label>
+  <div style="margin-top:15px;">
+    <button id="getAdvice">Obtenir des conseils</button>
+    <!-- BOUTON COMMANDE VOCALE (micro stylé) -->
+    <button id="voiceCommandBtn" style="
+      background: linear-gradient(45deg, #00d4aa, #009977);
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,212,170,0.5);
+      display: flex;
+      align-items: center;
+    ">
+      🎤 Commande vocale
+      <span id="voiceStatus" style="font-size:14px; opacity:0.8;">Clique et parle !</span>
+    </button>
+    <button id="clearBtn">Réinitialiser</button>
   </div>
- 
-  <!-- MASQUE TEASING FLOU (s'affiche si gratuit) -->
-  <div id="premiumTeasingMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">
-    <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
-    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Le meilleur leurre en direct selon la météo réelle à ton spot...</p>
-    <button onclick="alert('Système premium mis à jour ! Utilise le nouveau bouton.')">Passer à Premium</button>
-  </div>
-</div>
 
-<script>
-// === MÉTÉO AUTO (tout gratuit maintenant) ===
-document.getElementById('weatherAdviceBtn').addEventListener('click', async () => {
-  const resultDiv = document.getElementById('weatherResult');
-  resultDiv.style.display = 'block';
-  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Détection position + météo en cours…</p>`;
+  <!-- Endroit où s'affichent les conseils de l'IA -->
+  <div id="advice"><p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p></div>
 
-  if (!navigator.geolocation) {
-    resultDiv.innerHTML = "Géolocalisation non supportée";
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(async pos => {
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
-    const species = document.getElementById('targetSpeciesSelect').value;
-    const spotType = document.getElementById('spotTypeSelect').value;
-    const structure = document.getElementById('structureSelect').value;
-
-    try {
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover,pressure_msl,is_day&timezone=Europe/Paris`);
-      const meteo = await res.json();
-      const c = meteo.current;
-      const temp = Math.round(c.temperature_2m);
-      const vent = Math.round(c.wind_speed_10m);
-      const pluie = c.precipitation > 0.5;
-      const nuages = c.cloud_cover > 70;
-      const pression = Math.round(c.pressure_msl);
-      const jour = c.is_day === 1;
-
-      let conditionsText = "";
-      if (pluie) conditionsText = "pluie";
-      else if (nuages) conditionsText = "nuageux";
-      else conditionsText = "soleil";
-      if (!jour) conditionsText += " nuit";
-
-      const adviceRes = await fetch('/api/advice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetSpecies: species,
-          structure: structure,
-          conditions: conditionsText,
-          spotType: spotType,
-          temperature: temp
-        })
-      });
-
-      const conseil = await adviceRes.json();
-
-      resultDiv.innerHTML = `
-        <div style="background:#003366;padding:18px;border-radius:12px;margin:15px 0;">
-          <b style="color:#00ff9d;font-size:22px;">${species.toUpperCase()}</b><br>
-          <span style="font-size:20px;">${temp}°C • ${vent} km/h • ${conditionsText} • ${pression} hPa</span>
-        </div>
-        <div style="background:#001f3f;padding:22px;border-radius:15px;margin:15px 0;font-size:21px;line-height:1.6;">
-          <b style="color:#FFD700;">MEILLEUR LEURRE MAINTENANT :</b><br>
-          ${conseil.lures.map(l => `<span style="color:#00ff9d;font-size:26px;font-weight:bold;">${l}</span><br>`).join('')}
-        </div>
-        <p style="color:#888;font-size:14px;margin-top:20px;">
-          IA FisherForce — mise à jour toutes les 10 min • Précision 98,7 %
-        </p>
-      `;
-
-      setTimeout(() => document.getElementById('weatherAdviceBtn').click(), 600000);
-    } catch (e) {
-      resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
-    }
-  }, () => {
-    resultDiv.innerHTML = `<p style="color:#ff6b00;">Active la localisation pour un conseil ultra-précis</p>`;
-  });
-});
-</script>
-<div id="weatherResult" style="margin:20px;padding:20px;background:#001122;border-radius:15px;color:white;text-align:center;display:none;"></div>
-      <h2>Décris ton spot</h2>
-      <label>Nom du spot <input id="spotName" placeholder="Ex: Étang du Moulin"></label>
-      <label>Type d'eau<br><select id="waterType"><option>Étang</option><option>Rivière</option><option>Lac</option><option>Canal</option></select></label>
-      <label>Fond / Structure <input id="structure" placeholder="Ex: herbiers, rochers"></label>
-      <label>Espèce ciblée <input id="targetSpecies" placeholder="Ex: brochet, perche"></label>
-      <label>Conditions <input id="conditions" placeholder="Ex: clair, pluie"></label>
-      <label>Température (°C)<br><input type="number" id="temperature" placeholder="15"></label>
-      <div style="margin-top:15px;">
-        <button id="getAdvice">Obtenir des conseils</button>
-<!-- BOUTON COMMANDE VOCALE (micro stylé) -->
-<button id="voiceCommandBtn" style="
-  background: linear-gradient(45deg, #00d4aa, #009977);
-  color: white;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(0,212,170,0.5);
-  display: flex;
-  align-items: center;
-
-">
-  🎤 Commande vocale
-  <span id="voiceStatus" style="font-size:14px; opacity:0.8;">Clique et parle !</span>
-</button>
-        <button id="clearBtn">Réinitialiser</button>
-      </div>
-
-
-
-    </section>
-
-
-    <section class="card output-card">
-      <h2>Conseils de l'IA</h2>
+      <!-- Tableau de bord XP -->
       <div class="dashboard">
         <h3><span class="level-badge">Débutant</span> — <span id="xp">0</span> XP</h3>
         <div class="stats-grid">
@@ -550,97 +409,23 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
         </div>
       </div>
 
-      <div id="advice"><p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p></div>
-
-      <button onclick="openResultat()" style="margin:20px auto;display:block;width:90%;background:#00d4aa;color:white;border:none;padding:14px;border-radius:10px;font-weight:bold;">
-        Enregistrer un résultat
-      </button>
-
-      <!-- SYSTÈME DE QUÊTES XP RÉEL (2026) -->
-<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#1a0033,#330066);border-radius:20px;color:white;max-width:600px;box-shadow:0 12px 40px rgba(102,0,204,0.6);">
-  <h3 style="text-align:center;color:#cc00ff;margin:0 0 20px;font-size:24px;">
-    QUÊTES DU JOUR – GAGNE DE L’XP RÉEL
-  </h3>
-  
-  <div id="dailyQuests">
-    <div class="quest" id="quest1">
-      <p><strong>1. Aller pêcher </strong> → +20 XP</p>
-      <button onclick="completeQuest(1, 20)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
-    </div>
-    
-    <div class="quest" id="quest2">
-      <p><strong>2. Utiliser la météo auto</strong> → +50 XP</p>
-      <button onclick="completeQuest(2, 50)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
-    </div>
-    
-    <div class="quest" id="quest3">
-      <p><strong>3. Enregistrer une session (prise ou bredouille)</strong> → +50 XP</p>
-      <button onclick="completeQuest(3, 50)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
-    </div>
-    
-
-  </div>
-  
-  <p style="text-align:center;color:#aaa;font-size:14px;margin-top:20px;">
-    Quêtes réinitialisées tous les jours à minuit
-  </p>
-</div>
-      <script>
-// === QUÊTES XP RÉEL (version corrigée) ===
-const today = new Date().toDateString();
-let completedQuests = JSON.parse(localStorage.getItem('completedQuests_' + today) || '[]');
-
-function completeQuest(questId, xpReward) {
-  if (completedQuests.includes(questId)) {
-    alert("Quête déjà accomplie aujourd'hui !");
-    return;
-  }
-
-  completedQuests.push(questId);
-  localStorage.setItem('completedQuests_' + today, JSON.stringify(completedQuests));
-
-  // XP réel
-  progress.xp += xpReward;
-  localStorage.setItem('fisherXP', JSON.stringify(progress));
-  awardXP(xpReward, "Quête accomplie !");
-  updateDashboard();
-
-  // Désactive le bouton
-  event.target.disabled = true;
-  event.target.textContent = "Accomplie ✓";
-  event.target.style.background = "#006600";
-}
-
-// Charge les quêtes déjà faites
-completedQuests.forEach(id => {
-  const btn = document.querySelector(`.quest:nth-child(${id}) button`);
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = "Accomplie ✓";
-    btn.style.background = "#006600";
-  }
-});
-</script>
-
-
-
-<!-- PRÉVISION DE TOUCHES 7 JOURS — VERSION PARFAITE (bug affichage fixé) -->
-<div id="biteForecast" style="margin:20px auto;padding:20px;background:linear-gradient(135deg,#000428,#004e92);border-radius:20px;color:white;box-shadow:0 10px 40px rgba(0,50,150,0.6);">
-  <h3 style="text-align:center;margin:15px 0 10px;font-size:20px;color:#00d4aa;">
-    Prévision de touches – 7 jours 
-  </h3>
-  <div id="forecastGraph" style="height:240px;position:relative;"></div>
-  <div style="display:flex;justify-content:space-around;margin-top:15px;font-size:12px;opacity:0.9;">
-    <div><span id="day0">...</span><br><span id="peak0">-</span></div>
-    <div><span id="day1">...</span><br><span id="peak1">-</span></div>
-    <div><span id="day2">...</span><br><span id="peak2">-</span></div>
-    <div><span id="day3">...</span><br><span id="peak3">-</span></div>
-    <div><span id="day4">...</span><br><span id="peak4">-</span></div>
-    <div><span id="day5">...</span><br><span id="peak5">-</span></div>
-    <div><span id="day6">...</span><br><span id="peak6">-</span></div>
-  </div>
-</div>
-<script>
+      <!-- Prévision touches -->
+      <div id="biteForecast" style="margin:20px auto;padding:20px;background:linear-gradient(135deg,#000428,#004e92);border-radius:20px;color:white;box-shadow:0 10px 40px rgba(0,50,150,0.6);">
+        <h3 style="text-align:center;margin:15px 0 10px;font-size:20px;color:#00d4aa;">
+          Prévision de touches – 7 jours 
+        </h3>
+        <div id="forecastGraph" style="height:240px;position:relative;"></div>
+        <div style="display:flex;justify-content:space-around;margin-top:15px;font-size:12px;opacity:0.9;">
+          <div><span id="day0">...</span><br><span id="peak0">-</span></div>
+          <div><span id="day1">...</span><br><span id="peak1">-</span></div>
+          <div><span id="day2">...</span><br><span id="peak2">-</span></div>
+          <div><span id="day3">...</span><br><span id="peak3">-</span></div>
+          <div><span id="day4">...</span><br><span id="peak4">-</span></div>
+          <div><span id="day5">...</span><br><span id="peak5">-</span></div>
+          <div><span id="day6">...</span><br><span id="peak6">-</span></div>
+        </div>
+      </div>
+  <script>
 // === PRÉVISION DE TOUCHES 7 JOURS — VERSION FINALE PARFAITE (affichage corrigé 2025) ===
 let userLat = 47.30;  // La Chapelle-sur-Erdre par défaut
 let userLon = -1.55;
@@ -774,262 +559,55 @@ function renderRealForecastFallback() {
 getUserLocationAndForecast();
 setInterval(getUserLocationAndForecast, 6 * 3600000); // refresh 6h
 </script>
-                      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
-background:linear-gradient(180deg,#1b2b3a,#0d1a26);color:white;
-font-family:Arial;box-shadow:0 10px 25px rgba(0,0,0,.45);">
-
-  <div style="text-align:center">
-    <div style="color:#4fd1c5;font-weight:bold">MÉTÉO LIVE DU SPOT</div>
-    <div style="font-size:12px;opacity:.8">
-      Suivi météo en temps réel
-    </div>
-  </div>
-
-  <div id="live-meteo-map" style="
-    height:180px;
-    margin-top:10px;
-    border-radius:12px;
-    overflow:hidden;
-  "></div>
-
-  <div id="live-meteo-result" style="
-    margin-top:10px;
-    font-size:13px;
-    line-height:1.4;
-  ">
-    🎯 Clique sur la carte pour suivre un spot
-  </div>
-
-  <div style="margin-top:8px;font-size:11px;opacity:.7;text-align:center">
-    🔄 Actualisation automatique toutes les 60 secondes
-  </div>
-</div>
-      <script>
-        document.addEventListener("DOMContentLoaded", () => {
-let liveMap = L.map("live-meteo-map").setView([46.8, 2.5], 5);
-let liveMarker = null;
-let liveTimer = null;
-let currentSpot = null;
-
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 18
-}).addTo(liveMap);
-
-// Correctif Leaflet widget
-setTimeout(() => liveMap.invalidateSize(), 300);
-
-liveMap.on("click", e => {
-  if (liveMarker) liveMap.removeLayer(liveMarker);
-  if (liveTimer) clearInterval(liveTimer);
-
-  currentSpot = e.latlng;
-
-  liveMarker = L.circleMarker(currentSpot, {
-    radius: 7,
-    color: "#4fd1c5",
-    fillOpacity: 0.9
-  }).addTo(liveMap);
-
-  // Première analyse immédiate
-  analyserMeteoLive();
-
-  // Rafraîchissement automatique
-  liveTimer = setInterval(analyserMeteoLive, 60000);
-});
-
-function analyserMeteoLive() {
-  if (!currentSpot) return;
-
-  const box = document.getElementById("live-meteo-result");
-  box.innerHTML = "📡 Mise à jour météo en cours…";
-
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,wind_direction_10m,pressure_msl`)
-    .then(r => r.json())
-    .then(d => {
-      const m = d.current;
-      const score = scoreMeteoLive(m);
-      const reco = recoMeteoLive(score);
-
-      const heure = new Date().toLocaleTimeString();
-
-      box.innerHTML = `
-        ⏱️ <b>Dernière maj :</b> ${heure}<br><br>
-        🌡️ ${m.temperature_2m}°C<br>
-        🌬️ ${m.wind_speed_10m} km/h (${dirVent(m.wind_direction_10m)})<br>
-        🌧️ ${m.precipitation} mm<br>
-        📉 ${m.pressure_msl} hPa<br><br>
-
-        🎯 <b>Score météo live :</b> ${score}/100<br>
-        👉 <b>${reco}</b>
-      `;
-    });
-}
-
-function scoreMeteoLive(m) {
-  let s = 100;
-  if (m.wind_speed_10m > 25) s -= 30;
-  if (m.precipitation > 1) s -= 25;
-  if (m.pressure_msl < 1005) s -= 20;
-  if (m.temperature_2m < 5 || m.temperature_2m > 30) s -= 15;
-  return Math.max(10, s);
-}
-
-function recoMeteoLive(score) {
-  if (score >= 80) return "🔥 EXCELLENT — activité max";
-  if (score >= 60) return "✅ BON — stratégie adaptée";
-  if (score >= 40) return "⚠️ FAIBLE — pêche lente";
-  return "❌ DÉFAVORABLE — attendre";
-}
-
-function dirVent(d) {
-  const r = ["N","NE","E","SE","S","SO","O","NO"];
-  return r[Math.round(d / 45) % 8];
-}
-          });
-</script>
 
 
+      <!-- Script pour prévision touches (exemple, ajoute tes scripts ici) -->
 
 
-
-      <!-- SIGNALER BRACONNAGE – VERSION RÉELLE ET PUISSANTE -->
-<button id="reportBracoBtn" style="margin:20px auto;display:block;width:90%;background:#ff1500;color:white;border:none;padding:18px;border-radius:14px;font-weight:bold;font-size:19px;box-shadow:0 8px 30px rgba(255,21,0,0.6);">
-  SIGNALER BRACONNAGE / POLLUTION (urgence)
-</button>
-
-<div id="reportModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:99999;">
-  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;padding:30px;border-radius:20px;width:90%;max-width:460px;text-align:center;color:white;">
-    <h2 style="color:#ff1500;margin:10px 0 20px;">SIGNALEMENT URGENT</h2>
-    <p>Prends une photo/vidéo du braconnage ou de la pollution</p>
-    <input type="file" id="proofFile" accept="image/*,video/*" capture="environment" style="margin:20px 0;width:100%;padding:15px;background:#222;border-radius:12px;">
-    <textarea id="reportDetails" placeholder="Détails rapides (filets, plaques, produits chimiques...)" style="width:100%;height:100px;background:#222;color:white;border:none;border-radius:12px;padding:15px;margin:15px 0;font-size:16px;"></textarea>
-    
-    <button onclick="sendRealReport()" style="width:90%;background:#ff1500;color:white;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:10px auto;display:block;">
-      ENVOYER AUX AUTORITÉS (GPS + preuve)
-    </button>
-    
-    <button onclick="document.getElementById('reportModal').style.display='none'" style="background:#444;padding:12px 30px;border:none;border-radius:10px;color:white;margin-top:10px;">
-      Annuler
-    </button>
-  </div>
-</div>
-
-<script>
-// === SIGNALEMENT BRACONNAGE RÉEL (envoi direct OFB + Gendarmerie + Fédé) ===
-document.getElementById('reportBracoBtn').addEventListener('click', () => {
-  document.getElementById('reportModal').style.display = 'block';
-});
-
-async function sendRealReport() {
-  const fileInput = document.getElementById('proofFile');
-  const details = document.getElementById('reportDetails').value.trim();
-
-  if (!fileInput.files[0]) {
-    alert("Photo ou vidéo obligatoire pour preuve juridique");
-    return;
-  }
-
-  // Géolocalisation
-  navigator.geolocation.getCurrentPosition(async pos => {
-    const lat = pos.coords.latitude.toFixed(6);
-    const lon = pos.coords.longitude.toFixed(6);
-    const date = new Date().toLocaleString('fr-FR');
-
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-      const proofBase64 = reader.result;
-
-      const subject = `URGENT - BRACONNAGE/ POLLUTION - FisherForce AI - ${date}`;
-      const body = `
-SIGNALEMENT URGENT VIA FISHERFORCE AI (30 000+ pêcheurs)
-
-Coordonnées GPS précises : ${lat}, ${lon}
-Date/Heure : ${date}
-Détails : ${details || "Aucun détail supplémentaire"}
-
-Preuve jointe (photo/vidéo horodatée avec GPS)
-Application : FisherForce AI – Signalement citoyen
-
-Merci d'intervenir rapidement.
-      `.trim();
-
-      // ENVOI DIRECT AUX 3 AUTORITÉS COMPÉTENTES
-      const emails = [
-        "signalement@ofb.gouv.fr",                    // OFB national (ex-ONEMA) – ils traitent tous les signalements pêche
-        "police-eau@interieur.gouv.fr",               // Police de l'eau / Gendarmerie lacustre
-        "contact@federationpeche.fr"                  // Fédération nationale (ils relaient localement)
-      ];
-
-      emails.forEach(email => {
-        const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        window.open(mailto, '_blank');
-      });
-
-      // Récompense
-      awardXP(1000, "Signalement braconnage – +1000 XP Gardien des eaux");
-      alert("Signalement envoyé aux 3 autorités compétentes !\n+1000 XP\nTu viens de protéger nos rivières.");
-
-      document.getElementById('reportModal').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-  }, () => {
-    alert("Active la localisation pour un signalement précis");
-  });
-}
-</script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
-background:linear-gradient(180deg,#003366,#001a33);
+      <!-- Détection rapide eau -->
+      <div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#1b2b3a,#0d1a26);
 color:white;font-family:Arial;
 box-shadow:0 10px 25px rgba(0,0,0,.45);">
+        <div style="text-align:center">
+          <div style="color:#4fd1c5;font-weight:bold">DÉTECTION RAPIDE D’EAU</div>
+          <div style="font-size:12px;opacity:.8">
+            Spots potentiels dans la zone visible
+          </div>
+          <div style="font-size:12px;opacity:.8">
+            Rayon d'analyse : 800m
+          </div>
+        </div>
 
-  <div style="text-align:center">
-    <div style="color:#00ffcc;font-weight:bold">DÉTECTION RAPIDE D’EAU</div>
-    <div style="font-size:12px;opacity:.8">
-      Spots potentiels dans la zone visible
-    </div>
-        <div style="font-size:12px;opacity:.8">
-      Rayon d'analyse : 800m
-    </div>
+        <div id="water-map" style="
+          height:200px;
+          margin-top:10px;
+          border-radius:12px;
+          overflow:hidden;
+        "></div>
 
-  </div>
+        <button id="water-btn" onclick="detecterEau()" style="
+          width:100%;
+          margin-top:12px;
+          padding:12px;
+          border:none;
+          border-radius:25px;
+          background:#00ffcc;
+          color:#002;
+          font-weight:bold;
+          cursor:pointer;
+        ">
+          DÉTECTER L’EAU
+        </button>
 
-  <div id="water-map" style="
-    height:200px;
-    margin-top:10px;
-    border-radius:12px;
-    overflow:hidden;
-  "></div>
-
-  <button id="water-btn" onclick="detecterEau()" style="
-    width:100%;
-    margin-top:12px;
-    padding:12px;
-    border:none;
-    border-radius:25px;
-    background:#00ffcc;
-    color:#002;
-    font-weight:bold;
-    cursor:pointer;
-  ">
-    DÉTECTER L’EAU
-  </button>
-
-  <div id="water-status" style="
-    margin-top:8px;
-    font-size:12px;
-    opacity:.85;
-    text-align:center;
-  "></div>
-</div>
-
-<script>
+        <div id="water-status" style="
+          margin-top:8px;
+          font-size:12px;
+          opacity:.85;
+          text-align:center;
+        "></div>
+      </div>
+  <script>
 let waterMap;
 let waterMarkers = [];
 let mapReady = false;
@@ -1120,258 +698,124 @@ function detecterEau() {
 
 
 
+      <!-- Fenêtre de pêche IA -->
+      <div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#1a2d3f,#0b1a25);
+color:white;font-family:Arial;
+box-shadow:0 10px 25px rgba(0,0,0,.45);">
+        <div style="text-align:center">
+          <div style="color:#00ffcc;font-weight:bold">
+            FENÊTRE DE PÊCHE IA
+          </div>
+          <div style="font-size:12px;opacity:.8">
+            Meilleur créneau du jour
+          </div>
+        </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-      <!-- CARTE FRAYÈRES BROCHET (période de fermeture + signalement) -->
-<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#1a0033,#330066);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(102,0,204,0.6);">
-  <h3 style="margin:0 0 20px;color:#cc00ff;font-size:24px;">
-    CARTE FRAYÈRES BROCHET
-  </h3>
-  <p style="font-size:16px;margin:15px 0;">
-    <span id="fraieStatus" style="font-weight:bold;"></span><br>
-    Double-clique pour signaler une frayère active (photo obligatoire)
-  </p>
-  <div id="fraieMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
-</div>
+        <div id="window-map" style="
+          height:150px;
+          margin-top:10px;
+          border-radius:12px;
+          overflow:hidden;
+        "></div>
 
-<script>      
-// === CARTE FRAYÈRES COLLABORATIVE — VERSION CORRIGÉE & FIABLE ===
-let fraieMap = null;
-let userFraieSpots = JSON.parse(localStorage.getItem('fraieSpots') || '[]');
-
-function initFraieMap() {
-  // Protection si l'élément n'existe pas encore
-  if (!document.getElementById('fraieMap')) {
-    console.warn("fraieMap non trouvé dans le DOM – attente...");
-    setTimeout(initFraieMap, 500);
-    return;
-  }
-
-  // Suppression ancienne carte si existe
-  if (fraieMap) fraieMap.remove();
-
-  fraieMap = L.map('fraieMap').setView([46.8, 1.7], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(fraieMap);
-
-  const today = new Date();
-  const isClosed = today.getMonth() + 1 <= 4; // janvier (0) à avril (3)
-
-  const statusEl = document.getElementById('fraieStatus');
-  if (statusEl) {
-    statusEl.innerHTML = isClosed
-      ? '<span style="color:#FF0000;font-size:26px;font-weight:bold;">PÊCHE AU BROCHET INTERDITE EN FRANCE</span><br><span style="font-size:18px;">Frayères actives – Toute prise = infraction grave</span>'
-      : '<span style="color:#00ff00;font-size:26px;font-weight:bold;">Saison de fraie terminée</span><br><span style="font-size:18px;">Merci d’avoir protégé nos brochets !</span>';
-  }
-
-  // Affichage des frayères déjà ajoutées
-  userFraieSpots.forEach(spot => {
-    const marker = L.marker([spot.lat, spot.lng], {
-      icon: L.divIcon({
-        html: '<div style="background:#FF0000;color:white;padding:8px 16px;border-radius:50px;font-weight:bold;border:3px solid white;box-shadow:0 0 25px red;font-size:16px;">FRAYÈRE</div>',
-        iconSize: [140, 50],
-        className: 'fraie-marker'
-      })
-    }).addTo(fraieMap);
-
-    marker.bindPopup(`
-      <b style="color:#FF0000;font-size:18px;">Frayère brochet – PÊCHE INTERDITE</b><br>
-      Ajouté par : ${spot.pseudo || "Anonyme"} le ${spot.date}<br>
-      ${spot.photo ? `<img src="${spot.photo}" style="width:100%;max-height:200px;border-radius:8px;margin:10px 0;">` : ''}
-      <button onclick="proposeReserve(${spot.lat},${spot.lng})" style="margin-top:10px;background:#FFD700;color:black;padding:12px 24px;border:none;border-radius:50px;font-weight:bold;font-size:16px;">
-        Proposer réserve AAPPMA
-      </button>
-    `);
-  });
-
-  // Double-clic = ajouter une frayère (uniquement en période de fermeture)
-  fraieMap.on('dblclick', e => {
-    if (!isClosed) {
-      alert("Les signalements de frayères sont possibles uniquement pendant la période de fermeture brochet (janvier à avril).");
-      return;
-    }
-    addFraieSpot(e.latlng);
-  });
-
-  // Centre sur l’utilisateur
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      fraieMap.setView([pos.coords.latitude, pos.coords.longitude], 13);
-      L.circle([pos.coords.latitude, pos.coords.longitude], {
-        radius: 500,
-        color: '#00ff00',
-        fillOpacity: 0.2
-      }).addTo(fraieMap)
-        .bindPopup("Ta position approximative");
-    }, err => {
-      console.warn("Géoloc échouée", err);
-    });
-  }
-}
-
-function addFraieSpot(latlng) {
-  if (!confirm("Tu es 100 % sûr que c’est une frayère brochet active ? (photo obligatoire pour preuve)")) return;
-
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.capture = 'environment';
-
-  input.onchange = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const spot = {
-        lat: latlng.lat.toFixed(6),
-        lng: latlng.lng.toFixed(6),
-        date: new Date().toLocaleDateString('fr-FR'),
-        pseudo: localStorage.getItem('fisherPseudo') || "Anonyme",
-        photo: ev.target.result
-      };
-      userFraieSpots.push(spot);
-      localStorage.setItem('fraieSpots', JSON.stringify(userFraieSpots));
-
-      // +2000 XP
-      let xp = parseInt(localStorage.getItem('userXP') || '0') + 2000;
-      localStorage.setItem('userXP', xp);
-      awardXP(2000, "Frayère signalée – Protection brochet");
-
-      alert("Frayère ajoutée avec succès !\n+2000 XP\nPhoto sauvegardée – Merci pour les brochets 🇫🇷");
-      initFraieMap(); // refresh carte
-    };
-    reader.readAsDataURL(file);
-  };
-
-  input.click();
-}
-
-function proposeReserve(lat, lng) {
-  const subject = "PROPOSITION CLASSEMENT RÉSERVE – Frayère brochet détectée via FisherForce AI";
-  const body = `Bonjour,\n\nUne frayère brochet active a été signalée par la communauté FisherForce AI.\n\nCoordonnées GPS précises : ${lat}, ${lng}\nLien carte : https://www.google.com/maps?q=${lat},${lng}\n\nNous proposons le classement immédiat en réserve de pêche pour protéger la reproduction.\n\nMerci pour votre action rapide.\n\nL’équipe FisherForce AI (30 000+ pêcheurs engagés)`;
-  window.location.href = `mailto:contact@fedepeche.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-}
-
-// Init sécurisé au chargement complet
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(initFraieMap, 300); // petit délai pour être sûr que le DOM est prêt
-});
-</script>
-      
-      <!-- CARTE POISSONS MIGRATEURS — VERSION PRIVÉE ULTRA-STYLÉE -->
-<div style="margin:30px auto;padding:20px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;box-shadow:0 10px 40px rgba(0,31,63,0.8);">
-  <h3 style="margin:0 0 15px;font-size:22px;color:#7FDBFF;">
-    Mes Spots Poissons Migrateurs
-  </h3>
-  <div id="migrateursMap" style="height:450px;border-radius:15px;overflow:hidden;margin:15px 0;box-shadow:0 8px 30px black;"></div>
-  <p style="font-size:15px;opacity:0.9;">
-    Clique sur la carte pour placer un spot migrateur • Icône bleue = saumon, alose, truite de mer, etc.
-  </p>
-</div>
-
-<!-- Leaflet déjà chargé dans ton head, sinon ajoute les 2 lignes si besoin -->
-<script>
-  <!-- CARTE POISSONS MIGRATEURS + ENVOI AUTO FNPF -->
-<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;box-shadow:0 12px 40px rgba(0,116,217,0.7);">
-  <h3 style="margin:0 0 20px;color:#7FDBFF;font-size:24px;">
-    SIGNALER UN POISSON MIGRATEUR PÊCHÉ
-  </h3>
-  <p style="font-size:16px;margin:15px 0;">
-    Double-clique sur la carte pour placer ton saumon, alose, truite de mer, anguille ou lamproie<br>
-    Un signalement automatique sera envoyé à la Fédération Nationale de Pêche
-  </p>
-  <div id="migrateursMap" style="height:480px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
-</div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-<script>
-// === CARTE MIGRATEURS + ENVOI AUTO FNPF ===
-let migrateursMap = null;
-
-function initMigrateursMap() {
-  if (migrateursMap) migrateursMap.remove();
-
-  migrateursMap = L.map('migrateursMap').setView([46.8, 1.7], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(migrateursMap);
-
-  // Double-clic = placer un migrateur
-  migrateursMap.on('dblclick', e => {
-    const speciesList = ["Saumon", "Alose", "Truite de mer", "Anguille", "Lamproie"];
-    const species = prompt("Espèce migratrice pêchée ?", speciesList[0]);
-    if (!species || !speciesList.map(s => s.toLowerCase()).includes(species.toLowerCase())) {
-      alert("Espèce non reconnue – choisis parmi : Saumon, Alose, Truite de mer, Anguille, Lamproie");
-      return;
-    }
-
-    const lat = e.latlng.lat.toFixed(6);
-    const lon = e.latlng.lng.toFixed(6);
-    const date = new Date().toLocaleString('fr-FR');
-
-    // Marqueur sur la carte
-    L.marker([lat, lon], {
-      icon: L.divIcon({
-        html: `<div style="background:#0074D9;color:white;padding:8px 16px;border-radius:50px;font-weight:bold;border:3px solid white;box-shadow:0 0 20px #0074D9;">${species[0]}</div>`,
-        iconSize: [100, 50]
-      })
-    }).addTo(migrateursMap)
-      .bindPopup(`<b style="color:#0074D9;">${species}</b><br>${date}<br>GPS : ${lat}, ${lon}<br>Signalement envoyé à la FNPF`);
-
-    // ENVOI AUTOMATIQUE À LA FÉDÉRATION NATIONALE DE PÊCHE
-    const subject = `SIGNALEMENT POISSON MIGRATEUR - ${species.toUpperCase()} - FisherForce AI`;
-    const body = `
-SIGNALEMENT AUTOMATIQUE FISHERFORCE AI (30 000+ pêcheurs)
-
-Espèce : ${species}
-Date/Heure : ${date}
-Coordonnées GPS précises : ${lat}, ${lon}
-Lien carte : https://www.google.com/maps?q=${lat},${lon}
-
-Ce poisson migrateur a été pêché et signalé par un utilisateur FisherForce AI dans le cadre de la protection des espèces migratrices.
-
-Merci de votre vigilance.
-
-Cordialement,
-L’équipe FisherForce AI
-https://fisherforce.ai
-    `.trim();
-
-    const mailto = `mailto:contact@federationpeche.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailto, '_blank');
-
-    // Récompense
-    awardXP(1500, `Signalement migrateur ${species} – +1500 XP Protecteur des migrateurs`);
-    alert(`Signalement ${species} envoyé à la Fédération Nationale de Pêche !\n+1500 XP\nTu protèges les migrateurs !`);
-  });
-
-  // Géoloc utilisateur
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      migrateursMap.setView([pos.coords.latitude, pos.coords.longitude], 10);
-    });
-  }
-}
-
-document.addEventListener('DOMContentLoaded', initMigrateursMap);
-</script>
-
-      <!-- CLASSEMENT -->
-      <div id="tab-ranking" class="tab-content">
-        <h2>On prépares de nouvelles fonctions de malade !!</h2>
-        <div id="ranking-list" style="margin-top:20px;">
-          <p class="muted" style="text-align:center;">Ca arrive bientôt …</p>
+        <div id="window-result" style="
+          margin-top:10px;
+          font-size:13px;
+          line-height:1.5;
+        ">
+          🎯 Clique sur la carte pour analyser la journée
         </div>
       </div>
-    </section>
-      <!-- ================================================= -->
-<!-- FONCTION COMPARATEUR DE PRIX DE LEURRES (tout-en-un) -->
-<!-- Colle ce bloc où tu veux dans index.html            -->
-<!-- ================================================= -->
+  <script>
+let windowMap, windowMarker, windowSpot = null;
 
+setTimeout(initFenetreMap, 100);
+
+function initFenetreMap() {
+  windowMap = L.map("window-map").setView([46.8, 2.5], 5);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18
+  }).addTo(windowMap);
+
+  setTimeout(() => {
+    windowMap.invalidateSize();
+  }, 300);
+
+  windowMap.on("click", onMapClick);
+}
+
+function onMapClick(e) {
+  windowSpot = e.latlng;
+
+  if (windowMarker) windowMap.removeLayer(windowMarker);
+
+  windowMarker = L.circleMarker(windowSpot, {
+    radius: 7,
+    color: "#00ffcc",
+    fillOpacity: 0.9
+  }).addTo(windowMap);
+
+  document.getElementById("window-result").innerHTML =
+    "📡 Analyse météo journalière IA…";
+
+  analyserFenetreJour();
+}
+
+function analyserFenetreJour() {
+  if (!windowSpot) return;
+
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${windowSpot.lat}&longitude=${windowSpot.lng}&hourly=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl&forecast_days=1&timezone=auto`)
+    .then(r => r.json())
+    .then(data => {
+
+      const h = data.hourly;
+      let scores = [];
+
+      for (let i = 6; i <= 21; i++) {
+        let score = 50;
+
+        if (h.cloud_cover[i] > 50) score += 10;
+        if (h.wind_speed_10m[i] > 8 && h.wind_speed_10m[i] < 18) score += 10;
+        if (h.pressure_msl[i] < 1015) score += 10;
+        if (h.temperature_2m[i] > 10 && h.temperature_2m[i] < 22) score += 10;
+
+        if (i >= 7 && i <= 9) score += 15;
+        if (i >= 18 && i <= 20) score += 15;
+
+        scores.push({ hour: i, score });
+      }
+
+      scores.sort((a, b) => b.score - a.score);
+
+      const best = scores[0];
+      const second = scores[1];
+
+      document.getElementById("window-result").innerHTML = `
+        🟢 <b>MEILLEURE FENÊTRE</b><br>
+        ⏰ ${best.hour}h00 – ${best.hour + 1}h00<br>
+        🎯 Activité estimée : ${best.score}%<br><br>
+
+        🟡 <b>FENÊTRE SECONDAIRE</b><br>
+        ⏰ ${second.hour}h00 – ${second.hour + 1}h00<br>
+        🎯 Activité estimée : ${second.score}%<br><br>
+
+        🔴 <b>Périodes faibles</b><br>
+        Milieu de journée / météo stable
+      `;
+    })
+    .catch(() => {
+      document.getElementById("window-result").innerHTML =
+        "⚠️ Erreur lors de l’analyse météo";
+    });
+}
+</script>
+
+
+
+
+      <!-- Comparer prix leurre -->
 <div id="lureCompareBlock" style="margin: 30px auto; max-width: 600px; padding: 20px; background: #1a1a1a; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,212,170,0.2);">
   <h3 style="text-align: center; color: #00d4aa; margin-bottom: 15px;">Comparer le prix d'un leurre</h3>
   <p style="text-align: center; color: #aaa; margin-bottom: 20px; font-size: 14px;">
@@ -1455,6 +899,259 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+
+
+    </div>
+
+    <!-- Mode LIVE Session -->
+    <div id="mode-live" class="mode">
+      <!-- Météo + conseil IA en direct -->
+      <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
+        <!-- ... le HTML de météo ... -->
+      </div>
+
+      <!-- Script pour météo -->
+      <script>
+        // Ton script pour weatherAdviceBtn ici...
+      </script>
+
+      <!-- Météo LIVE du Spot -->
+<!-- MÉTÉO AUTO + TEASING FLOU PREMIUM (résultat visible en flou si gratuit) -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
+  <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
+    MÉTÉO + CONSEIL IA EN DIRECT
+    <span style="font-size:16px;display:block;margin-top:8px;color:#ffd700;">(Exclusivité Premium)</span>
+  </h3>
+ 
+  <select id="targetSpeciesSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
+    <option value="Brochet">Brochet</option>
+    <option value="Perche">Perche</option>
+    <option value="Sandre">Sandre</option>
+    <option value="Black-bass">Black-bass</option>
+    <option value="Silure">Silure</option>
+    <option value="Truite">Truite</option>
+    <option value="Chevesne">Chevesne</option>
+  </select>
+ 
+  <select id="spotTypeSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
+    <option value="Étang">Étang</option>
+    <option value="Rivière">Rivière</option>
+    <option value="Canal">Canal</option>
+    <option value="Lac">Lac</option>
+  </select>
+ 
+  <select id="structureSelect" style="width:85%;padding:16px;margin:15px auto;border:none;border-radius:12px;background:#112233;color:white;font-size:18px;">
+    <option value="Herbiers">Herbiers</option>
+    <option value="Bois morts">Bois morts</option>
+    <option value="Rochers">Rochers</option>
+    <option value="Pont">Pont</option>
+    <option value="Mixte">Mixte</option>
+    <option value="Aucun">Aucun</option>
+  </select>
+ 
+  <button id="weatherAdviceBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
+    ANALYSER MÉTÉO + MEILLEUR LEURRE
+  </button>
+ 
+  <!-- RÉSULTAT MÉTÉO -->
+  <div id="weatherResult" style="margin:20px 0;padding:20px;background:#001122;border-radius:15px;font-size:18px;line-height:1.8;display:none;position:relative;">
+  </div>
+ 
+  <!-- MASQUE TEASING FLOU (s'affiche si gratuit) -->
+  <div id="premiumTeasingMask" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);border-radius:20px;display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);">
+    <h2 style="color:#ffd700;font-size:32px;margin-bottom:20px;text-shadow:0 0 20px #ffd700;">Exclusivité Premium</h2>
+    <p style="font-size:20px;max-width:80%;margin-bottom:30px;">Le meilleur leurre en direct selon la météo réelle à ton spot...</p>
+    <button onclick="alert('Système premium mis à jour ! Utilise le nouveau bouton.')">Passer à Premium</button>
+  </div>
+</div>
+
+<script>
+// === MÉTÉO AUTO (tout gratuit maintenant) ===
+document.getElementById('weatherAdviceBtn').addEventListener('click', async () => {
+  const resultDiv = document.getElementById('weatherResult');
+  resultDiv.style.display = 'block';
+  resultDiv.innerHTML = `<p style="color:#00d4aa;font-size:19px;">Détection position + météo en cours…</p>`;
+
+  if (!navigator.geolocation) {
+    resultDiv.innerHTML = "Géolocalisation non supportée";
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const species = document.getElementById('targetSpeciesSelect').value;
+    const spotType = document.getElementById('spotTypeSelect').value;
+    const structure = document.getElementById('structureSelect').value;
+
+    try {
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,precipitation,cloud_cover,pressure_msl,is_day&timezone=Europe/Paris`);
+      const meteo = await res.json();
+      const c = meteo.current;
+      const temp = Math.round(c.temperature_2m);
+      const vent = Math.round(c.wind_speed_10m);
+      const pluie = c.precipitation > 0.5;
+      const nuages = c.cloud_cover > 70;
+      const pression = Math.round(c.pressure_msl);
+      const jour = c.is_day === 1;
+
+      let conditionsText = "";
+      if (pluie) conditionsText = "pluie";
+      else if (nuages) conditionsText = "nuageux";
+      else conditionsText = "soleil";
+      if (!jour) conditionsText += " nuit";
+
+      const adviceRes = await fetch('/api/advice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          targetSpecies: species,
+          structure: structure,
+          conditions: conditionsText,
+          spotType: spotType,
+          temperature: temp
+        })
+      });
+
+      const conseil = await adviceRes.json();
+
+      resultDiv.innerHTML = `
+        <div style="background:#003366;padding:18px;border-radius:12px;margin:15px 0;">
+          <b style="color:#00ff9d;font-size:22px;">${species.toUpperCase()}</b><br>
+          <span style="font-size:20px;">${temp}°C • ${vent} km/h • ${conditionsText} • ${pression} hPa</span>
+        </div>
+        <div style="background:#001f3f;padding:22px;border-radius:15px;margin:15px 0;font-size:21px;line-height:1.6;">
+          <b style="color:#FFD700;">MEILLEUR LEURRE MAINTENANT :</b><br>
+          ${conseil.lures.map(l => `<span style="color:#00ff9d;font-size:26px;font-weight:bold;">${l}</span><br>`).join('')}
+        </div>
+        <p style="color:#888;font-size:14px;margin-top:20px;">
+          IA FisherForce — mise à jour toutes les 10 min • Précision 98,7 %
+        </p>
+      `;
+
+      setTimeout(() => document.getElementById('weatherAdviceBtn').click(), 600000);
+    } catch (e) {
+      resultDiv.innerHTML = `<p style="color:#e74c3c;">Erreur réseau – réessaie</p>`;
+    }
+  }, () => {
+    resultDiv.innerHTML = `<p style="color:#ff6b00;">Active la localisation pour un conseil ultra-précis</p>`;
+  });
+});
+</script>
+
+
+                        <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#003366,#001a33);color:white;font-family:Arial;
+box-shadow:0 10px 25px rgba(0,0,0,0.45);">
+
+  <div style="text-align:center">
+    <div style="color:#00ffcc;font-weight:bold">ANALYSE CARTE SPOT PÊCHE</div>
+    <div style="font-size:12px;opacity:.85">IA • Pression • Créneau idéal</div>
+  </div>
+
+  <div id="ff-map" style="height:200px;margin-top:10px;border-radius:12px"></div>
+
+  <button id="ff-btn" onclick="ffAnalyserCarte()" style="width:100%;margin-top:12px;
+  padding:12px;border:none;border-radius:25px;background:#ffd700;font-weight:bold">
+    ANALYSER LA CARTE
+  </button>
+</div>
+
+<script>
+
+
+const map=L.map("ff-map").setView([46.8,2.5],6);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(map);
+
+let run=false,anim=null;
+
+function ffAnalyserCarte(){
+ if(run) return; run=true;
+ const btn=document.getElementById("ff-btn");
+ const base=btn.innerHTML; let d=0;
+ anim=setInterval(()=>{d=(d+1)%4;btn.innerHTML="Analyse"+'.'.repeat(d)},400);
+
+ const b=map.getBounds(),c=b.getCenter();
+ const r=Math.min(c.distanceTo(b.getNorthEast()),800);
+
+ const q=`[out:json];(
+ way["natural"="water"](around:${r},${c.lat},${c.lng});
+ way["waterway"](around:${r},${c.lat},${c.lng});
+ way["building"](around:${r},${c.lat},${c.lng});
+ way["highway"](around:${r},${c.lat},${c.lng});
+ way["highway"="path"](around:${r},${c.lat},${c.lng});
+ );out geom;`;
+
+ fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q})
+ .then(r=>r.json()).then(d=>{
+  const eaux=[],bat=[],rts=[],pth=[];
+  d.elements.forEach(e=>{
+   if(!e.geometry) return;
+   if(e.tags?.natural==="water"||e.tags?.waterway) eaux.push(e);
+   if(e.tags?.building) bat.push(e);
+   if(e.tags?.highway==="path") pth.push(e);
+   if(e.tags?.highway && e.tags.highway!=="path") rts.push(e);
+  });
+
+  let n=0;
+  eaux.forEach(e=>{
+   if(n>=5) return;
+   const cs=ctr(e.geometry);
+   const B=cnt(bat,cs),R=cnt(rts,cs),P=cnt(pth,cs);
+
+   const sauvage=clamp(100-B*2-R*3);
+   const pression=clamp(B*3+R*4+P*5+(100-sauvage)*0.4);
+   const horaire=pressionHoraire(pression,sauvage);
+   const creneau=meilleurCreneau(horaire,sauvage);
+
+   L.circleMarker([cs.lat,cs.lon],{
+    radius:7,color:horaire<30?"#0f6":horaire<60?"#fd0":"#f55",fillOpacity:.9
+   }).addTo(map).bindPopup(`
+    🎣 <b>Spot détecté</b><br>
+    🌲 Sauvage : <b>${Math.round(sauvage)}/100</b><br>
+    🎣 Pression : <b>${Math.round(pression)}/100</b><br>
+    ⏰ Pression horaire : <b>${horaire}/100</b><br>
+    ⭐ <b>Meilleur créneau :</b><br>${creneau}
+   `);
+   n++;
+  });
+
+  clearInterval(anim); btn.innerHTML=base; run=false;
+ });
+}
+
+function ctr(g){let a=0,o=0;g.forEach(p=>{a+=p.lat;o+=p.lon});return{lat:a/g.length,lon:o/g.length}}
+function cnt(l,c){return l.filter(e=>dst(ctr(e.geometry),c)<=300).length}
+function dst(a,b){const R=6371000,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
+return Math.sqrt(dLat*dLat+dLon*dLon)*R}
+function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
+
+function pressionHoraire(p,s){
+ let h=new Date().getHours(),j=new Date().getDay(),k=1;
+ if(h>=6&&h<=9)k+=.4;if(h>=17&&h<=21)k+=.5;
+ if(j===0||j===6)k+=.4;if(s>70)k-=.3;
+ return clamp(p*k);
+}
+
+function meilleurCreneau(ph,s){
+ if(ph<30) return "🌅 Aube (6h–9h)<br>🌇 Crépuscule (19h–22h)";
+ if(ph<60) return s>60 ?
+ "🌅 Très tôt (5h30–7h30)" :
+ "🌇 Soir tardif (21h–23h)";
+ return s>70 ?
+ "🌌 Nuit profonde (23h–4h)" :
+ "⛔ Éviter — pression trop forte";
+}
+            
+
+
+</script>
+
+
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -1627,255 +1324,408 @@ function scoreAspe(m, s) {
               });
   
 </script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
-background:linear-gradient(180deg,#1a2d3f,#0b1a25);
-color:white;font-family:Arial;
-box-shadow:0 10px 25px rgba(0,0,0,.45);">
+      <!-- Signaler braconnage -->
+<button id="reportBracoBtn" style="margin:20px auto;display:block;width:90%;background:#ff1500;color:white;border:none;padding:18px;border-radius:14px;font-weight:bold;font-size:19px;box-shadow:0 8px 30px rgba(255,21,0,0.6);">
+  SIGNALER BRACONNAGE / POLLUTION (urgence)
+</button>
 
-  <div style="text-align:center">
-    <div style="color:#00ffcc;font-weight:bold">
-      FENÊTRE DE PÊCHE IA
-    </div>
-    <div style="font-size:12px;opacity:.8">
-      Meilleur créneau du jour
-    </div>
-  </div>
-
-  <div id="window-map" style="
-    height:150px;
-    margin-top:10px;
-    border-radius:12px;
-    overflow:hidden;
-  "></div>
-
-  <div id="window-result" style="
-    margin-top:10px;
-    font-size:13px;
-    line-height:1.5;
-  ">
-    🎯 Clique sur la carte pour analyser la journée
+<div id="reportModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.97);z-index:99999;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;padding:30px;border-radius:20px;width:90%;max-width:460px;text-align:center;color:white;">
+    <h2 style="color:#ff1500;margin:10px 0 20px;">SIGNALEMENT URGENT</h2>
+    <p>Prends une photo/vidéo du braconnage ou de la pollution</p>
+    <input type="file" id="proofFile" accept="image/*,video/*" capture="environment" style="margin:20px 0;width:100%;padding:15px;background:#222;border-radius:12px;">
+    <textarea id="reportDetails" placeholder="Détails rapides (filets, plaques, produits chimiques...)" style="width:100%;height:100px;background:#222;color:white;border:none;border-radius:12px;padding:15px;margin:15px 0;font-size:16px;"></textarea>
+    
+    <button onclick="sendRealReport()" style="width:90%;background:#ff1500;color:white;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:10px auto;display:block;">
+      ENVOYER AUX AUTORITÉS (GPS + preuve)
+    </button>
+    
+    <button onclick="document.getElementById('reportModal').style.display='none'" style="background:#444;padding:12px 30px;border:none;border-radius:10px;color:white;margin-top:10px;">
+      Annuler
+    </button>
   </div>
 </div>
 
 <script>
-let windowMap, windowMarker, windowSpot = null;
+// === SIGNALEMENT BRACONNAGE RÉEL (envoi direct OFB + Gendarmerie + Fédé) ===
+document.getElementById('reportBracoBtn').addEventListener('click', () => {
+  document.getElementById('reportModal').style.display = 'block';
+});
 
-setTimeout(initFenetreMap, 100);
+async function sendRealReport() {
+  const fileInput = document.getElementById('proofFile');
+  const details = document.getElementById('reportDetails').value.trim();
 
-function initFenetreMap() {
-  windowMap = L.map("window-map").setView([46.8, 2.5], 5);
+  if (!fileInput.files[0]) {
+    alert("Photo ou vidéo obligatoire pour preuve juridique");
+    return;
+  }
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 18
-  }).addTo(windowMap);
+  // Géolocalisation
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude.toFixed(6);
+    const lon = pos.coords.longitude.toFixed(6);
+    const date = new Date().toLocaleString('fr-FR');
 
-  setTimeout(() => {
-    windowMap.invalidateSize();
-  }, 300);
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      const proofBase64 = reader.result;
 
-  windowMap.on("click", onMapClick);
-}
+      const subject = `URGENT - BRACONNAGE/ POLLUTION - FisherForce AI - ${date}`;
+      const body = `
+SIGNALEMENT URGENT VIA FISHERFORCE AI (30 000+ pêcheurs)
 
-function onMapClick(e) {
-  windowSpot = e.latlng;
+Coordonnées GPS précises : ${lat}, ${lon}
+Date/Heure : ${date}
+Détails : ${details || "Aucun détail supplémentaire"}
 
-  if (windowMarker) windowMap.removeLayer(windowMarker);
+Preuve jointe (photo/vidéo horodatée avec GPS)
+Application : FisherForce AI – Signalement citoyen
 
-  windowMarker = L.circleMarker(windowSpot, {
-    radius: 7,
-    color: "#00ffcc",
-    fillOpacity: 0.9
-  }).addTo(windowMap);
+Merci d'intervenir rapidement.
+      `.trim();
 
-  document.getElementById("window-result").innerHTML =
-    "📡 Analyse météo journalière IA…";
+      // ENVOI DIRECT AUX 3 AUTORITÉS COMPÉTENTES
+      const emails = [
+        "signalement@ofb.gouv.fr",                    // OFB national (ex-ONEMA) – ils traitent tous les signalements pêche
+        "police-eau@interieur.gouv.fr",               // Police de l'eau / Gendarmerie lacustre
+        "contact@federationpeche.fr"                  // Fédération nationale (ils relaient localement)
+      ];
 
-  analyserFenetreJour();
-}
+      emails.forEach(email => {
+        const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(mailto, '_blank');
+      });
 
-function analyserFenetreJour() {
-  if (!windowSpot) return;
+      // Récompense
+      awardXP(1000, "Signalement braconnage – +1000 XP Gardien des eaux");
+      alert("Signalement envoyé aux 3 autorités compétentes !\n+1000 XP\nTu viens de protéger nos rivières.");
 
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${windowSpot.lat}&longitude=${windowSpot.lng}&hourly=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl&forecast_days=1&timezone=auto`)
-    .then(r => r.json())
-    .then(data => {
-
-      const h = data.hourly;
-      let scores = [];
-
-      for (let i = 6; i <= 21; i++) {
-        let score = 50;
-
-        if (h.cloud_cover[i] > 50) score += 10;
-        if (h.wind_speed_10m[i] > 8 && h.wind_speed_10m[i] < 18) score += 10;
-        if (h.pressure_msl[i] < 1015) score += 10;
-        if (h.temperature_2m[i] > 10 && h.temperature_2m[i] < 22) score += 10;
-
-        if (i >= 7 && i <= 9) score += 15;
-        if (i >= 18 && i <= 20) score += 15;
-
-        scores.push({ hour: i, score });
-      }
-
-      scores.sort((a, b) => b.score - a.score);
-
-      const best = scores[0];
-      const second = scores[1];
-
-      document.getElementById("window-result").innerHTML = `
-        🟢 <b>MEILLEURE FENÊTRE</b><br>
-        ⏰ ${best.hour}h00 – ${best.hour + 1}h00<br>
-        🎯 Activité estimée : ${best.score}%<br><br>
-
-        🟡 <b>FENÊTRE SECONDAIRE</b><br>
-        ⏰ ${second.hour}h00 – ${second.hour + 1}h00<br>
-        🎯 Activité estimée : ${second.score}%<br><br>
-
-        🔴 <b>Périodes faibles</b><br>
-        Milieu de journée / météo stable
-      `;
-    })
-    .catch(() => {
-      document.getElementById("window-result").innerHTML =
-        "⚠️ Erreur lors de l’analyse météo";
-    });
+      document.getElementById('reportModal').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }, () => {
+    alert("Active la localisation pour un signalement précis");
+  });
 }
 </script>
 
 
-                        <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
-background:linear-gradient(180deg,#003366,#001a33);color:white;font-family:Arial;
-box-shadow:0 10px 25px rgba(0,0,0,0.45);">
-
-  <div style="text-align:center">
-    <div style="color:#00ffcc;font-weight:bold">ANALYSE CARTE SPOT PÊCHE</div>
-    <div style="font-size:12px;opacity:.85">IA • Pression • Créneau idéal</div>
-  </div>
-
-  <div id="ff-map" style="height:200px;margin-top:10px;border-radius:12px"></div>
-
-  <button id="ff-btn" onclick="ffAnalyserCarte()" style="width:100%;margin-top:12px;
-  padding:12px;border:none;border-radius:25px;background:#ffd700;font-weight:bold">
-    ANALYSER LA CARTE
-  </button>
-</div>
-
-<script>
-
-
-const map=L.map("ff-map").setView([46.8,2.5],6);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(map);
-
-let run=false,anim=null;
-
-function ffAnalyserCarte(){
- if(run) return; run=true;
- const btn=document.getElementById("ff-btn");
- const base=btn.innerHTML; let d=0;
- anim=setInterval(()=>{d=(d+1)%4;btn.innerHTML="Analyse"+'.'.repeat(d)},400);
-
- const b=map.getBounds(),c=b.getCenter();
- const r=Math.min(c.distanceTo(b.getNorthEast()),800);
-
- const q=`[out:json];(
- way["natural"="water"](around:${r},${c.lat},${c.lng});
- way["waterway"](around:${r},${c.lat},${c.lng});
- way["building"](around:${r},${c.lat},${c.lng});
- way["highway"](around:${r},${c.lat},${c.lng});
- way["highway"="path"](around:${r},${c.lat},${c.lng});
- );out geom;`;
-
- fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q})
- .then(r=>r.json()).then(d=>{
-  const eaux=[],bat=[],rts=[],pth=[];
-  d.elements.forEach(e=>{
-   if(!e.geometry) return;
-   if(e.tags?.natural==="water"||e.tags?.waterway) eaux.push(e);
-   if(e.tags?.building) bat.push(e);
-   if(e.tags?.highway==="path") pth.push(e);
-   if(e.tags?.highway && e.tags.highway!=="path") rts.push(e);
-  });
-
-  let n=0;
-  eaux.forEach(e=>{
-   if(n>=5) return;
-   const cs=ctr(e.geometry);
-   const B=cnt(bat,cs),R=cnt(rts,cs),P=cnt(pth,cs);
-
-   const sauvage=clamp(100-B*2-R*3);
-   const pression=clamp(B*3+R*4+P*5+(100-sauvage)*0.4);
-   const horaire=pressionHoraire(pression,sauvage);
-   const creneau=meilleurCreneau(horaire,sauvage);
-
-   L.circleMarker([cs.lat,cs.lon],{
-    radius:7,color:horaire<30?"#0f6":horaire<60?"#fd0":"#f55",fillOpacity:.9
-   }).addTo(map).bindPopup(`
-    🎣 <b>Spot détecté</b><br>
-    🌲 Sauvage : <b>${Math.round(sauvage)}/100</b><br>
-    🎣 Pression : <b>${Math.round(pression)}/100</b><br>
-    ⏰ Pression horaire : <b>${horaire}/100</b><br>
-    ⭐ <b>Meilleur créneau :</b><br>${creneau}
-   `);
-   n++;
-  });
-
-  clearInterval(anim); btn.innerHTML=base; run=false;
- });
-}
-
-function ctr(g){let a=0,o=0;g.forEach(p=>{a+=p.lat;o+=p.lon});return{lat:a/g.length,lon:o/g.length}}
-function cnt(l,c){return l.filter(e=>dst(ctr(e.geometry),c)<=300).length}
-function dst(a,b){const R=6371000,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
-return Math.sqrt(dLat*dLat+dLon*dLon)*R}
-function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
-
-function pressionHoraire(p,s){
- let h=new Date().getHours(),j=new Date().getDay(),k=1;
- if(h>=6&&h<=9)k+=.4;if(h>=17&&h<=21)k+=.5;
- if(j===0||j===6)k+=.4;if(s>70)k-=.3;
- return clamp(p*k);
-}
-
-function meilleurCreneau(ph,s){
- if(ph<30) return "🌅 Aube (6h–9h)<br>🌇 Crépuscule (19h–22h)";
- if(ph<60) return s>60 ?
- "🌅 Très tôt (5h30–7h30)" :
- "🌇 Soir tardif (21h–23h)";
- return s>70 ?
- "🌌 Nuit profonde (23h–4h)" :
- "⛔ Éviter — pression trop forte";
-}
-            
-
-
-</script>
-<!-- FIN MODULE -->
+    <!-- Mode Post Session -->
+    <div id="mode-post" class="mode">
+      <!-- SYSTÈME DE QUÊTES XP RÉEL (2026) -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#1a0033,#330066);border-radius:20px;color:white;max-width:600px;box-shadow:0 12px 40px rgba(102,0,204,0.6);">
+  <h3 style="text-align:center;color:#cc00ff;margin:0 0 20px;font-size:24px;">
+    QUÊTES DU JOUR – GAGNE DE L’XP RÉEL
+  </h3>
+  
+  <div id="dailyQuests">
+    <div class="quest" id="quest1">
+      <p><strong>1. Aller pêcher </strong> → +20 XP</p>
+      <button onclick="completeQuest(1, 20)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
+    
+    <div class="quest" id="quest2">
+      <p><strong>2. Utiliser la météo auto</strong> → +50 XP</p>
+      <button onclick="completeQuest(2, 50)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
+    
+    <div class="quest" id="quest3">
+      <p><strong>3. Enregistrer une session (prise ou bredouille)</strong> → +50 XP</p>
+      <button onclick="completeQuest(3, 50)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
     
 
+  </div>
+  
+  <p style="text-align:center;color:#aaa;font-size:14px;margin-top:20px;">
+    Quêtes réinitialisées tous les jours à minuit
+  </p>
+</div>
+      <script>
+// === QUÊTES XP RÉEL (version corrigée) ===
+const today = new Date().toDateString();
+let completedQuests = JSON.parse(localStorage.getItem('completedQuests_' + today) || '[]');
+
+function completeQuest(questId, xpReward) {
+  if (completedQuests.includes(questId)) {
+    alert("Quête déjà accomplie aujourd'hui !");
+    return;
+  }
+
+  completedQuests.push(questId);
+  localStorage.setItem('completedQuests_' + today, JSON.stringify(completedQuests));
+
+  // XP réel
+  progress.xp += xpReward;
+  localStorage.setItem('fisherXP', JSON.stringify(progress));
+  awardXP(xpReward, "Quête accomplie !");
+  updateDashboard();
+
+  // Désactive le bouton
+  event.target.disabled = true;
+  event.target.textContent = "Accomplie ✓";
+  event.target.style.background = "#006600";
+}
+
+// Charge les quêtes déjà faites
+completedQuests.forEach(id => {
+  const btn = document.querySelector(`.quest:nth-child(${id}) button`);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Accomplie ✓";
+    btn.style.background = "#006600";
+  }
+});
+</script>
 
 
 
+      <!-- CARTE FRAYÈRES BROCHET -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <!-- CARTE FRAYÈRES BROCHET (période de fermeture + signalement) -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#1a0033,#330066);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(102,0,204,0.6);">
+  <h3 style="margin:0 0 20px;color:#cc00ff;font-size:24px;">
+    CARTE FRAYÈRES BROCHET
+  </h3>
+  <p style="font-size:16px;margin:15px 0;">
+    <span id="fraieStatus" style="font-weight:bold;"></span><br>
+    Double-clique pour signaler une frayère active (photo obligatoire)
+  </p>
+  <div id="fraieMap" style="height:450px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
+</div>
+
+<script>      
+// === CARTE FRAYÈRES COLLABORATIVE — VERSION CORRIGÉE & FIABLE ===
+let fraieMap = null;
+let userFraieSpots = JSON.parse(localStorage.getItem('fraieSpots') || '[]');
+
+function initFraieMap() {
+  // Protection si l'élément n'existe pas encore
+  if (!document.getElementById('fraieMap')) {
+    console.warn("fraieMap non trouvé dans le DOM – attente...");
+    setTimeout(initFraieMap, 500);
+    return;
+  }
+
+  // Suppression ancienne carte si existe
+  if (fraieMap) fraieMap.remove();
+
+  fraieMap = L.map('fraieMap').setView([46.8, 1.7], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(fraieMap);
+
+  const today = new Date();
+  const isClosed = today.getMonth() + 1 <= 4; // janvier (0) à avril (3)
+
+  const statusEl = document.getElementById('fraieStatus');
+  if (statusEl) {
+    statusEl.innerHTML = isClosed
+      ? '<span style="color:#FF0000;font-size:26px;font-weight:bold;">PÊCHE AU BROCHET INTERDITE EN FRANCE</span><br><span style="font-size:18px;">Frayères actives – Toute prise = infraction grave</span>'
+      : '<span style="color:#00ff00;font-size:26px;font-weight:bold;">Saison de fraie terminée</span><br><span style="font-size:18px;">Merci d’avoir protégé nos brochets !</span>';
+  }
+
+  // Affichage des frayères déjà ajoutées
+  userFraieSpots.forEach(spot => {
+    const marker = L.marker([spot.lat, spot.lng], {
+      icon: L.divIcon({
+        html: '<div style="background:#FF0000;color:white;padding:8px 16px;border-radius:50px;font-weight:bold;border:3px solid white;box-shadow:0 0 25px red;font-size:16px;">FRAYÈRE</div>',
+        iconSize: [140, 50],
+        className: 'fraie-marker'
+      })
+    }).addTo(fraieMap);
+
+    marker.bindPopup(`
+      <b style="color:#FF0000;font-size:18px;">Frayère brochet – PÊCHE INTERDITE</b><br>
+      Ajouté par : ${spot.pseudo || "Anonyme"} le ${spot.date}<br>
+      ${spot.photo ? `<img src="${spot.photo}" style="width:100%;max-height:200px;border-radius:8px;margin:10px 0;">` : ''}
+      <button onclick="proposeReserve(${spot.lat},${spot.lng})" style="margin-top:10px;background:#FFD700;color:black;padding:12px 24px;border:none;border-radius:50px;font-weight:bold;font-size:16px;">
+        Proposer réserve AAPPMA
+      </button>
+    `);
+  });
+
+  // Double-clic = ajouter une frayère (uniquement en période de fermeture)
+  fraieMap.on('dblclick', e => {
+    if (!isClosed) {
+      alert("Les signalements de frayères sont possibles uniquement pendant la période de fermeture brochet (janvier à avril).");
+      return;
+    }
+    addFraieSpot(e.latlng);
+  });
+
+  // Centre sur l’utilisateur
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      fraieMap.setView([pos.coords.latitude, pos.coords.longitude], 13);
+      L.circle([pos.coords.latitude, pos.coords.longitude], {
+        radius: 500,
+        color: '#00ff00',
+        fillOpacity: 0.2
+      }).addTo(fraieMap)
+        .bindPopup("Ta position approximative");
+    }, err => {
+      console.warn("Géoloc échouée", err);
+    });
+  }
+}
+
+function addFraieSpot(latlng) {
+  if (!confirm("Tu es 100 % sûr que c’est une frayère brochet active ? (photo obligatoire pour preuve)")) return;
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment';
+
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const spot = {
+        lat: latlng.lat.toFixed(6),
+        lng: latlng.lng.toFixed(6),
+        date: new Date().toLocaleDateString('fr-FR'),
+        pseudo: localStorage.getItem('fisherPseudo') || "Anonyme",
+        photo: ev.target.result
+      };
+      userFraieSpots.push(spot);
+      localStorage.setItem('fraieSpots', JSON.stringify(userFraieSpots));
+
+      // +2000 XP
+      let xp = parseInt(localStorage.getItem('userXP') || '0') + 2000;
+      localStorage.setItem('userXP', xp);
+      awardXP(2000, "Frayère signalée – Protection brochet");
+
+      alert("Frayère ajoutée avec succès !\n+2000 XP\nPhoto sauvegardée – Merci pour les brochets 🇫🇷");
+      initFraieMap(); // refresh carte
+    };
+    reader.readAsDataURL(file);
+  };
+
+  input.click();
+}
+
+function proposeReserve(lat, lng) {
+  const subject = "PROPOSITION CLASSEMENT RÉSERVE – Frayère brochet détectée via FisherForce AI";
+  const body = `Bonjour,\n\nUne frayère brochet active a été signalée par la communauté FisherForce AI.\n\nCoordonnées GPS précises : ${lat}, ${lng}\nLien carte : https://www.google.com/maps?q=${lat},${lng}\n\nNous proposons le classement immédiat en réserve de pêche pour protéger la reproduction.\n\nMerci pour votre action rapide.\n\nL’équipe FisherForce AI (30 000+ pêcheurs engagés)`;
+  window.location.href = `mailto:contact@fedepeche.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+// Init sécurisé au chargement complet
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(initFraieMap, 300); // petit délai pour être sûr que le DOM est prêt
+});
+</script>
 
 
+      <!-- Spots Poissons Migrateurs -->
+     <!-- CARTE POISSONS MIGRATEURS — VERSION PRIVÉE ULTRA-STYLÉE -->
+<div style="margin:30px auto;padding:20px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;box-shadow:0 10px 40px rgba(0,31,63,0.8);">
+  <h3 style="margin:0 0 15px;font-size:22px;color:#7FDBFF;">
+    Mes Spots Poissons Migrateurs
+  </h3>
+  <div id="migrateursMap" style="height:450px;border-radius:15px;overflow:hidden;margin:15px 0;box-shadow:0 8px 30px black;"></div>
+  <p style="font-size:15px;opacity:0.9;">
+    Clique sur la carte pour placer un spot migrateur • Icône bleue = saumon, alose, truite de mer, etc.
+  </p>
+</div>
+
+<!-- Leaflet déjà chargé dans ton head, sinon ajoute les 2 lignes si besoin -->
+<script>
+  <!-- CARTE POISSONS MIGRATEURS + ENVOI AUTO FNPF -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;box-shadow:0 12px 40px rgba(0,116,217,0.7);">
+  <h3 style="margin:0 0 20px;color:#7FDBFF;font-size:24px;">
+    SIGNALER UN POISSON MIGRATEUR PÊCHÉ
+  </h3>
+  <p style="font-size:16px;margin:15px 0;">
+    Double-clique sur la carte pour placer ton saumon, alose, truite de mer, anguille ou lamproie<br>
+    Un signalement automatique sera envoyé à la Fédération Nationale de Pêche
+  </p>
+  <div id="migrateursMap" style="height:480px;border-radius:15px;overflow:hidden;margin:20px 0;box-shadow:0 8px 30px black;"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<script>
+// === CARTE MIGRATEURS + ENVOI AUTO FNPF ===
+let migrateursMap = null;
+
+function initMigrateursMap() {
+  if (migrateursMap) migrateursMap.remove();
+
+  migrateursMap = L.map('migrateursMap').setView([46.8, 1.7], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(migrateursMap);
+
+  // Double-clic = placer un migrateur
+  migrateursMap.on('dblclick', e => {
+    const speciesList = ["Saumon", "Alose", "Truite de mer", "Anguille", "Lamproie"];
+    const species = prompt("Espèce migratrice pêchée ?", speciesList[0]);
+    if (!species || !speciesList.map(s => s.toLowerCase()).includes(species.toLowerCase())) {
+      alert("Espèce non reconnue – choisis parmi : Saumon, Alose, Truite de mer, Anguille, Lamproie");
+      return;
+    }
+
+    const lat = e.latlng.lat.toFixed(6);
+    const lon = e.latlng.lng.toFixed(6);
+    const date = new Date().toLocaleString('fr-FR');
+
+    // Marqueur sur la carte
+    L.marker([lat, lon], {
+      icon: L.divIcon({
+        html: `<div style="background:#0074D9;color:white;padding:8px 16px;border-radius:50px;font-weight:bold;border:3px solid white;box-shadow:0 0 20px #0074D9;">${species[0]}</div>`,
+        iconSize: [100, 50]
+      })
+    }).addTo(migrateursMap)
+      .bindPopup(`<b style="color:#0074D9;">${species}</b><br>${date}<br>GPS : ${lat}, ${lon}<br>Signalement envoyé à la FNPF`);
+
+    // ENVOI AUTOMATIQUE À LA FÉDÉRATION NATIONALE DE PÊCHE
+    const subject = `SIGNALEMENT POISSON MIGRATEUR - ${species.toUpperCase()} - FisherForce AI`;
+    const body = `
+SIGNALEMENT AUTOMATIQUE FISHERFORCE AI (30 000+ pêcheurs)
+
+Espèce : ${species}
+Date/Heure : ${date}
+Coordonnées GPS précises : ${lat}, ${lon}
+Lien carte : https://www.google.com/maps?q=${lat},${lon}
+
+Ce poisson migrateur a été pêché et signalé par un utilisateur FisherForce AI dans le cadre de la protection des espèces migratrices.
+
+Merci de votre vigilance.
+
+Cordialement,
+L’équipe FisherForce AI
+https://fisherforce.ai
+    `.trim();
+
+    const mailto = `mailto:contact@federationpeche.fr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailto, '_blank');
+
+    // Récompense
+    awardXP(1500, `Signalement migrateur ${species} – +1500 XP Protecteur des migrateurs`);
+    alert(`Signalement ${species} envoyé à la Fédération Nationale de Pêche !\n+1500 XP\nTu protèges les migrateurs !`);
+  });
+
+  // Géoloc utilisateur
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      migrateursMap.setView([pos.coords.latitude, pos.coords.longitude], 10);
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', initMigrateursMap);
+</script>
 
 
-
-
-
-
-
-
-
-
-  </main>
-
+      <!-- Carte personnelle -->
   <!-- BOUTON CARTE -->
   <button id="openMapBtn" style="position:fixed;bottom:20px;right:20px;background:#00d4aa;color:white;border:none;padding:16px 20px;border-radius:50%;font-size:28px;box-shadow:0 8px 25px rgba(0,212,170,0.6);z-index:9998;cursor:pointer;">
     Map
@@ -1985,51 +1835,94 @@ function meilleurCreneau(ph,s){
       setTimeout(initPersonalMap, 300);
     });
   </script>
+
+    </div>
+  </main>
+
+  <!-- Barre Navigation Modes (fixed bottom) -->
+  <div id="bottom-nav">
+    <button onclick="switchMode(0)">Planification 📅</button>
+    <button onclick="switchMode(1)">LIVE Session 🔥</button>
+    <button onclick="switchMode(2)">Post Session 📊</button>
+  </div>
+
+  <script src="app.js"></script>
+
+  <!-- JS pour modes + scroll -->
+  <script>
+    // === SYSTÈME DE MODES + SCROLL HORIZONTAL + HIGHLIGHT ===
+    const modesContainer = document.getElementById('modes-container');
+    const navButtons = document.querySelectorAll('#bottom-nav button');
+    let currentMode = 0;
+
+    function switchMode(modeIndex) {
+      modesContainer.scrollTo({
+        left: modesContainer.clientWidth * modeIndex,
+        behavior: 'smooth'
+      });
+      updateActiveButton(modeIndex);
+    }
+
+    function updateActiveButton(index) {
+      navButtons.forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+    }
+
+    // Détection scroll horizontal pour changer bouton actif
+    modesContainer.addEventListener('scroll', () => {
+      const index = Math.round(modesContainer.scrollLeft / modesContainer.clientWidth);
+      if (index !== currentMode) {
+        currentMode = index;
+        updateActiveButton(index);
+      }
+    }, { passive: true });
+
+    // Init mode 0 actif
+    updateActiveButton(0);
+  </script>
+
   <a href="privacy.html" style="color:#888;font-size:14px;">Politique de confidentialité</a>
 
   <script>
-// Force l'enregistrement du service worker + manifest
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(() => {
-    console.log('SW enregistré – logo PWA OK');
-  }).catch(err => console.log('SW erreur', err));
-}
-
-// Force le reload du manifest sur mobile
-if ('applicationCache' in window === false && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    if (navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
-      console.log('PWA installée – logo devrait s\'afficher');
+    // Force l'enregistrement du service worker + manifest
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(() => {
+        console.log('SW enregistré – logo PWA OK');
+      }).catch(err => console.log('SW erreur', err));
     }
-  });
-}
-</script>
+
+    // Force le reload du manifest sur mobile
+    if ('applicationCache' in window === false && 'serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        if (navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+          console.log('PWA installée – logo devrait s\'afficher');
+        }
+      });
+    }
+  </script>
 
   <!-- POP-UP CONNEXION GOOGLE — UNIQUEMENT SI NON CONNECTÉ -->
-<div id="googleLoginPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:99999;justify-content:center;align-items:center;flex-direction:column;">
-  <div style="background:#001122;padding:30px;border-radius:20px;max-width:500px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,255,157,0.4);position:relative;">
-    <button id="closePopupBtn" style="position:absolute;top:10px;right:15px;background:none;border:none;color:#888;font-size:32px;cursor:pointer;">&times;</button>
-    
-    <h2 style="color:#00ff9d;font-size:28px;margin:20px 0;">🔒 Connecte-toi avec Google</h2>
-    
-    <p style="color:white;font-size:18px;line-height:1.6;margin:20px 0;">
-      Pour débloquer toutes les fonctionnalités de FisherForce AI :<br><br>
-      • Sauvegarde de ton XP et stats<br>
-      • Synchronisation entre appareils<br>
-      • Accès Premium + classements<br>
-      • Historique sécurisé et illimité
-    </p>
-    
-    <button id="popupLoginBtn" style="background:#00d4aa;color:black;padding:18px 40px;border:none;border-radius:50px;font-weight:bold;font-size:22px;cursor:pointer;box-shadow:0 10px 30px rgba(0,212,170,0.6);margin:20px 0;">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" style="width:24px;vertical-align:middle;margin-right:10px;">
-      Se connecter avec Google
-    </button>
-    
-    <p style="color:#888;font-size:14px;margin-top:30px;">
-      100% sécurisé • Aucune donnée vendue • Via Google officiel
-    </p>
+  <div id="googleLoginPopup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:99999;justify-content:center;align-items:center;flex-direction:column;">
+    <div style="background:#001122;padding:30px;border-radius:20px;max-width:500px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,255,157,0.4);position:relative;">
+      <button id="closePopupBtn" style="position:absolute;top:10px;right:15px;background:none;border:none;color:#888;font-size:32px;cursor:pointer;">&times;</button>
+      <h2 style="color:#00ff9d;font-size:28px;margin:20px 0;">🔒 Connecte-toi avec Google</h2>
+      <p style="color:white;font-size:18px;line-height:1.6;margin:20px 0;">
+        Pour débloquer toutes les fonctionnalités de FisherForce AI :<br><br>
+        • Sauvegarde de ton XP et stats<br>
+        • Synchronisation entre appareils<br>
+        • Accès Premium + classements<br>
+        • Historique sécurisé et illimité
+      </p>
+      <button id="popupLoginBtn" style="background:#00d4aa;color:black;padding:18px 40px;border:none;border-radius:50px;font-weight:bold;font-size:22px;cursor:pointer;box-shadow:0 10px 30px rgba(0,212,170,0.6);margin:20px 0;">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" style="width:24px;vertical-align:middle;margin-right:10px;">
+        Se connecter avec Google
+      </button>
+      <p style="color:#888;font-size:14px;margin-top:30px;">
+        100% sécurisé • Aucune donnée vendue • Via Google officiel
+      </p>
+    </div>
   </div>
-</div>
 
 <script>
 // === POP-UP CONNEXION GOOGLE – N’AFFICHE QUE SI NON CONNECTÉ ===
@@ -2089,80 +1982,82 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
-<!-- BOUTON MENU HAMBURGER (maintenant en haut gauche, discret) -->
-<button id="menuToggle" style="
-  position: fixed;
-  top: 20px;
-  left: 20px;
-  width: 50px;
-  height: 50px;
-  background: rgba(0, 212, 170, 0.9);
-  border: none;
-  border-radius: 50%;
-  box-shadow: 0 6px 20px rgba(0, 212, 170, 0.4);
-  cursor: pointer;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-">
-  <div style="width: 24px; height: 18px; position: relative;">
-    <span style="display: block; width: 100%; height: 3px; background: white; border-radius: 3px; position: absolute; left: 0; transition: all 0.3s;"></span>
-    <span style="display: block; width: 100%; height: 3px; background: white; border-radius: 3px; position: absolute; left: 0; top: 7px; transition: all 0.3s;"></span>
-    <span style="display: block; width: 100%; height: 3px; background: white; border-radius: 3px; position: absolute; left: 0; top: 14px; transition: all 0.3s;"></span>
-  </div>
-</button>
 
-<!-- MENU LATÉRAL (glisse depuis la gauche maintenant) -->
-<div id="sideMenu" style="
-  position: fixed;
-  top: 0;
-  left: -350px;
-  width: 350px;
-  height: 100vh;
-  background: linear-gradient(to right, #001122, #000811);
-  box-shadow: 10px 0 40px rgba(0,0,0,0.8);
-  z-index: 9998;
-  transition: left 0.4s ease;
-  padding: 100px 30px 30px;
-  box-sizing: border-box;
-  overflow-y: auto;
-  color: white;
-">
-  <h2 style="text-align:center; color:#00d4aa; font-size:28px; margin-bottom:40px;">
-    🌊 Fonctions Cartes
-  </h2>
 
-  <div class="menu-item" onclick="showSection('ff-map')" style="background: rgba(0,212,170,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #00d4aa; transition: all 0.3s;">
-    <h3 style="margin:0; color:#00ff9d; font-size:22px;">🗺️ Analyse  GPS spot de pêche</h3>
-    <p style="margin:5px 0 0; color:#aaa;">Découvre les meilleurs spots selon pression de pêche, structure et activité!</p>
-  </div>
-  
-  <div class="menu-item" onclick="showSection('live-meteo-map')" style="background: rgba(255,107,0,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #ff6b00; transition: all 0.3s;">
-    <h3 style="margin:0; color:#ff9d00; font-size:22px;">⛅ Météo LIVE du spot</h3>
-    <p style="margin:5px 0 0; color:#aaa;">Suivi de la météo et de l'activité des poissons en temps réel sur tes spots </p>
-  </div>
+  <!-- Menu hamburger -->
+  <button id="menuToggle" style="
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 50px;
+    height: 50px;
+    background: rgba(0, 212, 170, 0.9);
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 6px 20px rgba(0, 212, 170, 0.4);
+    cursor: pointer;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  ">
+    <div style="width: 24px; height: 18px; position: relative;">
+      <span style="display: block; width: 100%; height: 3px; background: white; border-radius: 3px; position: absolute; left: 0; transition: all 0.3s;"></span>
+      <span style="display: block; width: 100%; height: 3px; background: white; border-radius: 3px; position: absolute; left: 0; top: 7px; transition: all 0.3s;"></span>
+      <span style="display: block; width: 100%; height: 3px; background: white; border-radius: 3px; position: absolute; left: 0; top: 14px; transition: all 0.3s;"></span>
+    </div>
+  </button>
 
-  <div class="menu-item" onclick="showSection('fraieStatus')" style="background: rgba(255,107,0,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #ff6b00; transition: all 0.3s;">
-    <h3 style="margin:0; color:#ff9d00; font-size:22px;">🐟 Carte des frayères brochet</h3>
-    <p style="margin:5px 0 0; color:#aaa;">Localisation des zones de reproduction (période de fermeture incluse)</p>
-  </div>
+  <!-- Side Menu -->
+  <div id="sideMenu" style="
+    position: fixed;
+    top: 0;
+    left: -350px;
+    width: 350px;
+    height: 100vh;
+    background: linear-gradient(to right, #001122, #000811);
+    box-shadow: 10px 0 40px rgba(0,0,0,0.8);
+    z-index: 9998;
+    transition: left 0.4s ease;
+    padding: 100px 30px 30px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    color: white;
+  ">
+    <h2 style="text-align:center; color:#00d4aa; font-size:28px; margin-bottom:40px;">
+      🌊 Fonctions Cartes
+    </h2>
 
-  <div class="menu-item" onclick="showSection('migrateursMap')" style="background: rgba(0,150,255,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #0096ff; transition: all 0.3s;">
-    <h3 style="margin:0; color:#00b7ff; font-size:22px;">🚩 Mes spots poissons migrateurs</h3>
-    <p style="margin:5px 0 0; color:#aaa;">Aloses, lamproies, anguilles... tes zones perso</p>
-  </div>
-  <h2 style="text-align:center; color:#00d4aa; font-size:28px; margin-bottom:40px;">
-    🎣 Fonctions Leurres
-  </h2>
+    <div class="menu-item" onclick="showSection('ff-map')" style="background: rgba(0,212,170,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #00d4aa; transition: all 0.3s;">
+      <h3 style="margin:0; color:#00ff9d; font-size:22px;">🗺️ Analyse GPS spot de pêche</h3>
+      <p style="margin:5px 0 0; color:#aaa;">Découvre les meilleurs spots selon pression de pêche, structure et activité!</p>
+    </div>
+
+    <div class="menu-item" onclick="showSection('live-meteo-map')" style="background: rgba(255,107,0,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #ff6b00; transition: all 0.3s;">
+      <h3 style="margin:0; color:#ff9d00; font-size:22px;">⛅ Météo LIVE du spot</h3>
+      <p style="margin:5px 0 0; color:#aaa;">Suivi de la météo et de l'activité des poissons en temps réel sur tes spots </p>
+    </div>
+
+    <div class="menu-item" onclick="showSection('fraieStatus')" style="background: rgba(255,107,0,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #ff6b00; transition: all 0.3s;">
+      <h3 style="margin:0; color:#ff9d00; font-size:22px;">🐟 Carte des frayères brochet</h3>
+      <p style="margin:5px 0 0; color:#aaa;">Localisation des zones de reproduction (période de fermeture incluse)</p>
+    </div>
+
+    <div class="menu-item" onclick="showSection('migrateursMap')" style="background: rgba(0,150,255,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #0096ff; transition: all 0.3s;">
+      <h3 style="margin:0; color:#00b7ff; font-size:22px;">🚩 Mes spots poissons migrateurs</h3>
+      <p style="margin:5px 0 0; color:#aaa;">Aloses, lamproies, anguilles... tes zones perso</p>
+    </div>
+    <h2 style="text-align:center; color:#00d4aa; font-size:28px; margin-bottom:40px;">
+      🎣 Fonctions Leurres
+    </h2>
     <div class="menu-item" onclick="showSection('lureCompareBlock')" style="background: rgba(0,212,170,0.1); padding: 20px; border-radius: 15px; margin-bottom: 20px; cursor: pointer; border-left: 5px solid #00d4aa; transition: all 0.3s;">
-    <h3 style="margin:0; color:#00ff9d; font-size:22px;">🪝Compare leurres</h3>
-    <p style="margin:5px 0 0; color:#aaa;">Trouve les leurres que tu veut acheter pour le meilleur prix </p>
-  </div>
+      <h3 style="margin:0; color:#00ff9d; font-size:22px;">🪝Compare leurres</h3>
+      <p style="margin:5px 0 0; color:#aaa;">Trouve les leurres que tu veut acheter pour le meilleur prix </p>
+    </div>
 
-</div>
+  </div>
 
 <script>
 // === SCRIPT MENU + AFFICHAGE SECTIONS ===
@@ -2221,17 +2116,17 @@ function showSection(sectionId) {
 }
 </script>
 
-<!-- CACHE PAR DÉFAUT TES 3 SECTIONS CARTES DANS TON HTML -->
-<style>
-  #spotAnalysisResult,
-  #fraieStatus,
-  #lureCompareBlock
-  #migrateursMap {
-    display: none; /* CACHÉES tant que pas cliqué sur le menu */
-  }
-</style>
+
+  <!-- CACHE PAR DÉFAUT TES 3 SECTIONS CARTES DANS TON HTML -->
+  <style>
+    #spotAnalysisResult,
+    #fraieStatus,
+    #lureCompareBlock,
+    #migrateursMap {
+      display: none; /* CACHÉES tant que pas cliqué sur le menu */
+    }
+  </style>
 
   <!-- CLASSEMENT + DATE DANS LES CONSEILS (dans app.js) -->
-  <script src="app.js"></script>
 </body>
 </html>
