@@ -1024,6 +1024,36 @@ async function viewMessages(withPseudo) {
     alert('Erreur réseau');
   }
 }
+// === SYSTÈME DE MODES + SCROLL HORIZONTAL + HIGHLIGHT ===
+const modesContainer = document.getElementById('modes-container');
+const navButtons = document.querySelectorAll('#bottom-nav button');
+let currentMode = 0;
+
+function switchMode(modeIndex) {
+  modesContainer.scrollTo({
+    left: modesContainer.clientWidth * modeIndex,
+    behavior: 'smooth'
+  });
+  updateActiveButton(modeIndex);
+}
+
+function updateActiveButton(index) {
+  navButtons.forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+}
+
+// Détection scroll horizontal pour changer bouton actif
+modesContainer.addEventListener('scroll', () => {
+  const index = Math.round(modesContainer.scrollLeft / modesContainer.clientWidth);
+  if (index !== currentMode) {
+    currentMode = index;
+    updateActiveButton(index);
+  }
+}, { passive: true });
+
+// Init mode 0 actif
+updateActiveButton(0);
 
 // Appelle ces fonctions aux bons endroits :
 // Après un conseil IA : updateStatsAfterAdvice({ species: species, lures: conseil.lures });
