@@ -1627,6 +1627,112 @@ function scoreAspe(m, s) {
               });
   
 </script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#1a2d3f,#0b1a25);
+color:white;font-family:Arial;
+box-shadow:0 10px 25px rgba(0,0,0,.45);">
+
+  <div style="text-align:center">
+    <div style="color:#00ffcc;font-weight:bold">
+      FENÊTRE DE PÊCHE IA
+    </div>
+    <div style="font-size:12px;opacity:.8">
+      Meilleur créneau du jour
+    </div>
+  </div>
+
+  <div id="window-map" style="
+    height:150px;
+    margin-top:10px;
+    border-radius:12px;
+    overflow:hidden;
+  "></div>
+
+  <div id="window-result" style="
+    margin-top:10px;
+    font-size:13px;
+    line-height:1.5;
+  ">
+    🎯 Clique sur la carte pour analyser la journée
+  </div>
+</div>
+
+<script>
+let windowMap = L.map("window-map").setView([46.8, 2.5], 5);
+let windowMarker = null;
+let windowSpot = null;
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 18
+}).addTo(windowMap);
+
+setTimeout(() => windowMap.invalidateSize(), 300);
+
+windowMap.on("click", e => {
+  windowSpot = e.latlng;
+
+  if (windowMarker) windowMap.removeLayer(windowMarker);
+  windowMarker = L.circleMarker(windowSpot, {
+    radius: 7,
+    color: "#00ffcc",
+    fillOpacity: 0.9
+  }).addTo(windowMap);
+
+  analyserFenetreJour();
+});
+
+function analyserFenetreJour() {
+  const box = document.getElementById("window-result");
+  box.innerHTML = "📡 Analyse météo journalière IA…";
+
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${windowSpot.lat}&longitude=${windowSpot.lng}&hourly=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl&forecast_days=1&timezone=auto`)
+    .then(r => r.json())
+    .then(data => {
+
+      const h = data.hourly;
+      let scores = [];
+
+      for (let i = 6; i < 21; i++) {
+        let score = 50;
+
+        if (h.cloud_cover[i] > 50) score += 10;
+        if (h.wind_speed_10m[i] > 8 && h.wind_speed_10m[i] < 18) score += 10;
+        if (h.pressure_msl[i] < 1015) score += 10;
+        if (h.temperature_2m[i] > 10 && h.temperature_2m[i] < 22) score += 10;
+
+        if (i >= 7 && i <= 9) score += 15;      // aube
+        if (i >= 18 && i <= 20) score += 15;    // crépuscule
+
+        scores.push({ hour: i, score });
+      }
+
+      scores.sort((a, b) => b.score - a.score);
+
+      const best = scores[0];
+      const second = scores[1];
+
+      box.innerHTML = `
+        🟢 <b>MEILLEURE FENÊTRE</b><br>
+        ⏰ ${best.hour}h00 – ${best.hour + 1}h00<br>
+        🎯 Activité estimée : ${best.score}%<br><br>
+
+        🟡 <b>FENÊTRE SECONDAIRE</b><br>
+        ⏰ ${second.hour}h00 – ${second.hour + 1}h00<br>
+        🎯 Activité estimée : ${second.score}%<br><br>
+
+        🔴 <b>Périodes faibles</b><br>
+        Milieu de journée ou météo stable
+      `;
+    })
+    .catch(() => {
+      box.innerHTML = "⚠️ Impossible d’analyser la journée";
+    });
+}
+</script>
+
                         <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1738,6 +1844,7 @@ function meilleurCreneau(ph,s){
 
 </script>
 <!-- FIN MODULE -->
+    
 
 
 
