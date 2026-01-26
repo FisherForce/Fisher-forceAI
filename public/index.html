@@ -1477,6 +1477,7 @@ box-shadow:0 10px 25px rgba(0,0,0,0.45);">
 </div>
 
 <script>
+          document.addEventListener("DOMContentLoaded", () => {
 
 const map=L.map("ff-map").setView([46.8,2.5],6);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(map);
@@ -1560,6 +1561,7 @@ function meilleurCreneau(ph,s){
  "🌌 Nuit profonde (23h–4h)" :
  "⛔ Éviter — pression trop forte";
 }
+            });
 
 
 </script>
@@ -1602,6 +1604,8 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
 </div>
 
 <script>
+            document.addEventListener("DOMContentLoaded", () => {
+
 let biteMap = L.map("bite-map").setView([46.8, 2.5], 5);
 let biteMarker = null;
 let biteTimer = null;
@@ -1731,6 +1735,8 @@ function scoreAspe(m, s) {
   if (estAubeCrepuscule(s)) v += 15;
   return Math.min(90, v);
 }
+              });
+  
 </script>
 
 
