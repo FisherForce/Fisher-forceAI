@@ -1602,7 +1602,6 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
 </div>
 
 <script>
-          document.addEventListener("DOMContentLoaded", () => {
 let biteMap = L.map("bite-map").setView([46.8, 2.5], 5);
 let biteMarker = null;
 let biteTimer = null;
@@ -1637,7 +1636,7 @@ function analyserTouchesLive() {
   box.innerHTML = "📡 Analyse IA en temps réel…";
 
   Promise.all([
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${biteSpot.lat}&longitude=${biteSpot.lng}&current=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl,fog,precipitation`)
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${biteSpot.lat}&longitude=${biteSpot.lng}&current=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl,precipitation`)
       .then(r => r.json())
       .then(d => d.current),
     fetch(`https://api.sunrise-sunset.org/json?lat=${biteSpot.lat}&lng=${biteSpot.lng}&formatted=0`)
@@ -1648,7 +1647,7 @@ function analyserTouchesLive() {
     const scores = {
       "Brochet": scoreBrochet(m, s),
       "Sandre": scoreSandre(m, s),
-      "Perche": scorePerche(m, s),
+      "Perche": scorePerche(m),
       "Black-bass": scoreBass(m, s),
       "Silure": scoreSilure(m, s),
       "Aspe": scoreAspe(m, s)
@@ -1663,35 +1662,46 @@ function analyserTouchesLive() {
     });
 
     box.innerHTML = html;
+  })
+  .catch(() => {
+    box.innerHTML = "⚠️ Erreur lors de l’analyse IA";
   });
 }
 
-/* ----- LOGIQUES IA PAR ESPÈCE ----- */
+/* --------- OUTILS TEMPS --------- */
 
-function heureCritique(s) {
+function estAubeCrepuscule(s) {
   const now = new Date();
-  return now >= new Date(s.sunrise) && now <= new Date(s.sunrise).setHours(new Date(s.sunrise).getHours() + 2)
-      || now >= new Date(s.sunset).setHours(new Date(s.sunset).getHours() - 2);
+  const sunrise = new Date(s.sunrise);
+  const sunset = new Date(s.sunset);
+
+  const aubeFin = new Date(sunrise.getTime() + 2 * 3600000);
+  const crepDebut = new Date(sunset.getTime() - 2 * 3600000);
+
+  return (now >= sunrise && now <= aubeFin) ||
+         (now >= crepDebut && now <= sunset);
 }
+
+/* --------- SCORES PAR ESPÈCE --------- */
 
 function scoreBrochet(m, s) {
   let v = 50;
   if (m.cloud_cover > 60) v += 20;
   if (m.temperature_2m < 18) v += 15;
   if (m.wind_speed_10m > 10) v += 10;
-  if (heureCritique(s)) v += 15;
+  if (estAubeCrepuscule(s)) v += 15;
   return Math.min(95, v);
 }
 
 function scoreSandre(m, s) {
   let v = 45;
-  if (m.cloud_cover > 70 || m.fog > 0) v += 20;
+  if (m.cloud_cover > 70) v += 20;
   if (m.pressure_msl < 1010) v += 15;
-  if (!heureCritique(s)) v += 10;
+  if (!estAubeCrepuscule(s)) v += 10;
   return Math.min(95, v);
 }
 
-function scorePerche(m, s) {
+function scorePerche(m) {
   let v = 55;
   if (m.temperature_2m > 12 && m.temperature_2m < 22) v += 15;
   if (m.cloud_cover > 40) v += 10;
@@ -1702,7 +1712,7 @@ function scoreBass(m, s) {
   let v = 40;
   if (m.temperature_2m > 18) v += 25;
   if (m.wind_speed_10m < 10) v += 15;
-  if (heureCritique(s)) v += 10;
+  if (estAubeCrepuscule(s)) v += 10;
   return Math.min(95, v);
 }
 
@@ -1710,7 +1720,7 @@ function scoreSilure(m, s) {
   let v = 35;
   if (m.temperature_2m > 16) v += 20;
   if (m.pressure_msl < 1010) v += 15;
-  if (!heureCritique(s)) v += 15;
+  if (!estAubeCrepuscule(s)) v += 15;
   return Math.min(95, v);
 }
 
@@ -1718,10 +1728,9 @@ function scoreAspe(m, s) {
   let v = 45;
   if (m.wind_speed_10m > 15) v += 15;
   if (m.cloud_cover < 40) v += 15;
-  if (heureCritique(s)) v += 15;
+  if (estAubeCrepuscule(s)) v += 15;
   return Math.min(90, v);
 }
-              });
 </script>
 
 
