@@ -1492,178 +1492,136 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
-background:linear-gradient(180deg,#1b2b3a,#0d1a26);
+background:linear-gradient(180deg,#0f2535,#07141e);
 color:white;font-family:Arial;
 box-shadow:0 10px 25px rgba(0,0,0,.45);">
 
   <div style="text-align:center">
-    <div style="color:#ffd700;font-weight:bold">
+    <div style="color:#00ffd5;font-weight:bold">
       PROBABILITÉ DE TOUCHE LIVE
     </div>
     <div style="font-size:12px;opacity:.8">
-      Classement carnassiers temps réel
+      Analyse IA temps réel
     </div>
   </div>
 
-  <div id="bite-map" style="
-    height:160px;
+  <div id="livebite-map" style="
+    height:150px;
     margin-top:10px;
     border-radius:12px;
     overflow:hidden;
   "></div>
 
-  <div id="bite-result" style="
+  <div id="livebite-result" style="
     margin-top:10px;
     font-size:13px;
-    line-height:1.5;
+    line-height:1.45;
   ">
-    🎯 Clique sur la carte pour analyser un spot
-  </div>
-
-  <div style="margin-top:8px;font-size:11px;opacity:.7;text-align:center">
-    🔄 Actualisation automatique toutes les 60 secondes
+    🎯 Clique sur la carte pour lancer l’analyse LIVE
   </div>
 </div>
 
 <script>
-            document.addEventListener("DOMContentLoaded", () => {
+let liveMap, liveMarker, liveSpot = null, liveTimer = null;
 
-let biteMap = L.map("bite-map").setView([46.8, 2.5], 5);
-let biteMarker = null;
-let biteTimer = null;
-let biteSpot = null;
+setTimeout(initLiveMap, 100);
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  maxZoom: 18
-}).addTo(biteMap);
+function initLiveMap() {
+  liveMap = L.map("livebite-map").setView([46.8, 2.5], 5);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18
+  }).addTo(liveMap);
 
-setTimeout(() => biteMap.invalidateSize(), 300);
+  setTimeout(() => liveMap.invalidateSize(), 300);
+  liveMap.on("click", onLiveClick);
+}
 
-biteMap.on("click", e => {
-  if (biteMarker) biteMap.removeLayer(biteMarker);
-  if (biteTimer) clearInterval(biteTimer);
+function onLiveClick(e) {
+  liveSpot = e.latlng;
+  if (liveMarker) liveMap.removeLayer(liveMarker);
 
-  biteSpot = e.latlng;
-
-  biteMarker = L.circleMarker(biteSpot, {
+  liveMarker = L.circleMarker(liveSpot, {
     radius: 7,
-    color: "#ffd700",
+    color: "#00ffd5",
     fillOpacity: 0.9
-  }).addTo(biteMap);
+  }).addTo(liveMap);
 
-  analyserTouchesLive();
-  biteTimer = setInterval(analyserTouchesLive, 60000);
-});
+  document.getElementById("livebite-result").innerHTML =
+    "📡 Analyse IA LIVE en cours…";
 
-function analyserTouchesLive() {
-  if (!biteSpot) return;
+  if (liveTimer) clearInterval(liveTimer);
+  analyserLive();
+  liveTimer = setInterval(analyserLive, 60000);
+}
 
-  const box = document.getElementById("bite-result");
-  box.innerHTML = "📡 Analyse IA en temps réel…";
+function analyserLive() {
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${liveSpot.lat}&longitude=${liveSpot.lng}&hourly=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl&current=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl&timezone=auto`)
+    .then(r => r.json())
+    .then(data => {
 
-  Promise.all([
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${biteSpot.lat}&longitude=${biteSpot.lng}&current=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl,precipitation`)
-      .then(r => r.json())
-      .then(d => d.current),
-    fetch(`https://api.sunrise-sunset.org/json?lat=${biteSpot.lat}&lng=${biteSpot.lng}&formatted=0`)
-      .then(r => r.json())
-      .then(d => d.results)
-  ]).then(([m, s]) => {
+      const c = data.current;
+      const h = data.hourly;
+      const hour = new Date().getHours();
 
-    const scores = {
-      "Brochet": scoreBrochet(m, s),
-      "Sandre": scoreSandre(m, s),
-      "Perche": scorePerche(m),
-      "Black-bass": scoreBass(m, s),
-      "Silure": scoreSilure(m, s),
-      "Aspe": scoreAspe(m, s)
-    };
+      const instabilite =
+        Math.abs(h.pressure_msl[hour] - h.pressure_msl[hour - 2] || 0) +
+        Math.abs(h.cloud_cover[hour] - h.cloud_cover[hour - 2] || 0);
 
-    const classement = Object.entries(scores)
-      .sort((a, b) => b[1] - a[1]);
+      const luminosite = 100 - c.cloud_cover;
 
-    let html = `<b>🎯 Classement probabilité de touche</b><br><br>`;
-    classement.forEach((e, i) => {
-      html += `${i + 1}. <b>${e[0]}</b> — ${e[1]}%<br>`;
+      const pressionPeche = (
+        (hour >= 17 && hour <= 20 ? 20 : 0) +
+        (c.cloud_cover < 30 ? 10 : 0) +
+        (c.temperature_2m > 18 ? 10 : 0)
+      );
+
+      const especes = {
+        "Brochet": v => v + bonus(c.cloud_cover > 60, 15) + bonus(c.wind_speed_10m > 10, 10),
+        "Sandre": v => v + bonus(c.pressure_msl < 1012, 20) + bonus(luminosite < 40, 10),
+        "Perche": v => v + bonus(c.temperature_2m > 12 && c.temperature_2m < 22, 15),
+        "Black-bass": v => v + bonus(c.temperature_2m > 18, 25),
+        "Silure": v => v + bonus(hour < 7 || hour > 20, 20),
+        "Aspe": v => v + bonus(c.wind_speed_10m > 15, 15)
+      };
+
+      let html = `<b>🎣 Classement LIVE des touches</b><br><br>`;
+
+      Object.entries(especes).forEach(([nom, fn]) => {
+        let score =
+          (50 * 0.4) +
+          (instabilite * 0.2) +
+          (luminosite * 0.2);
+
+        score = fn(score);
+        score -= pressionPeche;
+        score = Math.max(5, Math.min(95, Math.round(score)));
+
+        html += `🔹 <b>${nom}</b> — ${score}%<br>`;
+      });
+
+      html += `<br>
+        📉 Pression de pêche estimée : ${pressionPeche}%<br>
+        🌫️ Luminosité : ${luminosite}%<br>
+        ⚡ Instabilité météo : ${Math.round(instabilite)}%
+      `;
+
+      document.getElementById("livebite-result").innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById("livebite-result").innerHTML =
+        "⚠️ Erreur analyse LIVE";
     });
-
-    box.innerHTML = html;
-  })
-  .catch(() => {
-    box.innerHTML = "⚠️ Erreur lors de l’analyse IA";
-  });
 }
 
-/* --------- OUTILS TEMPS --------- */
-
-function estAubeCrepuscule(s) {
-  const now = new Date();
-  const sunrise = new Date(s.sunrise);
-  const sunset = new Date(s.sunset);
-
-  const aubeFin = new Date(sunrise.getTime() + 2 * 3600000);
-  const crepDebut = new Date(sunset.getTime() - 2 * 3600000);
-
-  return (now >= sunrise && now <= aubeFin) ||
-         (now >= crepDebut && now <= sunset);
+function bonus(cond, val) {
+  return cond ? val : 0;
 }
-
-/* --------- SCORES PAR ESPÈCE --------- */
-
-function scoreBrochet(m, s) {
-  let v = 50;
-  if (m.cloud_cover > 60) v += 20;
-  if (m.temperature_2m < 18) v += 15;
-  if (m.wind_speed_10m > 10) v += 10;
-  if (estAubeCrepuscule(s)) v += 15;
-  return Math.min(95, v);
-}
-
-function scoreSandre(m, s) {
-  let v = 45;
-  if (m.cloud_cover > 70) v += 20;
-  if (m.pressure_msl < 1010) v += 15;
-  if (!estAubeCrepuscule(s)) v += 10;
-  return Math.min(95, v);
-}
-
-function scorePerche(m) {
-  let v = 55;
-  if (m.temperature_2m > 12 && m.temperature_2m < 22) v += 15;
-  if (m.cloud_cover > 40) v += 10;
-  return Math.min(90, v);
-}
-
-function scoreBass(m, s) {
-  let v = 40;
-  if (m.temperature_2m > 18) v += 25;
-  if (m.wind_speed_10m < 10) v += 15;
-  if (estAubeCrepuscule(s)) v += 10;
-  return Math.min(95, v);
-}
-
-function scoreSilure(m, s) {
-  let v = 35;
-  if (m.temperature_2m > 16) v += 20;
-  if (m.pressure_msl < 1010) v += 15;
-  if (!estAubeCrepuscule(s)) v += 15;
-  return Math.min(95, v);
-}
-
-function scoreAspe(m, s) {
-  let v = 45;
-  if (m.wind_speed_10m > 15) v += 15;
-  if (m.cloud_cover < 40) v += 15;
-  if (estAubeCrepuscule(s)) v += 15;
-  return Math.min(90, v);
-}
-              });
-  
 </script>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
