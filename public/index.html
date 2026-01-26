@@ -516,7 +516,25 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
       <label>Conditions <input id="conditions" placeholder="Ex: clair, pluie"></label>
       <label>Température (°C)<br><input type="number" id="temperature" placeholder="15"></label>
       <div style="margin-top:15px;">
-        <button id="getAdvice">Obtenir des conseils</button>
+<button id="getAdvice"
+  style="
+    background: linear-gradient(180deg, #1e90ff, #0b5ed7);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(30,144,255,0.45);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  "
+  onmouseover="this.style.transform='scale(1.04)';this.style.boxShadow='0 8px 20px rgba(30,144,255,0.6)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 6px 15px rgba(30,144,255,0.45)'"
+>
+  Obtenir des conseils
+</button>
+
 <!-- BOUTON COMMANDE VOCALE (micro stylé) -->
 <button id="voiceCommandBtn" style="
   background: linear-gradient(45deg, #00d4aa, #009977);
@@ -532,7 +550,25 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
   🎤 Commande vocale
   <span id="voiceStatus" style="font-size:14px; opacity:0.8;">Clique et parle !</span>
 </button>
-        <button id="clearBtn">Réinitialiser</button>
+<button id="clearBtn"
+  style="
+    background: linear-gradient(180deg, #1e90ff, #0b5ed7);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(30,144,255,0.45);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  "
+  onmouseover="this.style.transform='scale(1.04)';this.style.boxShadow='0 8px 20px rgba(30,144,255,0.6)'"
+  onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 6px 15px rgba(30,144,255,0.45)'"
+>
+ Réinitialiser
+</button>
+
       </div>
 
 
