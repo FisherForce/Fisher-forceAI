@@ -1493,123 +1493,136 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 <!-- ====== BLOC PROBABILITÉ DE TOUCHE LIVE ====== -->
-<div style="width:320px;padding:10px;border-radius:12px;background:#111;color:#fff;font-family:sans-serif">
-  <h3 style="margin:5px 0;font-size:14px;">🎣 Probabilité de touches LIVE</h3>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <button id="analyzeBite"
-    style="padding:6px 10px;border-radius:8px;border:none;background:#2ecc71;color:#000;font-weight:bold;cursor:pointer">
-    Analyser météo
-  </button>
+<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#0f2535,#07141e);
+color:white;font-family:Arial;
+box-shadow:0 10px 25px rgba(0,0,0,.45);">
 
-  <div id="biteLoading" style="display:none;margin-top:8px;font-size:12px;">
-    ⏳ Analyse en cours...
+  <div style="text-align:center">
+    <div style="color:#00ffd5;font-weight:bold">
+      PROBABILITÉ DE TOUCHE LIVE
+    </div>
+    <div style="font-size:12px;opacity:.8">
+      Analyse IA temps réel
+    </div>
   </div>
 
-  <div id="biteResult" style="margin-top:8px;font-size:12px;"></div>
+  <div id="livebite-map" style="
+    height:150px;
+    margin-top:10px;
+    border-radius:12px;
+    overflow:hidden;
+  "></div>
+
+  <div id="livebite-result" style="
+    margin-top:10px;
+    font-size:13px;
+    line-height:1.45;
+  ">
+    🎯 Clique sur la carte pour lancer l’analyse LIVE
+  </div>
 </div>
 
 <script>
-document.getElementById("analyzeBite").onclick = async () => {
-  const resultDiv = document.getElementById("biteResult");
-  const loadingDiv = document.getElementById("biteLoading");
+let liveMap, liveMarker, liveSpot = null, liveTimer = null;
 
-  resultDiv.innerHTML = "";
-  loadingDiv.style.display = "block";
+setTimeout(initLiveMap, 100);
 
-  try {
-    // Exemple : Paris (tu peux brancher ton point carte ici)
-    const lat = 48.8566;
-    const lon = 2.3522;
+function initLiveMap() {
+  liveMap = L.map("livebite-map").setView([46.8, 2.5], 5);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18
+  }).addTo(liveMap);
 
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl,weather_code`;
+  setTimeout(() => liveMap.invalidateSize(), 300);
+  liveMap.on("click", onLiveClick);
+}
 
-    const res = await fetch(url);
-    const data = await res.json();
-    const c = data.current;
+function onLiveClick(e) {
+  liveSpot = e.latlng;
+  if (liveMarker) liveMap.removeLayer(liveMarker);
 
-    const hour = new Date().getHours();
-    const luminosite = 100 - c.cloud_cover;
+  liveMarker = L.circleMarker(liveSpot, {
+    radius: 7,
+    color: "#00ffd5",
+    fillOpacity: 0.9
+  }).addTo(liveMap);
 
-    const bonus = (cond, val) => cond ? val : 0;
+  document.getElementById("livebite-result").innerHTML =
+    "📡 Analyse IA LIVE en cours…";
 
-    // === COMPORTEMENT DES POISSONS ===
-    const especes = {
-      "Brochet": v => {
-        let s = v;
-        if (c.cloud_cover > 70) s += 20;
-        if (c.wind_speed_10m > 8 && c.wind_speed_10m < 18) s += 10;
-        if (luminosite > 70) s -= 15;
-        return s;
-      },
+  if (liveTimer) clearInterval(liveTimer);
+  analyserLive();
+  liveTimer = setInterval(analyserLive, 60000);
+}
 
-      "Sandre": v => {
-        let s = v;
-        if (c.pressure_msl < 1012) s += 20;
-        if (luminosite < 40) s += 15;
-        if (hour >= 20 || hour <= 6) s += 20;
-        if (luminosite > 60) s -= 10;
-        return s;
-      },
+function analyserLive() {
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${liveSpot.lat}&longitude=${liveSpot.lng}&hourly=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl&current=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl&timezone=auto`)
+    .then(r => r.json())
+    .then(data => {
 
-      "Perche": v => {
-        let s = v;
-        if (c.temperature_2m > 12 && c.temperature_2m < 22) s += 15;
-        if (c.cloud_cover > 40) s += 10;
-        if (c.wind_speed_10m > 20) s -= 10;
-        return s;
-      },
+      const c = data.current;
+      const h = data.hourly;
+      const hour = new Date().getHours();
 
-      "Black-bass": v => {
-        let s = v;
-        if (c.temperature_2m > 18) s += 25;
-        if (c.wind_speed_10m < 10) s += 15;
-        if (luminosite < 30) s -= 10;
-        return s;
-      },
+      const instabilite =
+        Math.abs(h.pressure_msl[hour] - h.pressure_msl[hour - 2] || 0) +
+        Math.abs(h.cloud_cover[hour] - h.cloud_cover[hour - 2] || 0);
 
-      "Silure": v => {
-        let s = v;
-        if (hour < 7 || hour > 21) s += 25;
-        if (c.pressure_msl < 1010) s += 15;
-        if (luminosite > 50) s -= 10;
-        return s;
-      },
+      const luminosite = 100 - c.cloud_cover;
 
-      "Aspe": v => {
-        let s = v;
-        if (c.wind_speed_10m > 15) s += 15;
-        if (luminosite > 50) s += 10;
-        if (c.cloud_cover > 70) s -= 10;
-        return s;
-      }
-    };
+      const pressionPeche = (
+        (hour >= 17 && hour <= 20 ? 20 : 0) +
+        (c.cloud_cover < 30 ? 10 : 0) +
+        (c.temperature_2m > 18 ? 10 : 0)
+      );
 
-    // === CALCUL DES SCORES ===
-    let scores = [];
+      const especes = {
+        "Brochet": v => v + bonus(c.cloud_cover > 60, 15) + bonus(c.wind_speed_10m > 10, 10),
+        "Sandre": v => v + bonus(c.pressure_msl < 1012, 20) + bonus(luminosite < 40, 10),
+        "Perche": v => v + bonus(c.temperature_2m > 12 && c.temperature_2m < 22, 15),
+        "Black-bass": v => v + bonus(c.temperature_2m > 18, 25),
+        "Silure": v => v + bonus(hour < 7 || hour > 20, 20),
+        "Aspe": v => v + bonus(c.wind_speed_10m > 15, 15)
+      };
 
-    for (let espece in especes) {
-      let base = 50;
-      let score = especes[espece](base);
-      score = Math.max(5, Math.min(95, score)); // clamp
-      scores.push({ espece, score });
-    }
+      let html = `<b>🎣 Classement LIVE des touches</b><br><br>`;
 
-    scores.sort((a, b) => b.score - a.score);
+      Object.entries(especes).forEach(([nom, fn]) => {
+        let score =
+          (50 * 0.4) +
+          (instabilite * 0.2) +
+          (luminosite * 0.2);
 
-    // === AFFICHAGE ===
-    resultDiv.innerHTML = "<strong>Classement carnassiers :</strong><br>";
-    scores.forEach((s, i) => {
-      resultDiv.innerHTML += `${i + 1}. ${s.espece} — ${s.score}%<br>`;
+        score = fn(score);
+        score -= pressionPeche;
+        score = Math.max(5, Math.min(95, Math.round(score)));
+
+        html += `🔹 <b>${nom}</b> — ${score}%<br>`;
+      });
+
+      html += `<br>
+        📉 Pression de pêche estimée : ${pressionPeche}%<br>
+        🌫️ Luminosité : ${luminosite}%<br>
+        ⚡ Instabilité météo : ${Math.round(instabilite)}%
+      `;
+
+      document.getElementById("livebite-result").innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById("livebite-result").innerHTML =
+        "⚠️ Erreur analyse LIVE";
     });
+}
 
-  } catch (e) {
-    resultDiv.innerHTML = "❌ Erreur météo";
-    console.error(e);
-  }
-
-  loadingDiv.style.display = "none";
-};
+function bonus(cond, val) {
+  return cond ? val : 0;
+}
 </script>
+
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
