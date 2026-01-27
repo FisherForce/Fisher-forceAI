@@ -1741,6 +1741,73 @@ function bonus(cond, val) {
   return cond ? val : 0;
 }
 </script>
+    <!-- ====== APPRENTISSAGE UTILISATEUR ====== -->
+<div style="width:320px;margin-top:10px;padding:10px;border-radius:12px;background:#181818;color:#fff;font-family:sans-serif">
+  <h3 style="margin:5px 0;font-size:13px;">🧠 Apprentissage utilisateur</h3>
+
+  <select id="fishSpecies" style="width:100%;margin-bottom:6px;">
+    <option>Brochet</option>
+    <option>Sandre</option>
+    <option>Perche</option>
+    <option>Black-bass</option>
+    <option>Silure</option>
+    <option>Aspe</option>
+  </select>
+
+  <button id="logCatch"
+    style="width:100%;padding:6px;border-radius:8px;border:none;background:#3498db;color:#fff;font-weight:bold;cursor:pointer">
+    J’ai eu une touche 🎯
+  </button>
+
+  <div id="learnMsg" style="margin-top:6px;font-size:11px;color:#aaa;"></div>
+</div>
+
+<script>
+function saveLearning(espece, conditions) {
+  let data = JSON.parse(localStorage.getItem("ffai_learning")) || {};
+
+  if (!data[espece]) data[espece] = [];
+
+  data[espece].push(conditions);
+
+  localStorage.setItem("ffai_learning", JSON.stringify(data));
+}
+
+function getLearningBonus(espece, conditions) {
+  let data = JSON.parse(localStorage.getItem("ffai_learning")) || {};
+  if (!data[espece]) return 0;
+
+  let bonus = 0;
+
+  data[espece].forEach(past => {
+    if (Math.abs(past.temp - conditions.temp) < 3) bonus += 2;
+    if (Math.abs(past.cloud - conditions.cloud) < 15) bonus += 2;
+    if (Math.abs(past.wind - conditions.wind) < 5) bonus += 1;
+    if (past.hour === conditions.hour) bonus += 3;
+  });
+
+  return Math.min(15, bonus);
+}
+
+document.getElementById("logCatch").onclick = () => {
+  const espece = document.getElementById("fishSpecies").value;
+
+  // mêmes variables que ton bloc LIVE
+  const now = new Date();
+  const conditions = {
+    temp: window.ff_temp || 15,
+    cloud: window.ff_cloud || 50,
+    wind: window.ff_wind || 10,
+    hour: now.getHours()
+  };
+
+  saveLearning(espece, conditions);
+
+  document.getElementById("learnMsg").innerText =
+    "✔️ Enregistré — Fisher-ForceAI apprend ton style";
+};
+</script>
+
 
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
