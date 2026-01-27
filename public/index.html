@@ -1872,7 +1872,7 @@ function onSpeciesClick(e) {
   }).addTo(speciesMap);
 
   document.getElementById("species-result").innerHTML =
-    "📡 Analyse météo IA par espèce…";
+    "📡 Analyse comportementale IA…";
 
   analyserParEspece();
 }
@@ -1883,25 +1883,20 @@ function analyserParEspece() {
     .then(data => {
 
       const h = data.hourly;
+
       const especes = {
-        "Brochet": scoreBrochet,
-        "Sandre": scoreSandre,
-        "Perche": scorePerche,
-        "Black-bass": scoreBass,
-        "Silure": scoreSilure,
-        "Aspe": scoreAspe
+        "Brochet": () => scoreBrochet(h),
+        "Sandre": () => scoreSandre(h),
+        "Perche": () => scorePerche(h),
+        "Black-bass": () => scoreBass(h),
+        "Silure": () => scoreSilure(h),
+        "Aspe": () => scoreAspe(h)
       };
 
       let html = `<b>🎣 Fenêtres optimales par espèce</b><br><br>`;
 
       Object.entries(especes).forEach(([nom, fn]) => {
-        let best = { hour: null, score: 0 };
-
-        for (let i = 6; i <= 21; i++) {
-          const s = fn(h, i);
-          if (s > best.score) best = { hour: i, score: s };
-        }
-
+        const best = fn();
         html += `
           🔹 <b>${nom}</b><br>
           ⏰ ${best.hour}h00 – ${best.hour + 1}h00<br>
@@ -1910,63 +1905,136 @@ function analyserParEspece() {
       });
 
       document.getElementById("species-result").innerHTML = html;
-    })
-    .catch(() => {
-      document.getElementById("species-result").innerHTML =
-        "⚠️ Erreur lors de l’analyse par espèce";
     });
 }
 
-/* -------- SCORES IA PAR ESPÈCE -------- */
+/* ===== COMPORTEMENT POISSON ===== */
+function comportementPoisson(type, h, i) {
+  let c = 0;
+  const light = 100 - h.cloud_cover[i];
 
-function scoreBrochet(h, i) {
-  let v = 50;
-  if (h.cloud_cover[i] > 60) v += 15;
-  if (h.temperature_2m[i] < 18) v += 10;
-  if (h.wind_speed_10m[i] > 10) v += 10;
-  if (i <= 9 || i >= 18) v += 15;
-  return Math.min(95, v);
+  if (type === "agressif") {
+    if (h.wind_speed_10m[i] > 12) c += 10;
+    if (light > 50) c += 5;
+  }
+
+  if (type === "neutre") {
+    if (light > 30 && light < 70) c += 5;
+  }
+
+  if (type === "passif") {
+    if (h.pressure_msl[i] < 1012) c += 10;
+    if (light < 40) c += 10;
+  }
+
+  return c;
 }
 
-function scoreSandre(h, i) {
-  let v = 45;
-  if (h.cloud_cover[i] > 70) v += 15;
-  if (h.pressure_msl[i] < 1012) v += 15;
-  if (i < 8 || i > 19) v += 15;
-  return Math.min(95, v);
+/* ===== SCORES PAR ESPÈCE (AVEC COMPORTEMENT) ===== */
+
+function scoreBrochet(h) {
+  let best = { hour: 6, score: 0 };
+
+  for (let i = 6; i <= 21; i++) {
+    let v = 50;
+    if (h.cloud_cover[i] > 60) v += 15;
+    if (h.temperature_2m[i] < 18) v += 10;
+    if (h.wind_speed_10m[i] > 10) v += 10;
+    if (i <= 9 || i >= 18) v += 15;
+
+    v += comportementPoisson("agressif", h, i);
+
+    v = Math.min(95, v);
+    if (v > best.score) best = { hour: i, score: v };
+  }
+  return best;
 }
 
-function scorePerche(h, i) {
-  let v = 55;
-  if (h.temperature_2m[i] > 12 && h.temperature_2m[i] < 22) v += 15;
-  if (h.cloud_cover[i] > 40) v += 10;
-  return Math.min(90, v);
+function scoreSandre(h) {
+  let best = { hour: 6, score: 0 };
+
+  for (let i = 6; i <= 21; i++) {
+    let v = 45;
+    if (h.cloud_cover[i] > 70) v += 15;
+    if (h.pressure_msl[i] < 1012) v += 15;
+    if (i < 8 || i > 19) v += 15;
+
+    v += comportementPoisson("passif", h, i);
+
+    v = Math.min(95, v);
+    if (v > best.score) best = { hour: i, score: v };
+  }
+  return best;
 }
 
-function scoreBass(h, i) {
-  let v = 40;
-  if (h.temperature_2m[i] > 18) v += 25;
-  if (h.wind_speed_10m[i] < 10) v += 15;
-  if (i <= 9 || i >= 18) v += 10;
-  return Math.min(95, v);
+function scorePerche(h) {
+  let best = { hour: 6, score: 0 };
+
+  for (let i = 6; i <= 21; i++) {
+    let v = 55;
+    if (h.temperature_2m[i] > 12 && h.temperature_2m[i] < 22) v += 15;
+    if (h.cloud_cover[i] > 40) v += 10;
+
+    v += comportementPoisson("neutre", h, i);
+
+    v = Math.min(90, v);
+    if (v > best.score) best = { hour: i, score: v };
+  }
+  return best;
 }
 
-function scoreSilure(h, i) {
-  let v = 35;
-  if (h.temperature_2m[i] > 16) v += 20;
-  if (h.pressure_msl[i] < 1010) v += 15;
-  if (i < 7 || i > 20) v += 15;
-  return Math.min(95, v);
+function scoreBass(h) {
+  let best = { hour: 6, score: 0 };
+
+  for (let i = 6; i <= 21; i++) {
+    let v = 40;
+    if (h.temperature_2m[i] > 18) v += 25;
+    if (h.wind_speed_10m[i] < 10) v += 15;
+    if (i <= 9 || i >= 18) v += 10;
+
+    v += comportementPoisson("agressif", h, i);
+
+    v = Math.min(95, v);
+    if (v > best.score) best = { hour: i, score: v };
+  }
+  return best;
 }
 
-function scoreAspe(h, i) {
-  let v = 45;
-  if (h.wind_speed_10m[i] > 15) v += 15;
-  if (h.cloud_cover[i] < 40) v += 15;
-  if (i <= 9 || i >= 18) v += 15;
-  return Math.min(90, v);
+function scoreSilure(h) {
+  let best = { hour: 6, score: 0 };
+
+  for (let i = 6; i <= 21; i++) {
+    let v = 35;
+    if (h.temperature_2m[i] > 16) v += 20;
+    if (h.pressure_msl[i] < 1010) v += 15;
+    if (i < 7 || i > 20) v += 15;
+
+    v += comportementPoisson("passif", h, i);
+
+    v = Math.min(95, v);
+    if (v > best.score) best = { hour: i, score: v };
+  }
+  return best;
+}
+
+function scoreAspe(h) {
+  let best = { hour: 6, score: 0 };
+
+  for (let i = 6; i <= 21; i++) {
+    let v = 45;
+    if (h.wind_speed_10m[i] > 15) v += 15;
+    if (h.cloud_cover[i] < 40) v += 15;
+    if (i <= 9 || i >= 18) v += 15;
+
+    v += comportementPoisson("agressif", h, i);
+
+    v = Math.min(90, v);
+    if (v > best.score) best = { hour: i, score: v };
+  }
+  return best;
 }
 </script>
+
 
 
 
