@@ -2081,6 +2081,91 @@ function meilleurCreneau(ph,s){
 
 </script>
 <!-- FIN MODULE -->
+    <!-- ====== MODE COMPÉTITION ====== -->
+<div style="width:320px;margin-top:10px;padding:10px;border-radius:12px;background:#101010;color:#fff;font-family:sans-serif">
+  <h3 style="margin:5px 0;font-size:13px;">🏆 Mode compétition</h3>
+
+  <button id="openCompetition"
+    style="width:100%;padding:6px;border-radius:8px;border:none;background:#f1c40f;color:#000;font-weight:bold;cursor:pointer">
+    Activer le mode
+  </button>
+
+  <div id="competitionPanel" style="display:none;margin-top:8px;font-size:12px;">
+    <div id="compScore">Score total : 0 pts</div>
+    <div id="compStats" style="margin-top:5px;"></div>
+
+    <button id="logCompetitionCatch"
+      style="margin-top:6px;width:100%;padding:6px;border-radius:8px;border:none;background:#27ae60;color:#fff;font-weight:bold">
+      Ajouter une touche 🎯
+    </button>
+  </div>
+</div>
+
+<script>
+let competitionActive = false;
+
+const speciesPoints = {
+  "Brochet": 30,
+  "Sandre": 35,
+  "Perche": 20,
+  "Black-bass": 25,
+  "Silure": 50,
+  "Aspe": 40
+};
+
+function getCompetitionData() {
+  return JSON.parse(localStorage.getItem("ffai_competition")) || {
+    score: 0,
+    catches: {}
+  };
+}
+
+function saveCompetitionData(data) {
+  localStorage.setItem("ffai_competition", JSON.stringify(data));
+}
+
+document.getElementById("openCompetition").onclick = () => {
+  competitionActive = !competitionActive;
+  document.getElementById("competitionPanel").style.display = competitionActive ? "block" : "none";
+};
+
+document.getElementById("logCompetitionCatch").onclick = () => {
+  if (!competitionActive) return;
+
+  const espece = document.getElementById("fishSpecies")?.value || "Brochet";
+
+  let data = getCompetitionData();
+  let pts = speciesPoints[espece] || 20;
+
+  // Bonus difficulté météo (si variables globales)
+  if (window.ff_wind > 20) pts += 10;
+  if (window.ff_pressure < 1010) pts += 10;
+  if (window.ff_cloud > 70) pts += 10;
+  if (new Date().getHours() < 7 || new Date().getHours() > 21) pts += 15;
+
+  data.score += pts;
+  data.catches[espece] = (data.catches[espece] || 0) + 1;
+
+  saveCompetitionData(data);
+  updateCompetitionUI();
+};
+
+function updateCompetitionUI() {
+  const data = getCompetitionData();
+  document.getElementById("compScore").innerText =
+    `Score total : ${data.score} pts`;
+
+  let html = "Stats :<br>";
+  for (let e in data.catches) {
+    html += `• ${e} : ${data.catches[e]}<br>`;
+  }
+
+  document.getElementById("compStats").innerHTML = html;
+}
+
+updateCompetitionUI();
+</script>
+
     
 
 
