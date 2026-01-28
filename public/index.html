@@ -1810,6 +1810,7 @@ document.getElementById("logCatch").onclick = () => {
 
 
 
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -1823,7 +1824,7 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
       FENÊTRE DE PÊCHE IA
     </div>
     <div style="font-size:12px;opacity:.8">
-      Meilleur créneau par espèce
+      Créneau optimisé + apprentissage utilisateur
     </div>
   </div>
 
@@ -1846,7 +1847,49 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
 <script>
 let speciesMap, speciesMarker, speciesSpot = null;
 
-/* ===== SAISON AUTO ===== */
+/* ============================
+   🔥 APPRENTISSAGE UTILISATEUR
+============================ */
+
+/* Sauvegarde des retours pêche */
+function saveFeedback(espece, success) {
+  let data = JSON.parse(localStorage.getItem("fishAI_learning")) || {};
+
+  if (!data[espece]) data[espece] = { ok: 0, fail: 0 };
+
+  if (success) data[espece].ok++;
+  else data[espece].fail++;
+
+  localStorage.setItem("fishAI_learning", JSON.stringify(data));
+}
+
+/* Bonus/malus IA selon expérience */
+function getLearningBonus(espece) {
+  let data = JSON.parse(localStorage.getItem("fishAI_learning")) || {};
+  if (!data[espece]) return 0;
+
+  let ok = data[espece].ok;
+  let fail = data[espece].fail;
+
+  let total = ok + fail;
+  if (total < 3) return 0; // pas assez de données
+
+  let ratio = ok / total;
+
+  // bonus si souvent touches
+  if (ratio > 0.7) return +8;
+  if (ratio > 0.55) return +4;
+
+  // malus si souvent bredouille
+  if (ratio < 0.3) return -8;
+  if (ratio < 0.45) return -4;
+
+  return 0;
+}
+
+/* ============================
+   SAISON AUTO
+============================ */
 function getSeason() {
   const m = new Date().getMonth() + 1;
   if (m >= 3 && m <= 5) return "printemps";
@@ -1855,56 +1898,23 @@ function getSeason() {
   return "hiver";
 }
 
-/* ===== COMPORTEMENT SAISONNIER ===== */
+/* ============================
+   COMPORTEMENT SAISONNIER
+============================ */
 function comportementSaison(type, h, i, season) {
   let c = 0;
-  const light = 100 - h.cloud_cover[i];
   const temp = h.temperature_2m[i];
 
-  if (season === "printemps") {
-    if (type === "agressif") {
-      if (temp > 10 && temp < 18) c += 10;
-      if (light < 60) c += 5;
-    }
-    if (type === "passif") {
-      if (h.pressure_msl[i] < 1012) c += 10;
-    }
-  }
-
-  if (season === "ete") {
-    if (type === "agressif") {
-      if (temp > 18 && temp < 26) c += 10;
-      if (light > 75) c -= 5;
-    }
-    if (type === "passif") {
-      if (i > 20 || i < 7) c += 15;
-    }
-  }
-
-  if (season === "automne") {
-    if (type === "agressif") {
-      c += 10;
-      if (h.wind_speed_10m[i] > 12) c += 10;
-    }
-    if (type === "neutre") {
-      if (temp > 8 && temp < 16) c += 10;
-    }
-  }
-
-  if (season === "hiver") {
-    if (type === "agressif") {
-      if (temp < 8) c -= 10;
-    }
-    if (type === "passif") {
-      if (light < 40) c += 5;
-      if (h.pressure_msl[i] < 1010) c += 10;
-    }
-  }
+  if (season === "automne" && type === "agressif") c += 10;
+  if (season === "hiver" && temp < 8) c -= 8;
+  if (season === "ete" && (i < 7 || i > 20)) c += 10;
 
   return c;
 }
 
-/* ===== INIT MAP ===== */
+/* ============================
+   INIT MAP
+============================ */
 setTimeout(initSpeciesMap, 100);
 
 function initSpeciesMap() {
@@ -1919,7 +1929,6 @@ function initSpeciesMap() {
   speciesMap.on("click", onSpeciesClick);
 }
 
-/* ===== CLICK ===== */
 function onSpeciesClick(e) {
   speciesSpot = e.latlng;
 
@@ -1932,12 +1941,14 @@ function onSpeciesClick(e) {
   }).addTo(speciesMap);
 
   document.getElementById("species-result").innerHTML =
-    "📡 Analyse météo IA saisonnière…";
+    "📡 Analyse météo IA + apprentissage…";
 
   analyserParEspece();
 }
 
-/* ===== ANALYSE ===== */
+/* ============================
+   ANALYSE PRINCIPALE
+============================ */
 function analyserParEspece() {
   const season = getSeason();
 
@@ -1959,15 +1970,20 @@ function analyserParEspece() {
       ];
 
       especes.forEach(([nom, fn, type]) => {
+
         let best = { hour: 6, score: 0 };
 
         for (let i = 6; i <= 21; i++) {
+
           let s = fn(h, i);
 
-          // AJOUT COMPORTEMENT SAISONNIER
+          // Saison
           s += comportementSaison(type, h, i, season);
 
-          s = Math.min(95, s);
+          // 🔥 Apprentissage utilisateur
+          s += getLearningBonus(nom);
+
+          s = Math.min(95, Math.max(5, s));
 
           if (s > best.score) best = { hour: i, score: s };
         }
@@ -1975,24 +1991,43 @@ function analyserParEspece() {
         html += `
           🔹 <b>${nom}</b><br>
           ⏰ ${best.hour}h00 – ${best.hour + 1}h00<br>
-          🎯 Activité estimée : ${best.score}%<br><br>
+          🎯 Activité estimée : ${best.score}%<br>
+
+          <button onclick="saveFeedback('${nom}',true);alert('✅ Feedback enregistré !')"
+            style="margin-top:4px;padding:4px 8px;border:none;
+            border-radius:8px;background:#2ecc71;color:white;font-size:12px;">
+            ✅ Touche
+          </button>
+
+          <button onclick="saveFeedback('${nom}',false);alert('❌ Feedback enregistré !')"
+            style="margin-top:4px;padding:4px 8px;border:none;
+            border-radius:8px;background:#e74c3c;color:white;font-size:12px;">
+            ❌ Rien
+          </button>
+
+          <br><br>
         `;
       });
+
+      html += `<div style="font-size:11px;opacity:.7">
+      📌 Plus tu donnes de retours, plus l’IA s’adapte à ton plan d’eau.
+      </div>`;
 
       document.getElementById("species-result").innerHTML = html;
     })
     .catch(() => {
       document.getElementById("species-result").innerHTML =
-        "⚠️ Erreur lors de l’analyse par espèce";
+        "⚠️ Erreur lors de l’analyse météo";
     });
 }
 
-/* ===== SCORES BASE ===== */
+/* ============================
+   SCORES BASE
+============================ */
 
 function scoreBrochet(h, i) {
   let v = 50;
   if (h.cloud_cover[i] > 60) v += 15;
-  if (h.temperature_2m[i] < 18) v += 10;
   if (h.wind_speed_10m[i] > 10) v += 10;
   if (i <= 9 || i >= 18) v += 15;
   return v;
@@ -2001,7 +2036,6 @@ function scoreBrochet(h, i) {
 function scoreSandre(h, i) {
   let v = 45;
   if (h.cloud_cover[i] > 70) v += 15;
-  if (h.pressure_msl[i] < 1012) v += 15;
   if (i < 8 || i > 19) v += 15;
   return v;
 }
@@ -2009,34 +2043,28 @@ function scoreSandre(h, i) {
 function scorePerche(h, i) {
   let v = 55;
   if (h.temperature_2m[i] > 12 && h.temperature_2m[i] < 22) v += 15;
-  if (h.cloud_cover[i] > 40) v += 10;
   return v;
 }
 
 function scoreBass(h, i) {
   let v = 40;
   if (h.temperature_2m[i] > 18) v += 25;
-  if (h.wind_speed_10m[i] < 10) v += 15;
-  if (i <= 9 || i >= 18) v += 10;
   return v;
 }
 
 function scoreSilure(h, i) {
   let v = 35;
   if (h.temperature_2m[i] > 16) v += 20;
-  if (h.pressure_msl[i] < 1010) v += 15;
-  if (i < 7 || i > 20) v += 15;
   return v;
 }
 
 function scoreAspe(h, i) {
   let v = 45;
   if (h.wind_speed_10m[i] > 15) v += 15;
-  if (h.cloud_cover[i] < 40) v += 15;
-  if (i <= 9 || i >= 18) v += 15;
   return v;
 }
 </script>
+
 
 
 
