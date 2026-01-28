@@ -29,21 +29,143 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 
-  <style>
-    @keyframes pulse {0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
-    @keyframes blink {0%,100%{opacity:1}50%{opacity:0.3}}
-    .live-dot {width:10px;height:10px;background:#fff;border-radius:50%;animation:blink 1.5s infinite}
-    .dashboard {background:linear-gradient(135deg,#00d4aa,#00a085);color:white;padding:18px;border-radius:16px;margin:20px 0;text-align:center;box-shadow:0 8px 20px rgba(0,212,170,0.3)}
-    .level-badge {background:#ffd700;color:#000;padding:6px 14px;border-radius:30px;font-weight:bold}
-    .stats-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin-top:12px}
-    .stat-item {background:rgba(255,255,255,0.25);padding:10px;border-radius:10px}
-    .player-rank {background:#112233;margin:12px 0;padding:16px;border-radius:12px;display:flex;justify-content:space-between;align-items:center;font-size:16px;transition:all .3s}
-    .player-rank.you {background:#00d4aa!important;color:#000;font-weight:bold;box-shadow:0 0 20px rgba(0,212,170,0.6)}
-    .rank-num {font-size:24px;font-weight:bold;width:50px;text-align:center}
-    .player-name {flex:1;margin-left:15px}
-    .player-level {font-size:12px;color:#aaa;margin-top:2px}
-    .player-xp {font-weight:bold;color:#ffd700}
-  </style>
+<style>
+  /* Animations originales gardées */
+  @keyframes pulse {0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+  @keyframes blink {0%,100%{opacity:1}50%{opacity:0.3}}
+
+  /* Classes originales gardées et améliorées */
+  .live-dot {
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    animation: blink 1.5s infinite;
+    box-shadow: 0 0 8px rgba(255,255,255,0.6);
+  }
+
+  .dashboard {
+    background: linear-gradient(135deg, #00d4aa, #00a085);
+    color: white;
+    padding: 20px;
+    border-radius: 18px;
+    margin: 24px 0;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,212,170,0.4);
+    transition: transform 0.3s ease;
+  }
+
+  .dashboard:hover {
+    transform: translateY(-4px);
+  }
+
+  .level-badge {
+    background: #ffd700;
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(255,215,0,0.4);
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .stat-item {
+    background: rgba(255,255,255,0.18);
+    padding: 14px;
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: transform 0.2s ease;
+  }
+
+  .stat-item:hover {
+    transform: scale(1.05);
+  }
+
+  .player-rank {
+    background: #112233;
+    margin: 16px 0;
+    padding: 18px;
+    border-radius: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+
+  .player-rank.you {
+    background: #00d4aa !important;
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 25px rgba(0,212,170,0.6);
+    transform: scale(1.02);
+  }
+
+  .rank-num {
+    font-size: 28px;
+    font-weight: bold;
+    width: 60px;
+    text-align: center;
+    color: #ffd700;
+  }
+
+  .player-name {
+    flex: 1;
+    margin-left: 20px;
+    font-weight: 600;
+  }
+
+  .player-level {
+    font-size: 14px;
+    color: #aaa;
+    margin-top: 4px;
+  }
+
+  .player-xp {
+    font-weight: bold;
+    color: #ffd700;
+    font-size: 18px;
+  }
+
+  /* Améliorations globales (ajoutées sans casser l'ancien) */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f1724, #081427);
+    color: #e6eef6;
+    min-height: 100vh;
+  }
+
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr 1fr; /* 2 colonnes sur mobile */
+      gap: 12px;
+    }
+
+    .player-rank {
+      font-size: 14px;
+      padding: 14px;
+    }
+
+    .rank-num {
+      font-size: 24px;
+      width: 50px;
+    }
+  }
+</style>
 
   <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
