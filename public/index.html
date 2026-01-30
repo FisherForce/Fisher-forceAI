@@ -2232,7 +2232,7 @@ function scoreAspe(h,i){let v=45;if(h.wind_speed_10m[i]>15)v+=15;return v;}
   <p id="coachStatus" style="text-align:center;color:#aaa;font-size:14px;margin-top:10px;">Actualisation toutes les 60s • Dernière mise à jour : --</p>
 </div>
 <script>
-// === MODE COACH - Analyse IA en direct sur spot choisi ===
+// === MODE COACH - Analyse IA en direct avec Lune & Marée ===
 document.addEventListener('DOMContentLoaded', () => {
   let coachMap = null;
   let coachMarker = null;
@@ -2242,6 +2242,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastTemp = null;
   let lastPrecip = null;
   let lastWind = null;
+  let lastMoonPhase = null;
+  let lastTide = null;
   let userWeatherOverride = null; // 'soleil', 'nuages', 'pluie' ou null
 
   // Init carte
@@ -2273,16 +2275,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('.weather-btn');
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
-        // Désélectionne tous
         buttons.forEach(b => b.classList.remove('active'));
-        // Sélectionne celui cliqué
         btn.classList.add('active');
         userWeatherOverride = btn.dataset.value;
-
-        // Re-analyse immédiat
-        analyserCoach();
+        analyserCoach(); // Re-analyse immédiat
       });
     });
+  }
+
+  // Calcul phase lunaire simple (approximation)
+  function getMoonPhase(date = new Date()) {
+    const knownNewMoon = new Date(2025, 0, 13); // Date nouvelle lune connue
+    const days = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
+    const phase = (days % 29.53) / 29.53;
+    if (phase < 0.03 || phase > 0.97) return "Nouvelle Lune";
+    if (phase > 0.47 && phase < 0.53) return "Pleine Lune";
+    if (phase < 0.25) return "Croissante";
+    if (phase < 0.75) return "Décroissante";
+    return "Pleine Lune";
   }
 
   async function analyserCoach() {
@@ -2293,7 +2303,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resultDiv.innerHTML = '<p style="color:#00ff9d;font-size:18px;">Analyse en direct... 📡</p>';
 
     try {
-      // Fetch météo Open-Meteo
+      // Fetch météo
       const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,pressure_msl,cloud_cover,is_day&timezone=Europe/Paris`);
       const meteo = await meteoRes.json();
       const c = meteo.current;
@@ -2305,16 +2315,33 @@ document.addEventListener('DOMContentLoaded', () => {
       let isDay = c.is_day === 1;
       let clouds = c.cloud_cover;
 
-      // Détection conditions auto
+      // Lune
+      const moonPhase = getMoonPhase();
+      const moonText = moonPhase.includes("Pleine") ? "pleine lune" : moonPhase.includes("Nouvelle") ? "nouvelle lune" : moonPhase.toLowerCase();
+
+      // Marée (exemple avec API gratuite - remplace par une meilleure si besoin)
+      let tideText = "marée inconnue";
+      try {
+        const tideRes = await fetch(`https://api.tides.bigdatacloud.net/v1/tide?lat=${currentSpot.lat}&lon=${currentSpot.lng}&date=${new Date().toISOString().split('T')[0]}`);
+        const tideData = await tideRes.json();
+        if (tideData?.data?.[0]) {
+          const tide = tideData.data[0];
+          tideText = tide.height > 0 ? `haute (${Math.round(tide.height)}m)` : `basse (${Math.round(tide.height)}m)`;
+        }
+      } catch (e) {}
+
+      // Conditions auto
       let conditions = [];
       if (precip > 0.1) conditions.push('pluie');
       if (wind > 25) conditions.push('vent fort');
       if (clouds > 70) conditions.push('nuageux');
       else conditions.push('clair');
       if (!isDay) conditions.push('nuit');
+      conditions.push(moonText);
+      conditions.push(tideText);
       let autoConditions = conditions.join(' ');
 
-      // Override si utilisateur a choisi
+      // Override utilisateur
       let finalConditions = autoConditions;
       let weatherDisplay = 'Auto-détecté';
       if (userWeatherOverride) {
@@ -2324,15 +2351,17 @@ document.addEventListener('DOMContentLoaded', () => {
         weatherDisplay = `Choisi : ${userWeatherOverride.charAt(0).toUpperCase() + userWeatherOverride.slice(1)}`;
       }
 
-      // Vérif stabilité avant nouveau conseil (même avec override)
+      // Stabilité
       let needNewAdvice = true;
-      if (lastTemp !== null && lastPrecip !== null && lastWind !== null) {
+      if (lastTemp !== null && lastPrecip !== null && lastWind !== null && lastMoonPhase && lastTide) {
         const tempDiff = Math.abs(temp - lastTemp);
         const precipDiff = Math.abs(precip - lastPrecip);
         const windDiff = Math.abs(wind - lastWind);
-        if (tempDiff < 1 && precipDiff < 0.1 && windDiff < 2) {
+        const moonSame = moonPhase === lastMoonPhase;
+        const tideSame = tideText === lastTide;
+        if (tempDiff < 1 && precipDiff < 0.1 && windDiff < 2 && moonSame && tideSame) {
           needNewAdvice = false;
-          resultDiv.innerHTML = lastAdvice; // Garde l'ancien
+          resultDiv.innerHTML = lastAdvice;
         }
       }
 
@@ -2354,11 +2383,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const conseil = await adviceRes.json();
 
-        // Affichage avec tirets
         let html = `
           <h3 style="color:#00ff9d;margin:0 0 15px;">Conditions à ton spot</h3>
           <p style="font-size:18px;">
             🌡️ ${temp}°C • 💨 ${wind} km/h • 🌧️ ${precip}mm • ☁️ ${clouds}% • ${isDay ? 'Jour' : 'Nuit'} • ${pression} hPa<br>
+            🌕 Lune : ${moonPhase} • 🌊 Marée : ${tideText}<br>
             <strong>${weatherDisplay}</strong>
           </p>
           <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
@@ -2367,7 +2396,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ${conseil.lures?.map(l => `<p style="margin:8px 0;font-size:18px;">- ${l}</p>`).join('') || "<p>- Pas de conseil disponible</p>"}
           </div>
           <h3 style="color:#00ff9d;margin:20px 0 10px;">C'est quoi le temps vraiment ?</h3>
-          <div style="display:flex;gap:10px;justify-content:center;">
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
             <button class="weather-btn ${userWeatherOverride === 'soleil' ? 'active' : ''}" data-value="soleil" style="background:#ffd700;color:black;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Soleil ☀️</button>
             <button class="weather-btn ${userWeatherOverride === 'nuages' ? 'active' : ''}" data-value="nuages" style="background:#aaa;color:black;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Nuages ☁️</button>
             <button class="weather-btn ${userWeatherOverride === 'pluie' ? 'active' : ''}" data-value="pluie" style="background:#4285f4;color:white;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Pluie 🌧️</button>
@@ -2379,8 +2408,9 @@ document.addEventListener('DOMContentLoaded', () => {
         lastTemp = temp;
         lastPrecip = precip;
         lastWind = wind;
+        lastMoonPhase = moonPhase;
+        lastTide = tideText;
 
-        // Ré-attache les listeners aux boutons
         setupWeatherButtons();
       }
 
@@ -2391,10 +2421,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Init carte (zoom France)
+  // Init carte
   setTimeout(() => coachMap.invalidateSize(), 300);
 
-  // Style actif pour boutons météo (ajoute dans ton <style> ou ici)
+  // Style boutons
   const weatherStyle = document.createElement('style');
   weatherStyle.textContent = `
     .weather-btn.active {
@@ -2406,7 +2436,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.head.appendChild(weatherStyle);
 });
 </script>
-
 
 
                         <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
