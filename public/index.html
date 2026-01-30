@@ -2231,7 +2231,7 @@ function scoreAspe(h,i){let v=45;if(h.wind_speed_10m[i]>15)v+=15;return v;}
   <!-- Statut actualisation -->
   <p id="coachStatus" style="text-align:center;color:#aaa;font-size:14px;margin-top:10px;">Actualisation toutes les 60s • Dernière mise à jour : --</p>
 </div>
-    <script>
+<script>
 // === MODE COACH - Analyse IA en direct sur spot choisi ===
 document.addEventListener('DOMContentLoaded', () => {
   let coachMap = null;
@@ -2242,6 +2242,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastTemp = null;
   let lastPrecip = null;
   let lastWind = null;
+  let userWeatherOverride = null; // 'soleil', 'nuages', 'pluie' ou null
 
   // Init carte
   coachMap = L.map('coachMap').setView([46.8, 2.5], 6);
@@ -2267,6 +2268,23 @@ document.addEventListener('DOMContentLoaded', () => {
     coachTimer = setInterval(analyserCoach, 60000); // 60s
   });
 
+  // Gestion override météo utilisateur
+  function setupWeatherButtons() {
+    const buttons = document.querySelectorAll('.weather-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Désélectionne tous
+        buttons.forEach(b => b.classList.remove('active'));
+        // Sélectionne celui cliqué
+        btn.classList.add('active');
+        userWeatherOverride = btn.dataset.value;
+
+        // Re-analyse immédiat
+        analyserCoach();
+      });
+    });
+  }
+
   async function analyserCoach() {
     if (!currentSpot) return;
 
@@ -2280,23 +2298,33 @@ document.addEventListener('DOMContentLoaded', () => {
       const meteo = await meteoRes.json();
       const c = meteo.current;
 
-      const temp = Math.round(c.temperature_2m);
-      const precip = c.precipitation;
-      const wind = Math.round(c.wind_speed_10m);
-      const pression = Math.round(c.pressure_msl);
-      const isDay = c.is_day === 1;
-      const clouds = c.cloud_cover;
+      let temp = Math.round(c.temperature_2m);
+      let precip = c.precipitation;
+      let wind = Math.round(c.wind_speed_10m);
+      let pression = Math.round(c.pressure_msl);
+      let isDay = c.is_day === 1;
+      let clouds = c.cloud_cover;
 
-      // Détection conditions
+      // Détection conditions auto
       let conditions = [];
       if (precip > 0.1) conditions.push('pluie');
       if (wind > 25) conditions.push('vent fort');
       if (clouds > 70) conditions.push('nuageux');
       else conditions.push('clair');
       if (!isDay) conditions.push('nuit');
-      conditions = conditions.join(' ');
+      let autoConditions = conditions.join(' ');
 
-      // Vérif stabilité avant nouveau conseil
+      // Override si utilisateur a choisi
+      let finalConditions = autoConditions;
+      let weatherDisplay = 'Auto-détecté';
+      if (userWeatherOverride) {
+        if (userWeatherOverride === 'soleil') finalConditions = 'clair jour';
+        if (userWeatherOverride === 'nuages') finalConditions = 'nuageux';
+        if (userWeatherOverride === 'pluie') finalConditions = 'pluie';
+        weatherDisplay = `Choisi : ${userWeatherOverride.charAt(0).toUpperCase() + userWeatherOverride.slice(1)}`;
+      }
+
+      // Vérif stabilité avant nouveau conseil (même avec override)
       let needNewAdvice = true;
       if (lastTemp !== null && lastPrecip !== null && lastWind !== null) {
         const tempDiff = Math.abs(temp - lastTemp);
@@ -2309,7 +2337,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (needNewAdvice) {
-        // Appel serveur
         const species = document.getElementById('coachSpecies').value;
         const milieu = document.getElementById('coachMilieu').value;
 
@@ -2318,8 +2345,8 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             targetSpecies: species,
-            structure: "Mixte", // ou adapte
-            conditions: conditions || "clair",
+            structure: "Mixte",
+            conditions: finalConditions,
             spotType: milieu,
             temperature: temp
           })
@@ -2327,16 +2354,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const conseil = await adviceRes.json();
 
-        // Affichage
+        // Affichage avec tirets
         let html = `
-          <h3 style="color:#00ff9d;margin:0 0 15px;">Conditions détectées à ton spot</h3>
+          <h3 style="color:#00ff9d;margin:0 0 15px;">Conditions à ton spot</h3>
           <p style="font-size:18px;">
-            🌡️ ${temp}°C • 💨 ${wind} km/h • 🌧️ ${precip}mm • ☁️ ${clouds}% nuages • ${isDay ? 'Jour' : 'Nuit'} • ${pression} hPa
+            🌡️ ${temp}°C • 💨 ${wind} km/h • 🌧️ ${precip}mm • ☁️ ${clouds}% • ${isDay ? 'Jour' : 'Nuit'} • ${pression} hPa<br>
+            <strong>${weatherDisplay}</strong>
           </p>
           <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
             <b style="color:#ffd700;font-size:22px;">${species.toUpperCase()} en ${milieu}</b><br>
-            <b style="color:#00ff9d;font-size:20px;margin-top:10px;display:block;">MEILLEUR LEURRE MAINTENANT :</b>
-            ${conseil.lures?.map(l => `<span style="font-size:18px;">${l}</span><br>`).join('') || "Pas de conseil disponible"}
+            <b style="color:#00ff9d;font-size:20px;margin-top:10px;display:block;">Conseils IA :</b>
+            ${conseil.lures?.map(l => `<p style="margin:8px 0;font-size:18px;">- ${l}</p>`).join('') || "<p>- Pas de conseil disponible</p>"}
+          </div>
+          <h3 style="color:#00ff9d;margin:20px 0 10px;">C'est quoi le temps vraiment ?</h3>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <button class="weather-btn ${userWeatherOverride === 'soleil' ? 'active' : ''}" data-value="soleil" style="background:#ffd700;color:black;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Soleil ☀️</button>
+            <button class="weather-btn ${userWeatherOverride === 'nuages' ? 'active' : ''}" data-value="nuages" style="background:#aaa;color:black;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Nuages ☁️</button>
+            <button class="weather-btn ${userWeatherOverride === 'pluie' ? 'active' : ''}" data-value="pluie" style="background:#4285f4;color:white;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Pluie 🌧️</button>
           </div>
         `;
 
@@ -2345,6 +2379,9 @@ document.addEventListener('DOMContentLoaded', () => {
         lastTemp = temp;
         lastPrecip = precip;
         lastWind = wind;
+
+        // Ré-attache les listeners aux boutons
+        setupWeatherButtons();
       }
 
       statusDiv.textContent = `Actualisation toutes les 60s • Dernière : ${new Date().toLocaleTimeString('fr-FR')}`;
@@ -2356,9 +2393,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Init carte (zoom France)
   setTimeout(() => coachMap.invalidateSize(), 300);
+
+  // Style actif pour boutons météo (ajoute dans ton <style> ou ici)
+  const weatherStyle = document.createElement('style');
+  weatherStyle.textContent = `
+    .weather-btn.active {
+      background: #00ff9d !important;
+      color: black !important;
+      box-shadow: 0 0 15px #00ff9d;
+    }
+  `;
+  document.head.appendChild(weatherStyle);
 });
 </script>
-
 
 
 
