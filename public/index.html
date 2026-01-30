@@ -2191,6 +2191,173 @@ function scoreAspe(h,i){let v=45;if(h.wind_speed_10m[i]>15)v+=15;return v;}
 
 
 
+    <!-- Mode Coach -->
+<div id="mode-coach" class="mode">
+  <h2 style="text-align:center;color:#00ff9d;">Mode Coach IA 🏆</h2>
+  <p style="text-align:center;color:#aaa;margin:10px 0;">Sélectionne ton espèce et milieu, puis clique sur la carte pour ton spot. L'IA analyse en direct !</p>
+
+  <!-- Sélecteurs -->
+  <div style="max-width:600px;margin:0 auto;padding:15px;background:#001122;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.5);">
+    <label style="display:block;margin-bottom:8px;color:#00ff9d;">Espèce ciblée</label>
+    <select id="coachSpecies" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
+      <option value="Brochet">Brochet</option>
+      <option value="Perche">Perche</option>
+      <option value="Sandre">Sandre</option>
+      <option value="Black-bass">Black-bass</option>
+      <option value="Silure">Silure</option>
+      <option value="Truite">Truite</option>
+      <option value="Chevesne">Chevesne</option>
+    </select>
+
+    <label style="display:block;margin:15px 0 8px;color:#00ff9d;">Milieu</label>
+    <select id="coachMilieu" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
+      <option value="Étang">Étang</option>
+      <option value="Rivière">Rivière</option>
+      <option value="Canal">Canal</option>
+      <option value="Lac">Lac</option>
+    </select>
+  </div>
+
+  <!-- Carte Leaflet -->
+  <div style="margin:20px auto;max-width:800px;">
+    <div id="coachMap" style="height:400px;border-radius:15px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.6);"></div>
+  </div>
+
+  <!-- Résultat IA en direct -->
+  <div id="coachResult" style="margin:20px auto;padding:20px;background:#001122;border-radius:15px;max-width:800px;box-shadow:0 10px 30px rgba(0,0,0,0.5);min-height:150px;text-align:center;">
+    <p style="color:#00ff9d;font-size:18px;">Clique sur la carte pour analyser ton spot en direct... 🔍</p>
+  </div>
+
+  <!-- Statut actualisation -->
+  <p id="coachStatus" style="text-align:center;color:#aaa;font-size:14px;margin-top:10px;">Actualisation toutes les 60s • Dernière mise à jour : --</p>
+</div>
+    <script>
+// === MODE COACH - Analyse IA en direct sur spot choisi ===
+document.addEventListener('DOMContentLoaded', () => {
+  let coachMap = null;
+  let coachMarker = null;
+  let coachTimer = null;
+  let currentSpot = null;
+  let lastAdvice = null;
+  let lastTemp = null;
+  let lastPrecip = null;
+  let lastWind = null;
+
+  // Init carte
+  coachMap = L.map('coachMap').setView([46.8, 2.5], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(coachMap);
+
+  // Clic sur carte → placer marker + analyser
+  coachMap.on('click', e => {
+    currentSpot = e.latlng;
+
+    if (coachMarker) coachMap.removeLayer(coachMarker);
+    coachMarker = L.marker(currentSpot, {
+      icon: L.divIcon({
+        html: '<div style="background:#00ff9d;color:black;padding:8px 16px;border-radius:50px;font-weight:bold;box-shadow:0 0 15px #00ff9d;">SPOT</div>',
+        iconSize: [100, 40],
+        iconAnchor: [50, 20]
+      })
+    }).addTo(coachMap);
+
+    analyserCoach();
+    if (coachTimer) clearInterval(coachTimer);
+    coachTimer = setInterval(analyserCoach, 60000); // 60s
+  });
+
+  async function analyserCoach() {
+    if (!currentSpot) return;
+
+    const resultDiv = document.getElementById('coachResult');
+    const statusDiv = document.getElementById('coachStatus');
+    resultDiv.innerHTML = '<p style="color:#00ff9d;font-size:18px;">Analyse en direct... 📡</p>';
+
+    try {
+      // Fetch météo Open-Meteo
+      const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,pressure_msl,cloud_cover,is_day&timezone=Europe/Paris`);
+      const meteo = await meteoRes.json();
+      const c = meteo.current;
+
+      const temp = Math.round(c.temperature_2m);
+      const precip = c.precipitation;
+      const wind = Math.round(c.wind_speed_10m);
+      const pression = Math.round(c.pressure_msl);
+      const isDay = c.is_day === 1;
+      const clouds = c.cloud_cover;
+
+      // Détection conditions
+      let conditions = [];
+      if (precip > 0.1) conditions.push('pluie');
+      if (wind > 25) conditions.push('vent fort');
+      if (clouds > 70) conditions.push('nuageux');
+      else conditions.push('clair');
+      if (!isDay) conditions.push('nuit');
+      conditions = conditions.join(' ');
+
+      // Vérif stabilité avant nouveau conseil
+      let needNewAdvice = true;
+      if (lastTemp !== null && lastPrecip !== null && lastWind !== null) {
+        const tempDiff = Math.abs(temp - lastTemp);
+        const precipDiff = Math.abs(precip - lastPrecip);
+        const windDiff = Math.abs(wind - lastWind);
+        if (tempDiff < 1 && precipDiff < 0.1 && windDiff < 2) {
+          needNewAdvice = false;
+          resultDiv.innerHTML = lastAdvice; // Garde l'ancien
+        }
+      }
+
+      if (needNewAdvice) {
+        // Appel serveur
+        const species = document.getElementById('coachSpecies').value;
+        const milieu = document.getElementById('coachMilieu').value;
+
+        const adviceRes = await fetch('/api/advice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetSpecies: species,
+            structure: "Mixte", // ou adapte
+            conditions: conditions || "clair",
+            spotType: milieu,
+            temperature: temp
+          })
+        });
+
+        const conseil = await adviceRes.json();
+
+        // Affichage
+        let html = `
+          <h3 style="color:#00ff9d;margin:0 0 15px;">Conditions détectées à ton spot</h3>
+          <p style="font-size:18px;">
+            🌡️ ${temp}°C • 💨 ${wind} km/h • 🌧️ ${precip}mm • ☁️ ${clouds}% nuages • ${isDay ? 'Jour' : 'Nuit'} • ${pression} hPa
+          </p>
+          <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
+            <b style="color:#ffd700;font-size:22px;">${species.toUpperCase()} en ${milieu}</b><br>
+            <b style="color:#00ff9d;font-size:20px;margin-top:10px;display:block;">MEILLEUR LEURRE MAINTENANT :</b>
+            ${conseil.lures?.map(l => `<span style="font-size:18px;">${l}</span><br>`).join('') || "Pas de conseil disponible"}
+          </div>
+        `;
+
+        resultDiv.innerHTML = html;
+        lastAdvice = html;
+        lastTemp = temp;
+        lastPrecip = precip;
+        lastWind = wind;
+      }
+
+      statusDiv.textContent = `Actualisation toutes les 60s • Dernière : ${new Date().toLocaleTimeString('fr-FR')}`;
+    } catch (e) {
+      resultDiv.innerHTML = '<p style="color:#e74c3c;font-size:18px;">Erreur analyse – réessaie</p>';
+      console.error(e);
+    }
+  }
+
+  // Init carte (zoom France)
+  setTimeout(() => coachMap.invalidateSize(), 300);
+});
+</script>
 
 
 
