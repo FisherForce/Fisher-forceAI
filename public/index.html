@@ -600,17 +600,18 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
       else conditionsText = "soleil";
       if (!jour) conditionsText += " nuit";
 
-      const adviceRes = await fetch('/api/advice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-  targetSpecies: species,
-  structure: structure || "Mixte",
-  conditions: conditions,
-  spotType: milieu,
-  temperature: temp,
-  technique: document.getElementById('technique').value
-      });
+const adviceRes = await fetch('/api/advice', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },  // ← VIRGULE AJOUTÉE ICI !
+  body: JSON.stringify({
+    targetSpecies: species,
+    structure: structure || "Mixte",
+    conditions: conditions,
+    spotType: milieu,
+    temperature: temp,
+    technique: document.getElementById('technique')?.value || "leurres"  // ← Ajouté fallback si select absent
+  })
+});
 
       const conseil = await adviceRes.json();
 
