@@ -414,6 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
             conditions: conditionsText,
             spotType: "étang",
             temperature: temp
+            technique: document.getElementById('technique').value // nouveau !
           })
         });
         const conseil = await serverRes.json();
