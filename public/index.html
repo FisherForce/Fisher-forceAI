@@ -603,13 +603,13 @@ document.getElementById('weatherAdviceBtn').addEventListener('click', async () =
       const adviceRes = await fetch('/api/advice', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetSpecies: species,
-          structure: structure,
-          conditions: conditionsText,
-          spotType: spotType,
-          temperature: temp
-        })
+body: JSON.stringify({
+  targetSpecies: species,
+  structure: structure || "Mixte",
+  conditions: conditions,
+  spotType: milieu,
+  temperature: temp,
+  technique: document.getElementById('technique').value
       });
 
       const conseil = await adviceRes.json();
