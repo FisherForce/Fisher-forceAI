@@ -1169,16 +1169,17 @@ const randomParEspece = {
 
 
 // === ROUTES ===
-
-app.post('/api/suggest', (req, res) => {
-  let { targetSpecies: species = "", structure, conditions, spotType, temperature } = req.body;
-  const result = suggestLures(species, structure, conditions, spotType, temperature);
-  res.json(result);
-});
-
 app.post('/api/advice', (req, res) => {
   try {
-    let { targetSpecies: species = "", structure, conditions, spotType, temperature, failedLures = [] } = req.body;
+    let { 
+      targetSpecies: species = "", 
+      structure, 
+      conditions, 
+      spotType, 
+      temperature, 
+      failedLures = [],
+      technique = "leurres"  // Nouveau paramètre, par défaut leurres
+    } = req.body;
 
     species = (species || "").toLowerCase();
     structure = (structure || "").toLowerCase();
@@ -1190,7 +1191,21 @@ app.post('/api/advice', (req, res) => {
       return res.status(400).json({ error: 'Champs requis manquants : structure et conditions.' });
     }
 
-    const result = suggestLures(species, structure, conditions, spotType, temperature);
+    // Détection fermeture carnassiers (janvier-avril)
+    const now = new Date();
+    const isClosed = now.getMonth() < 4; // Mois 0-3 = janv-avril
+
+    // Si fermeture + technique leurres → message + fallback appâts
+    let fallbackMessage = [];
+    if (isClosed && technique === "leurres") {
+      fallbackMessage = [
+        "- Période de fermeture carnassiers ! Essaie les appâts pour truite, carpe ou poissons blancs.",
+        "- L’IA te propose des conseils appâts en attendant l’ouverture."
+      ];
+      technique = "appats"; // Force le mode appâts
+    }
+
+    const result = suggestLures(species, structure, conditions, spotType, temperature, technique); // Passe technique à suggestLures
 
     let filteredLures = result.lures.filter(lure => {
       const lureName = lure.split(' — ')[0].trim().toLowerCase();
@@ -1199,11 +1214,16 @@ app.post('/api/advice', (req, res) => {
 
     if (filteredLures.length === 0) {
       filteredLures = [
-        "Aucun leurre précédent n'a fonctionné dans ces conditions...",
-        "Essaie un leurre totalement différent (taille, couleur, vibration)",
-        "Change radicalement d'animation ou de profondeur",
+        "Aucun leurre/appât précédent n'a fonctionné dans ces conditions...",
+        "Essaie un appât totalement différent (taille, couleur, présentation)",
+        "Change radicalement de montage ou de profondeur",
         "Enregistre une nouvelle session pour faire progresser l'IA !"
       ];
+    }
+
+    // Ajoute les messages fallback si fermeture
+    if (fallbackMessage.length > 0) {
+      filteredLures = [...fallbackMessage, ...filteredLures];
     }
 
     res.json({
@@ -1216,7 +1236,56 @@ app.post('/api/advice', (req, res) => {
     res.status(500).json({ error: 'Erreur serveur' });
   }
 });
-const fetch = require('node-fetch'); // Assure-toi d'avoir installé node-fetch si pas déjà fait : npm install node-fetch
+
+// Si tu n'as pas encore la fonction suggestLures, voici une version adaptée qui gère technique
+function suggestLures(species, structure, conditions, spotType, temperature, technique = "leurres") {
+  let lures = [];
+  let depthAdvice = [];
+
+  if (technique === "appats" || technique === "mouche" || technique === "carpe") {
+    // Conseils appâts / mouche / carpe
+    if (species.includes("truite")) {
+      lures = [
+        "Ver de terre ou teigne en nymphe ou à soutenir",
+        "Asticot ou pinkies en flotteur léger",
+        "Mouche artificielle sèche ou nymphe si eau claire",
+        "Teigne ou ver rouge pour grosses truites en profondeur"
+      ];
+      depthAdvice = ["0-1m surface ou nymphe près du fond"];
+    } else if (species.includes("carpe")) {
+      lures = [
+        "Maïs doux ou bouillettes 15-20mm",
+        "Pellets en PVA bag ou spod",
+        "Pain de mie ou pâte à carpe",
+        "Boilies saveur fruitée ou poisson"
+      ];
+      depthAdvice = ["Fond ou mi-eau selon amorçage"];
+    } else {
+      lures = [
+        "Ver de terre ou asticot en flotteur",
+        "Teigne ou pinkies pour finesse",
+        "Pain ou fromage pour carpeaux ou gros poissons blancs"
+      ];
+      depthAdvice = ["Fond ou mi-eau"];
+    }
+  } else {
+    // Leurres classiques (ton ancien code)
+    lures = [
+      "Jerkbait 10-15cm naturel (eau claire, courant faible)",
+      "Spinnerbait ou chatterbait (vent fort, herbiers)",
+      "Shad souple 10cm texan ou drop shot (profondeur, structures)"
+    ];
+    depthAdvice = ["0-2m si surface active", "3-5m si froid"];
+  }
+
+  return { lures, depthAdvice };
+}
+app.post('/api/suggest', (req, res) => {
+  let { targetSpecies: species = "", structure, conditions, spotType, temperature } = req.body;
+  const result = suggestLures(species, structure, conditions, spotType, temperature);
+  res.json(result);
+});
+
 
 app.post('/api/compare-lure', async (req, res) => {
   const { lure } = req.body;
