@@ -405,18 +405,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('temperature')) {
           document.getElementById('temperature').value = temp;
         }
-        const serverRes = await fetch('/api/advice', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            targetSpecies: "Brochet",
-            structure: "mixte",
-            conditions: conditionsText,
-            spotType: "étang",
-            temperature: temp
-            technique: document.getElementById('technique').value // nouveau !
-          })
-        });
+const adviceRes = await fetch('/api/advice', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },  // ← VIRGULE AJOUTÉE ICI !
+  body: JSON.stringify({
+    targetSpecies: species,
+    structure: structure || "Mixte",
+    conditions: conditions,
+    spotType: milieu,
+    temperature: temp,
+    technique: document.getElementById('technique')?.value || "leurres"  // ← fallback si select absent
+  })
+});
         const conseil = await serverRes.json();
         el('weatherResult').innerHTML = `
           <h3 style="color:#00ff9d;margin:15px 0;">MÉTÉO PRÈS DE CHEZ TOI</h3>
