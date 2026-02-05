@@ -1227,7 +1227,7 @@ if (isClosedForSpecies && technique === "leurres") {
       lures: filteredLures,
       depthAdvice: result.depthAdvice || []
     });
-  } catch (err) {
+   catch (err) {
     console.error("Erreur dans /api/advice :", err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
