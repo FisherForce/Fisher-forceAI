@@ -160,7 +160,7 @@ try {
 }
 
 // === SUGGEST LURES ===
-function suggestLures(species, structure, conditions, spotType, temperature = null) {
+function suggestLures(species, structure, conditions, spotType, temperature = null, technique = "leurres") {
   species = (species || "").toLowerCase();
   structure = (structure || "").toLowerCase();
   conditions = (conditions || "").toLowerCase();
@@ -184,6 +184,47 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   if (learnedLures && learnedLures.length > 0) {
     learnedLures.forEach(lure => list.push(`${lure} (appris des sessions)`));
   }
+  if (technique === "appats" || technique === "mouche" || technique === "carpe") {
+    // Conseils appâts / mouche / carpe
+    if (species.includes("truite")) {
+      // Liste complète truite (ton original + ajouts pour varier)
+      const fullTruite = [
+        "Ver de terre ou teigne en nymphe ou à soutenir",
+        "Asticot ou pinkies en flotteur léger",
+        "Mouche artificielle sèche ou nymphe si eau claire",
+        "Teigne ou ver rouge pour grosses truites en profondeur",
+        "Petit vairon mort ou vif en plombée",  // Ajout
+        "Fromage frais ou pâte à truite pour eau trouble"  // Ajout
+      ];
+      // 2 aléatoires parmi la liste complète
+      const shuffled = fullTruite.sort(() => 0.5 - Math.random());
+      lures = shuffled.slice(0, 2);
+      depthAdvice = ["0-1m surface ou nymphe près du fond"];
+    } else if (species.includes("carpe")) {
+      // Liste complète carpe (ton original + ajouts)
+      const fullCarpe = [
+        "Maïs doux ou bouillettes 15-20mm",
+        "Pellets en PVA bag ou spod",
+        "Pain de mie ou pâte à carpe",
+        "Boilies saveur fruitée ou poisson",
+        "Maïs fermenté ou pellets en method feeder",  // Ajout
+        "Tiger nuts ou hemp seed pour carpe sélective"  // Ajout
+      ];
+      const shuffled = fullCarpe.sort(() => 0.5 - Math.random());
+      lures = shuffled.slice(0, 2);
+      depthAdvice = ["Fond ou mi-eau selon amorçage"];
+    } else {
+      // Liste générale appâts (ton original)
+      const fullGeneral = [
+        "Ver de terre ou asticot en flotteur",
+        "Teigne ou pinkies pour finesse",
+        "Pain ou fromage pour carpeaux ou gros poissons blancs"
+      ];
+      const shuffled = fullGeneral.sort(() => 0.5 - Math.random());
+      lures = shuffled.slice(0, 2);
+      depthAdvice = ["Fond ou mi-eau"];
+    }
+  } else {
 
   // Cas ultra-ciblés (tes conditions originales)
   if (species.includes('perche')) {
