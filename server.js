@@ -1187,19 +1187,20 @@ app.post('/api/advice', (req, res) => {
     }
 
     // Détection fermeture carnassiers (janvier-avril)
-    const now = new Date();
-    const isClosed = now.getMonth() < 4; // Mois 0-3 = janv-avril
+const now = new Date();
+const isClosedPeriod = now.getMonth() < 4; // Mois 0-3 = janv-avril
+const closedSpecies = ["brochet", "sandre", "black-bass", "black bass"]; // Liste espèces fermées
 
-    // Si fermeture + technique leurres → message + fallback appâts
-    let fallbackMessage = [];
-    if (isClosed && technique === "leurres") {
-      fallbackMessage = [
-        "- Période de fermeture carnassiers ! Essaie les appâts pour truite, carpe ou poissons blancs.",
-        "- L’IA te propose des conseils appâts en attendant l’ouverture."
-      ];
-      technique = "appats"; // Force le mode appâts
-    }
+let isClosedForSpecies = isClosedPeriod && closedSpecies.some(cs => species.toLowerCase().includes(cs));
 
+let fallbackMessage = [];
+if (isClosedForSpecies && technique === "leurres") {
+  fallbackMessage = [
+    "- Période de fermeture pour " + species + " ! Toute prise = infraction grave.",
+    "- Essaie les appâts naturels, mouche ou finesse pour truite, carpe, perche, silure..."
+  ];
+  technique = "appats naturels"; // Force appâts pour éviter conseils leurres illégaux
+} else if (technique === "leurres") {
     const result = suggestLures(species, structure, conditions, spotType, temperature, technique); // Passe technique à suggestLures
 
     let filteredLures = result.lures.filter(lure => {
