@@ -330,6 +330,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   if (species.includes('silure')) {
     list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
   }
+    }
 
 
   // === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET) ===
