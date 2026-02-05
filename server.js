@@ -1277,48 +1277,7 @@ app.post('/api/advice', (req, res) => {
 });
 
 // Si tu n'as pas encore la fonction suggestLures, voici une version adaptée qui gère technique
-function suggestLures(species, structure, conditions, spotType, temperature, technique = "leurres") {
-  let lures = [];
-  let depthAdvice = [];
 
-  if (technique === "appats" || technique === "mouche" || technique === "carpe") {
-    // Conseils appâts / mouche / carpe
-    if (species.includes("truite")) {
-      lures = [
-        "Ver de terre ou teigne en nymphe ou à soutenir",
-        "Asticot ou pinkies en flotteur léger",
-        "Mouche artificielle sèche ou nymphe si eau claire",
-        "Teigne ou ver rouge pour grosses truites en profondeur"
-      ];
-      depthAdvice = ["0-1m surface ou nymphe près du fond"];
-    } else if (species.includes("carpe")) {
-      lures = [
-        "Maïs doux ou bouillettes 15-20mm",
-        "Pellets en PVA bag ou spod",
-        "Pain de mie ou pâte à carpe",
-        "Boilies saveur fruitée ou poisson"
-      ];
-      depthAdvice = ["Fond ou mi-eau selon amorçage"];
-    } else {
-      lures = [
-        "Ver de terre ou asticot en flotteur",
-        "Teigne ou pinkies pour finesse",
-        "Pain ou fromage pour carpeaux ou gros poissons blancs"
-      ];
-      depthAdvice = ["Fond ou mi-eau"];
-    }
-  } else {
-    // Leurres classiques (ton ancien code)
-    lures = [
-      "Jerkbait 10-15cm naturel (eau claire, courant faible)",
-      "Spinnerbait ou chatterbait (vent fort, herbiers)",
-      "Shad souple 10cm texan ou drop shot (profondeur, structures)"
-    ];
-    depthAdvice = ["0-2m si surface active", "3-5m si froid"];
-  }
-
-  return { lures, depthAdvice };
-}
 app.post('/api/suggest', (req, res) => {
   let { targetSpecies: species = "", structure, conditions, spotType, temperature } = req.body;
   const result = suggestLures(species, structure, conditions, spotType, temperature);
