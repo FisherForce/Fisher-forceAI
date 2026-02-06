@@ -1092,8 +1092,7 @@ const randomParEspece = {
     }
   }
   if (technique === "carpe") {
-    if (species.includes('carpe') {
-    }
+// on mettra un listPush//
   }
   if (technique === "finesse") {
     if (species.includes('carpe') {
