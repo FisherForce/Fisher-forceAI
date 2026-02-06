@@ -168,6 +168,9 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   saveSpot(spotType);
 
   const list = [];
+  let lures = [];
+  let depthAdvice = [];
+
 
   const mois = new Date().getMonth() + 1;
   let saison = [12, 1, 2].includes(mois) ? "hiver" :
@@ -1233,7 +1236,7 @@ const randomParEspece = {
 
   return { lures: list, depthAdvice };
 }
-}
+
 
 
 
