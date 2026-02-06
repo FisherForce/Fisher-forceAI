@@ -1083,6 +1083,22 @@ const randomParEspece = {
 }
 
 
+  if (technique === "appats") {
+    if (species.includes('carpe') {
+    }
+  }
+  if (technique === "mouche") {
+    if (species.includes('truite') {
+    }
+  }
+  if (technique === "carpe") {
+    if (species.includes('carpe') {
+    }
+  }
+  if (technique === "finesse") {
+    if (species.includes('carpe') {
+    }
+  }
 
 
 
