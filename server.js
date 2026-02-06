@@ -1092,7 +1092,59 @@ const randomParEspece = {
     }
   }
   if (technique === "carpe") {
-// on mettra un listPush//
+
+    const carp = {
+      carpe: [
+        "Conseils Carpe ",
+        "Ca arrive "
+        ];
+        let normalized = species.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, '');
+  const speciesMap = {
+    brochet: 'brochet',
+    perche: 'perche',
+    sandre: 'sandre',
+    blackbass: 'blackbass',
+    bass: 'blackbass',
+    chevesne: 'chevesne',
+    aspe: 'aspe',
+    silure: 'silure',
+    truite: 'truite',
+    carpe:'carpe'
+  };
+  let matched = null;
+  for (const key in speciesMap) {
+    if (normalized.includes(key)) {
+      matched = speciesMap[key];
+      break;
+    }
+  }
+  if (matched && carp[matched]) {
+    const conseils = carp[matched];
+    let random1 = conseils[Math.floor(Math.random() * conseils.length)];
+    let random2 = conseils[Math.floor(Math.random() * conseils.length)];
+    while (random2 === random1 && conseils.length > 1) {
+      random2 = conseils[Math.floor(Math.random() * conseils.length)];
+    }
+    list.push(random1);
+    list.push(random2);
+  } else {
+    // Conseils génériques si espèce inconnue
+    const generiques = [
+      "Prospection variée avec un leurre souple naturel en linéaire.",
+      "Essaie un crankbait moyen pour couvrir de l'eau rapidement.",
+      "Pêche en réaction avec une lame vibrante ou un spinner.",
+      "Animation lente au fond avec un jig ou un texas rig.",
+      "Varie les profondeurs jusqu'à trouver les poissons actifs."
+    ];
+    let random1 = generiques[Math.floor(Math.random() * generiques.length)];
+    let random2 = generiques[Math.floor(Math.random() * generiques.length)];
+    while (random2 === random1) random2 = generiques[Math.floor(Math.random() * generiques.length)];
+    list.push(random1);
+    list.push(random2);
+  }
+  list.push("Enregistre ta session pour faire progresser l'IA !");
+
+    }
   }
   if (technique === "finesse") {
     if (species.includes('carpe') {
