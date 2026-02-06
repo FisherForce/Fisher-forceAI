@@ -213,7 +213,7 @@ if ( technique === "mouche") {
           const shuffled = Mouches.sort(() => 0.5 - Math.random());
       lures = shuffled.slice(0, 2);
       depthAdvice = ["0-1m surface ou près du fond"];
-  if (species.inculdes("chevesne")){
+  if (species.includes("chevesne")){
     const chubFly= [
       "Mouches Chevesne",
       "Ca arrive"
