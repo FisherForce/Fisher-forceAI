@@ -184,14 +184,13 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   if (learnedLures && learnedLures.length > 0) {
     learnedLures.forEach(lure => list.push(`${lure} (appris des sessions)`));
   }
-  if (technique === "appats" || technique === "mouche" || technique === "carpe") {
+if (technique === "appats") {
     // Conseils appâts / mouche / carpe
     if (species.includes("truite")) {
       // Liste complète truite (ton original + ajouts pour varier)
       const fullTruite = [
         "Ver de terre ou teigne en nymphe ou à soutenir",
         "Asticot ou pinkies en flotteur léger",
-        "Mouche artificielle sèche ou nymphe si eau claire",
         "Teigne ou ver rouge pour grosses truites en profondeur",
         "Petit vairon mort ou vif en plombée",  // Ajout
         "Fromage frais ou pâte à truite pour eau trouble"  // Ajout
@@ -200,6 +199,26 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       const shuffled = fullTruite.sort(() => 0.5 - Math.random());
       lures = shuffled.slice(0, 2);
       depthAdvice = ["0-1m surface ou nymphe près du fond"];
+    }
+}
+if ( technique === "mouche") {
+  if (species.includes("truite")) {
+    const Mouches= [
+      "Conseils mouches",
+      "mettre ici" 
+      ];
+          const shuffled = Mouches.sort(() => 0.5 - Math.random());
+      lures = shuffled.slice(0, 2);
+      depthAdvice = ["0-1m surface ou près du fond"];
+  if (species.inculdes("chevesne")){
+    const chubFly= [
+      "Mouches Chevesne",
+      "Ca arrive"
+      ];
+  
+              const shuffled = chubFly.sort(() => 0.5 - Math.random());
+      lures = shuffled.slice(0, 2);
+      depthAdvice = ["0-1m surface ou près du fond"];
     } else if (species.includes("carpe")) {
       // Liste complète carpe (ton original + ajouts)
       const fullCarpe = [
@@ -213,7 +232,20 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       const shuffled = fullCarpe.sort(() => 0.5 - Math.random());
       lures = shuffled.slice(0, 2);
       depthAdvice = ["Fond ou mi-eau selon amorçage"];
-    } else {
+  }
+  }
+}
+
+    
+    
+if ( technique === "carpe"){
+  const Carpe = [
+    "appats carpe",
+    "ca arrive"
+    ];
+  
+      
+} else {
       // Liste générale appâts (ton original)
       const fullGeneral = [
         "Ver de terre ou asticot en flotteur",
@@ -225,7 +257,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       depthAdvice = ["Fond ou mi-eau"];
     }
   } else {
-
+if (technique === "leurres") {
   // Cas ultra-ciblés (tes conditions originales)
   if (species.includes('perche')) {
     list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
@@ -330,7 +362,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   if (species.includes('silure')) {
     list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
   }
-    }
+    
 
 
   // === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET) ===
@@ -1201,6 +1233,9 @@ const randomParEspece = {
 
   return { lures: list, depthAdvice };
 }
+}
+
+
 
 
 
