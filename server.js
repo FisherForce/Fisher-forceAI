@@ -244,7 +244,7 @@ if (saison === "automne" && spotType === "rivière" && conditions.includes('nuag
 list.push('Swimbait de 15cm — Récupération lente en surface');
 list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d\'eau');
 if (saison === "automne" && spotType === "étang" && conditions.includes('vent'))
-list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d'eau au fur et à mesure du temps');
+list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d\'eau au fur et à mesure du temps');
 }
 if (species.includes('bass')) {
 list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');
