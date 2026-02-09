@@ -242,8 +242,7 @@ if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'
 list.push('Lipless ou spintail ou lame vibrante — Récupération lente ou dandine en verticale');
 if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux'))
 list.push('Swimbait de 15cm — Récupération lente en surface');
-if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
-list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d'eau');
+list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d\'eau');
 if (saison === "automne" && spotType === "étang" && conditions.includes('vent'))
 list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d'eau au fur et à mesure du temps');
 }
