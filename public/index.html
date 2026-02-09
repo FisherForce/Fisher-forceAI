@@ -1089,8 +1089,119 @@ function scoreBass(h,i){let v=40;if(h.temperature_2m[i]>18)v+=25;return v;}
 function scoreSilure(h,i){let v=35;if(h.temperature_2m[i]>16)v+=20;return v;}
 function scoreAspe(h,i){let v=45;if(h.wind_speed_10m[i]>15)v+=15;return v;}
 </script>
+                                        <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#003366,#001a33);color:white;font-family:Arial;
+box-shadow:0 10px 25px rgba(0,0,0,0.45);">
+
+  <div style="text-align:center">
+    <div style="color:#00ffcc;font-weight:bold">ANALYSE CARTE SPOT PÊCHE</div>
+    <div style="font-size:12px;opacity:.85">IA • Pression • Créneau idéal</div>
+  </div>
+
+  <div id="ff-map" style="height:200px;margin-top:10px;border-radius:12px"></div>
+
+  <button id="ff-btn" onclick="ffAnalyserCarte()" style="width:100%;margin-top:12px;
+  padding:12px;border:none;border-radius:25px;background:#ffd700;font-weight:bold">
+    ANALYSER LA CARTE
+  </button>
 </div>
-<!-- MÉTÉO AUTO + TEASING FLOU PREMIUM (résultat visible en flou si gratuit) -->
+
+<script>
+
+
+const map=L.map("ff-map").setView([46.8,2.5],6);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(map);
+
+let run=false,anim=null;
+
+function ffAnalyserCarte(){
+ if(run) return; run=true;
+ const btn=document.getElementById("ff-btn");
+ const base=btn.innerHTML; let d=0;
+ anim=setInterval(()=>{d=(d+1)%4;btn.innerHTML="Analyse"+'.'.repeat(d)},400);
+
+ const b=map.getBounds(),c=b.getCenter();
+ const r=Math.min(c.distanceTo(b.getNorthEast()),800);
+
+ const q=`[out:json];(
+ way["natural"="water"](around:${r},${c.lat},${c.lng});
+ way["waterway"](around:${r},${c.lat},${c.lng});
+ way["building"](around:${r},${c.lat},${c.lng});
+ way["highway"](around:${r},${c.lat},${c.lng});
+ way["highway"="path"](around:${r},${c.lat},${c.lng});
+ );out geom;`;
+
+ fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q})
+ .then(r=>r.json()).then(d=>{
+  const eaux=[],bat=[],rts=[],pth=[];
+  d.elements.forEach(e=>{
+   if(!e.geometry) return;
+   if(e.tags?.natural==="water"||e.tags?.waterway) eaux.push(e);
+   if(e.tags?.building) bat.push(e);
+   if(e.tags?.highway==="path") pth.push(e);
+   if(e.tags?.highway && e.tags.highway!=="path") rts.push(e);
+  });
+
+  let n=0;
+  eaux.forEach(e=>{
+   if(n>=5) return;
+   const cs=ctr(e.geometry);
+   const B=cnt(bat,cs),R=cnt(rts,cs),P=cnt(pth,cs);
+
+   const sauvage=clamp(100-B*2-R*3);
+   const pression=clamp(B*3+R*4+P*5+(100-sauvage)*0.4);
+   const horaire=pressionHoraire(pression,sauvage);
+   const creneau=meilleurCreneau(horaire,sauvage);
+
+   L.circleMarker([cs.lat,cs.lon],{
+    radius:7,color:horaire<30?"#0f6":horaire<60?"#fd0":"#f55",fillOpacity:.9
+   }).addTo(map).bindPopup(`
+    🎣 <b>Spot détecté</b><br>
+    🌲 Sauvage : <b>${Math.round(sauvage)}/100</b><br>
+    🎣 Pression : <b>${Math.round(pression)}/100</b><br>
+    ⏰ Pression horaire : <b>${horaire}/100</b><br>
+    ⭐ <b>Meilleur créneau :</b><br>${creneau}
+   `);
+   n++;
+  });
+
+  clearInterval(anim); btn.innerHTML=base; run=false;
+ });
+}
+
+function ctr(g){let a=0,o=0;g.forEach(p=>{a+=p.lat;o+=p.lon});return{lat:a/g.length,lon:o/g.length}}
+function cnt(l,c){return l.filter(e=>dst(ctr(e.geometry),c)<=300).length}
+function dst(a,b){const R=6371000,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
+return Math.sqrt(dLat*dLat+dLon*dLon)*R}
+function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
+
+function pressionHoraire(p,s){
+ let h=new Date().getHours(),j=new Date().getDay(),k=1;
+ if(h>=6&&h<=9)k+=.4;if(h>=17&&h<=21)k+=.5;
+ if(j===0||j===6)k+=.4;if(s>70)k-=.3;
+ return clamp(p*k);
+}
+
+function meilleurCreneau(ph,s){
+ if(ph<30) return "🌅 Aube (6h–9h)<br>🌇 Crépuscule (19h–22h)";
+ if(ph<60) return s>60 ?
+ "🌅 Très tôt (5h30–7h30)" :
+ "🌇 Soir tardif (21h–23h)";
+ return s>70 ?
+ "🌌 Nuit profonde (23h–4h)" :
+ "⛔ Éviter — pression trop forte";
+}
+            
+
+
+</script>
+</div>
+      <div id="mode-coach" style="display:none">
+        <!-- MÉTÉO AUTO + TEASING FLOU PREMIUM (résultat visible en flou si gratuit) -->
 <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     MÉTÉO + CONSEIL IA EN DIRECT
@@ -1291,116 +1402,7 @@ const adviceRes = await fetch('/api/advice', {
  Réinitialiser
 </button>
 
-                                <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
-background:linear-gradient(180deg,#003366,#001a33);color:white;font-family:Arial;
-box-shadow:0 10px 25px rgba(0,0,0,0.45);">
-
-  <div style="text-align:center">
-    <div style="color:#00ffcc;font-weight:bold">ANALYSE CARTE SPOT PÊCHE</div>
-    <div style="font-size:12px;opacity:.85">IA • Pression • Créneau idéal</div>
-  </div>
-
-  <div id="ff-map" style="height:200px;margin-top:10px;border-radius:12px"></div>
-
-  <button id="ff-btn" onclick="ffAnalyserCarte()" style="width:100%;margin-top:12px;
-  padding:12px;border:none;border-radius:25px;background:#ffd700;font-weight:bold">
-    ANALYSER LA CARTE
-  </button>
-</div>
-
-<script>
-
-
-const map=L.map("ff-map").setView([46.8,2.5],6);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(map);
-
-let run=false,anim=null;
-
-function ffAnalyserCarte(){
- if(run) return; run=true;
- const btn=document.getElementById("ff-btn");
- const base=btn.innerHTML; let d=0;
- anim=setInterval(()=>{d=(d+1)%4;btn.innerHTML="Analyse"+'.'.repeat(d)},400);
-
- const b=map.getBounds(),c=b.getCenter();
- const r=Math.min(c.distanceTo(b.getNorthEast()),800);
-
- const q=`[out:json];(
- way["natural"="water"](around:${r},${c.lat},${c.lng});
- way["waterway"](around:${r},${c.lat},${c.lng});
- way["building"](around:${r},${c.lat},${c.lng});
- way["highway"](around:${r},${c.lat},${c.lng});
- way["highway"="path"](around:${r},${c.lat},${c.lng});
- );out geom;`;
-
- fetch("https://overpass-api.de/api/interpreter",{method:"POST",body:q})
- .then(r=>r.json()).then(d=>{
-  const eaux=[],bat=[],rts=[],pth=[];
-  d.elements.forEach(e=>{
-   if(!e.geometry) return;
-   if(e.tags?.natural==="water"||e.tags?.waterway) eaux.push(e);
-   if(e.tags?.building) bat.push(e);
-   if(e.tags?.highway==="path") pth.push(e);
-   if(e.tags?.highway && e.tags.highway!=="path") rts.push(e);
-  });
-
-  let n=0;
-  eaux.forEach(e=>{
-   if(n>=5) return;
-   const cs=ctr(e.geometry);
-   const B=cnt(bat,cs),R=cnt(rts,cs),P=cnt(pth,cs);
-
-   const sauvage=clamp(100-B*2-R*3);
-   const pression=clamp(B*3+R*4+P*5+(100-sauvage)*0.4);
-   const horaire=pressionHoraire(pression,sauvage);
-   const creneau=meilleurCreneau(horaire,sauvage);
-
-   L.circleMarker([cs.lat,cs.lon],{
-    radius:7,color:horaire<30?"#0f6":horaire<60?"#fd0":"#f55",fillOpacity:.9
-   }).addTo(map).bindPopup(`
-    🎣 <b>Spot détecté</b><br>
-    🌲 Sauvage : <b>${Math.round(sauvage)}/100</b><br>
-    🎣 Pression : <b>${Math.round(pression)}/100</b><br>
-    ⏰ Pression horaire : <b>${horaire}/100</b><br>
-    ⭐ <b>Meilleur créneau :</b><br>${creneau}
-   `);
-   n++;
-  });
-
-  clearInterval(anim); btn.innerHTML=base; run=false;
- });
-}
-
-function ctr(g){let a=0,o=0;g.forEach(p=>{a+=p.lat;o+=p.lon});return{lat:a/g.length,lon:o/g.length}}
-function cnt(l,c){return l.filter(e=>dst(ctr(e.geometry),c)<=300).length}
-function dst(a,b){const R=6371000,dLat=(b.lat-a.lat)*Math.PI/180,dLon=(b.lon-a.lon)*Math.PI/180;
-return Math.sqrt(dLat*dLat+dLon*dLon)*R}
-function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
-
-function pressionHoraire(p,s){
- let h=new Date().getHours(),j=new Date().getDay(),k=1;
- if(h>=6&&h<=9)k+=.4;if(h>=17&&h<=21)k+=.5;
- if(j===0||j===6)k+=.4;if(s>70)k-=.3;
- return clamp(p*k);
-}
-
-function meilleurCreneau(ph,s){
- if(ph<30) return "🌅 Aube (6h–9h)<br>🌇 Crépuscule (19h–22h)";
- if(ph<60) return s>60 ?
- "🌅 Très tôt (5h30–7h30)" :
- "🌇 Soir tardif (21h–23h)";
- return s>70 ?
- "🌌 Nuit profonde (23h–4h)" :
- "⛔ Éviter — pression trop forte";
-}
-            
-
-
-</script>
 
       </div>
 
@@ -1425,77 +1427,262 @@ function meilleurCreneau(ph,s){
       <button onclick="openResultat()" style="margin:20px auto;display:block;width:90%;background:#00d4aa;color:white;border:none;padding:14px;border-radius:10px;font-weight:bold;">
         Enregistrer un résultat
       </button>
+          <!-- Mode Coach -->
+<div id="mode-coach" class="mode">
+  <h2 style="text-align:center;color:#00ff9d;">Mode Coach IA 🏆</h2>
+  <p style="text-align:center;color:#aaa;margin:10px 0;">Sélectionne ton espèce et milieu, puis clique sur la carte pour ton spot. L'IA analyse en direct !</p>
 
-      <!-- SYSTÈME DE QUÊTES XP RÉEL (2026) -->
-<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#1a0033,#330066);border-radius:20px;color:white;max-width:600px;box-shadow:0 12px 40px rgba(102,0,204,0.6);">
-  <h3 style="text-align:center;color:#cc00ff;margin:0 0 20px;font-size:24px;">
-    QUÊTES DU JOUR – GAGNE DE L’XP RÉEL
-  </h3>
-  
-  <div id="dailyQuests">
-    <div class="quest" id="quest1">
-      <p><strong>1. Aller pêcher </strong> → +20 XP</p>
-      <button onclick="completeQuest(1, 20)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
-    </div>
-    
-    <div class="quest" id="quest2">
-      <p><strong>2. Utiliser la météo auto</strong> → +50 XP</p>
-      <button onclick="completeQuest(2, 50)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
-    </div>
-    
-    <div class="quest" id="quest3">
-      <p><strong>3. Enregistrer une session (prise ou bredouille)</strong> → +50 XP</p>
-      <button onclick="completeQuest(3, 50)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
-    </div>
-    
+  <!-- Sélecteurs -->
+  <div style="max-width:600px;margin:0 auto;padding:15px;background:#001122;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.5);">
+    <label style="display:block;margin-bottom:8px;color:#00ff9d;">Espèce ciblée</label>
+    <select id="coachSpecies" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
+      <option value="Brochet">Brochet</option>
+      <option value="Perche">Perche</option>
+      <option value="Sandre">Sandre</option>
+      <option value="Black-bass">Black-bass</option>
+      <option value="Silure">Silure</option>
+      <option value="Truite">Truite</option>
+      <option value="Chevesne">Chevesne</option>
+    </select>
+    <label>Technique</label>
+<select id="technique" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
+  <option value="leurres">Leurres (carnassiers)</option>
+  <option value="appats">Appâts naturels (ver, teigne, asticot...)</option>
+  <option value="mouche">Mouche (sèche, nymphe, streamer)</option>
+  <option value="carpe">Carpe (maïs, bouillettes, pellets)</option>
+  <option value="finesse">Finesse / ultra-léger (dropshot, ned rig)</option>
+</select>
 
+    <label style="display:block;margin:15px 0 8px;color:#00ff9d;">Milieu</label>
+    <select id="coachMilieu" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
+      <option value="Étang">Étang</option>
+      <option value="Rivière">Rivière</option>
+      <option value="Canal">Canal</option>
+      <option value="Lac">Lac</option>
+    </select>
   </div>
-  
-  <p style="text-align:center;color:#aaa;font-size:14px;margin-top:20px;">
-    Quêtes réinitialisées tous les jours à minuit
-  </p>
+
+  <!-- Carte Leaflet -->
+  <div style="margin:20px auto;max-width:800px;">
+    <div id="coachMap" style="height:400px;border-radius:15px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.6);"></div>
+  </div>
+
+  <!-- Résultat IA en direct -->
+  <div id="coachResult" style="margin:20px auto;padding:20px;background:#001122;border-radius:15px;max-width:800px;box-shadow:0 10px 30px rgba(0,0,0,0.5);min-height:150px;text-align:center;">
+    <p style="color:#00ff9d;font-size:18px;">Clique sur la carte pour analyser ton spot en direct... 🔍</p>
+  </div>
+
+  <!-- Statut actualisation -->
+  <p id="coachStatus" style="text-align:center;color:#aaa;font-size:14px;margin-top:10px;">Actualisation toutes les 60s • Dernière mise à jour : --</p>
 </div>
-      <script>
-// === QUÊTES XP RÉEL (version corrigée) ===
-const today = new Date().toDateString();
-let completedQuests = JSON.parse(localStorage.getItem('completedQuests_' + today) || '[]');
+<script>
+// === MODE COACH - Analyse IA en direct avec Lune & Marée ===
+document.addEventListener('DOMContentLoaded', () => {
+  let coachMap = null;
+  let coachMarker = null;
+  let coachTimer = null;
+  let currentSpot = null;
+  let lastAdvice = null;
+  let lastTemp = null;
+  let lastPrecip = null;
+  let lastWind = null;
+  let lastMoonPhase = null;
+  let lastTide = null;
+  let userWeatherOverride = null; // 'soleil', 'nuages', 'pluie' ou null
 
-function completeQuest(questId, xpReward) {
-  if (completedQuests.includes(questId)) {
-    alert("Quête déjà accomplie aujourd'hui !");
-    return;
+  // Init carte
+  coachMap = L.map('coachMap').setView([46.8, 2.5], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(coachMap);
+
+  // Clic sur carte → placer marker + analyser
+  coachMap.on('click', e => {
+    currentSpot = e.latlng;
+
+    if (coachMarker) coachMap.removeLayer(coachMarker);
+    coachMarker = L.marker(currentSpot, {
+      icon: L.divIcon({
+        html: '<div style="background:#00ff9d;color:black;padding:8px 16px;border-radius:50px;font-weight:bold;box-shadow:0 0 15px #00ff9d;">SPOT</div>',
+        iconSize: [100, 40],
+        iconAnchor: [50, 20]
+      })
+    }).addTo(coachMap);
+
+    analyserCoach();
+    if (coachTimer) clearInterval(coachTimer);
+    coachTimer = setInterval(analyserCoach, 60000); // 60s
+  });
+
+  // Gestion override météo utilisateur
+  function setupWeatherButtons() {
+    const buttons = document.querySelectorAll('.weather-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        userWeatherOverride = btn.dataset.value;
+        analyserCoach(); // Re-analyse immédiat
+      });
+    });
   }
 
-  completedQuests.push(questId);
-  localStorage.setItem('completedQuests_' + today, JSON.stringify(completedQuests));
-
-  // XP réel
-  progress.xp += xpReward;
-  localStorage.setItem('fisherXP', JSON.stringify(progress));
-  awardXP(xpReward, "Quête accomplie !");
-  updateDashboard();
-
-  // Désactive le bouton
-  event.target.disabled = true;
-  event.target.textContent = "Accomplie ✓";
-  event.target.style.background = "#006600";
-}
-
-// Charge les quêtes déjà faites
-completedQuests.forEach(id => {
-  const btn = document.querySelector(`.quest:nth-child(${id}) button`);
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = "Accomplie ✓";
-    btn.style.background = "#006600";
+  // Calcul phase lunaire simple (approximation)
+  function getMoonPhase(date = new Date()) {
+    const knownNewMoon = new Date(2025, 0, 13); // Date nouvelle lune connue
+    const days = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
+    const phase = (days % 29.53) / 29.53;
+    if (phase < 0.03 || phase > 0.97) return "Nouvelle Lune";
+    if (phase > 0.47 && phase < 0.53) return "Pleine Lune";
+    if (phase < 0.25) return "Croissante";
+    if (phase < 0.75) return "Décroissante";
+    return "Pleine Lune";
   }
+
+  async function analyserCoach() {
+    if (!currentSpot) return;
+
+    const resultDiv = document.getElementById('coachResult');
+    const statusDiv = document.getElementById('coachStatus');
+    resultDiv.innerHTML = '<p style="color:#00ff9d;font-size:18px;">Analyse en direct... 📡</p>';
+
+    try {
+      // Fetch météo
+      const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,pressure_msl,cloud_cover,is_day&timezone=Europe/Paris`);
+      const meteo = await meteoRes.json();
+      const c = meteo.current;
+
+      let temp = Math.round(c.temperature_2m);
+      let precip = c.precipitation;
+      let wind = Math.round(c.wind_speed_10m);
+      let pression = Math.round(c.pressure_msl);
+      let isDay = c.is_day === 1;
+      let clouds = c.cloud_cover;
+
+      // Lune
+      const moonPhase = getMoonPhase();
+      const moonText = moonPhase.includes("Pleine") ? "pleine lune" : moonPhase.includes("Nouvelle") ? "nouvelle lune" : moonPhase.toLowerCase();
+
+      // Marée (exemple avec API gratuite - remplace par une meilleure si besoin)
+      let tideText = "marée inconnue";
+      try {
+        const tideRes = await fetch(`https://api.tides.bigdatacloud.net/v1/tide?lat=${currentSpot.lat}&lon=${currentSpot.lng}&date=${new Date().toISOString().split('T')[0]}`);
+        const tideData = await tideRes.json();
+        if (tideData?.data?.[0]) {
+          const tide = tideData.data[0];
+          tideText = tide.height > 0 ? `haute (${Math.round(tide.height)}m)` : `basse (${Math.round(tide.height)}m)`;
+        }
+      } catch (e) {}
+
+      // Conditions auto
+      let conditions = [];
+      if (precip > 0.1) conditions.push('pluie');
+      if (wind > 25) conditions.push('vent fort');
+      if (clouds > 70) conditions.push('nuageux');
+      else conditions.push('clair');
+      if (!isDay) conditions.push('nuit');
+      conditions.push(moonText);
+      conditions.push(tideText);
+      let autoConditions = conditions.join(' ');
+
+      // Override utilisateur
+      let finalConditions = autoConditions;
+      let weatherDisplay = 'Auto-détecté';
+      if (userWeatherOverride) {
+        if (userWeatherOverride === 'soleil') finalConditions = 'clair jour';
+        if (userWeatherOverride === 'nuages') finalConditions = 'nuageux';
+        if (userWeatherOverride === 'pluie') finalConditions = 'pluie';
+        weatherDisplay = `Choisi : ${userWeatherOverride.charAt(0).toUpperCase() + userWeatherOverride.slice(1)}`;
+      }
+
+      // Stabilité
+      let needNewAdvice = true;
+      if (lastTemp !== null && lastPrecip !== null && lastWind !== null && lastMoonPhase && lastTide) {
+        const tempDiff = Math.abs(temp - lastTemp);
+        const precipDiff = Math.abs(precip - lastPrecip);
+        const windDiff = Math.abs(wind - lastWind);
+        const moonSame = moonPhase === lastMoonPhase;
+        const tideSame = tideText === lastTide;
+        if (tempDiff < 1 && precipDiff < 0.1 && windDiff < 2 && moonSame && tideSame) {
+          needNewAdvice = false;
+          resultDiv.innerHTML = lastAdvice;
+        }
+      }
+
+      if (needNewAdvice) {
+        const species = document.getElementById('coachSpecies').value;
+        const milieu = document.getElementById('coachMilieu').value;
+
+        const adviceRes = await fetch('/api/advice', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            targetSpecies: species,
+            structure: "Mixte",
+            conditions: finalConditions,
+            spotType: milieu,
+            temperature: temp
+          })
+        });
+
+        const conseil = await adviceRes.json();
+
+        let html = `
+          <h3 style="color:#00ff9d;margin:0 0 15px;">Conditions à ton spot</h3>
+          <p style="font-size:18px;">
+            🌡️ ${temp}°C • 💨 ${wind} km/h • 🌧️ ${precip}mm • ☁️ ${clouds}% • ${isDay ? 'Jour' : 'Nuit'} • ${pression} hPa<br>
+            🌕 Lune : ${moonPhase} • 🌊 Marée : ${tideText}<br>
+            <strong>${weatherDisplay}</strong>
+          </p>
+          <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
+            <b style="color:#ffd700;font-size:22px;">${species.toUpperCase()} en ${milieu}</b><br>
+            <b style="color:#00ff9d;font-size:20px;margin-top:10px;display:block;">Conseils IA :</b>
+            ${conseil.lures?.map(l => `<p style="margin:8px 0;font-size:18px;">- ${l}</p>`).join('') || "<p>- Pas de conseil disponible</p>"}
+          </div>
+          <h3 style="color:#00ff9d;margin:20px 0 10px;">C'est quoi le temps vraiment ?</h3>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button class="weather-btn ${userWeatherOverride === 'soleil' ? 'active' : ''}" data-value="soleil" style="background:#ffd700;color:black;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Soleil ☀️</button>
+            <button class="weather-btn ${userWeatherOverride === 'nuages' ? 'active' : ''}" data-value="nuages" style="background:#aaa;color:black;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Nuages ☁️</button>
+            <button class="weather-btn ${userWeatherOverride === 'pluie' ? 'active' : ''}" data-value="pluie" style="background:#4285f4;color:white;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Pluie 🌧️</button>
+          </div>
+        `;
+
+        resultDiv.innerHTML = html;
+        lastAdvice = html;
+        lastTemp = temp;
+        lastPrecip = precip;
+        lastWind = wind;
+        lastMoonPhase = moonPhase;
+        lastTide = tideText;
+
+        setupWeatherButtons();
+      }
+
+      statusDiv.textContent = `Actualisation toutes les 60s • Dernière : ${new Date().toLocaleTimeString('fr-FR')}`;
+    } catch (e) {
+      resultDiv.innerHTML = '<p style="color:#e74c3c;font-size:18px;">Erreur analyse – réessaie</p>';
+      console.error(e);
+    }
+  }
+
+  // Init carte
+  setTimeout(() => coachMap.invalidateSize(), 300);
+
+  // Style boutons
+  const weatherStyle = document.createElement('style');
+  weatherStyle.textContent = `
+    .weather-btn.active {
+      background: #00ff9d !important;
+      color: black !important;
+      box-shadow: 0 0 15px #00ff9d;
+    }
+  `;
+  document.head.appendChild(weatherStyle);
 });
 </script>
-      
-
-
-
-<!-- PRÉVISION DE TOUCHES 7 JOURS — VERSION PARFAITE (bug affichage fixé) -->
+      </div>
+      <div id="mode-expert" style="display:none">
+        <!-- PRÉVISION DE TOUCHES 7 JOURS — VERSION PARFAITE (bug affichage fixé) -->
 <div id="biteForecast" style="margin:20px auto;padding:20px;background:linear-gradient(135deg,#000428,#004e92);border-radius:20px;color:white;box-shadow:0 10px 40px rgba(0,50,150,0.6);">
   <h3 style="text-align:center;margin:15px 0 10px;font-size:20px;color:#00d4aa;">
     Prévision de touches – 7 jours 
@@ -1645,6 +1832,7 @@ function renderRealForecastFallback() {
 getUserLocationAndForecast();
 setInterval(getUserLocationAndForecast, 6 * 3600000); // refresh 6h
 </script>
+        
                       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -1761,6 +1949,82 @@ function dirVent(d) {
 }
           });
 </script>
+      </div>
+
+    
+
+    
+
+      <!-- SYSTÈME DE QUÊTES XP RÉEL (2026) -->
+<div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#1a0033,#330066);border-radius:20px;color:white;max-width:600px;box-shadow:0 12px 40px rgba(102,0,204,0.6);">
+  <h3 style="text-align:center;color:#cc00ff;margin:0 0 20px;font-size:24px;">
+    QUÊTES DU JOUR – GAGNE DE L’XP RÉEL
+  </h3>
+  
+  <div id="dailyQuests">
+    <div class="quest" id="quest1">
+      <p><strong>1. Aller pêcher </strong> → +20 XP</p>
+      <button onclick="completeQuest(1, 20)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
+    
+    <div class="quest" id="quest2">
+      <p><strong>2. Utiliser la météo auto</strong> → +50 XP</p>
+      <button onclick="completeQuest(2, 50)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
+    
+    <div class="quest" id="quest3">
+      <p><strong>3. Enregistrer une session (prise ou bredouille)</strong> → +50 XP</p>
+      <button onclick="completeQuest(3, 50)" style="background:#cc00ff;color:white;padding:10px 20px;border:none;border-radius:50px;font-weight:bold;">Accomplie</button>
+    </div>
+    
+
+  </div>
+  
+  <p style="text-align:center;color:#aaa;font-size:14px;margin-top:20px;">
+    Quêtes réinitialisées tous les jours à minuit
+  </p>
+</div>
+      <script>
+// === QUÊTES XP RÉEL (version corrigée) ===
+const today = new Date().toDateString();
+let completedQuests = JSON.parse(localStorage.getItem('completedQuests_' + today) || '[]');
+
+function completeQuest(questId, xpReward) {
+  if (completedQuests.includes(questId)) {
+    alert("Quête déjà accomplie aujourd'hui !");
+    return;
+  }
+
+  completedQuests.push(questId);
+  localStorage.setItem('completedQuests_' + today, JSON.stringify(completedQuests));
+
+  // XP réel
+  progress.xp += xpReward;
+  localStorage.setItem('fisherXP', JSON.stringify(progress));
+  awardXP(xpReward, "Quête accomplie !");
+  updateDashboard();
+
+  // Désactive le bouton
+  event.target.disabled = true;
+  event.target.textContent = "Accomplie ✓";
+  event.target.style.background = "#006600";
+}
+
+// Charge les quêtes déjà faites
+completedQuests.forEach(id => {
+  const btn = document.querySelector(`.quest:nth-child(${id}) button`);
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Accomplie ✓";
+    btn.style.background = "#006600";
+  }
+});
+</script>
+      
+
+
+
+
 
 
 
@@ -2329,259 +2593,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    <!-- Mode Coach -->
-<div id="mode-coach" class="mode">
-  <h2 style="text-align:center;color:#00ff9d;">Mode Coach IA 🏆</h2>
-  <p style="text-align:center;color:#aaa;margin:10px 0;">Sélectionne ton espèce et milieu, puis clique sur la carte pour ton spot. L'IA analyse en direct !</p>
 
-  <!-- Sélecteurs -->
-  <div style="max-width:600px;margin:0 auto;padding:15px;background:#001122;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.5);">
-    <label style="display:block;margin-bottom:8px;color:#00ff9d;">Espèce ciblée</label>
-    <select id="coachSpecies" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
-      <option value="Brochet">Brochet</option>
-      <option value="Perche">Perche</option>
-      <option value="Sandre">Sandre</option>
-      <option value="Black-bass">Black-bass</option>
-      <option value="Silure">Silure</option>
-      <option value="Truite">Truite</option>
-      <option value="Chevesne">Chevesne</option>
-    </select>
-    <label>Technique</label>
-<select id="technique" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
-  <option value="leurres">Leurres (carnassiers)</option>
-  <option value="appats">Appâts naturels (ver, teigne, asticot...)</option>
-  <option value="mouche">Mouche (sèche, nymphe, streamer)</option>
-  <option value="carpe">Carpe (maïs, bouillettes, pellets)</option>
-  <option value="finesse">Finesse / ultra-léger (dropshot, ned rig)</option>
-</select>
-
-    <label style="display:block;margin:15px 0 8px;color:#00ff9d;">Milieu</label>
-    <select id="coachMilieu" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
-      <option value="Étang">Étang</option>
-      <option value="Rivière">Rivière</option>
-      <option value="Canal">Canal</option>
-      <option value="Lac">Lac</option>
-    </select>
-  </div>
-
-  <!-- Carte Leaflet -->
-  <div style="margin:20px auto;max-width:800px;">
-    <div id="coachMap" style="height:400px;border-radius:15px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.6);"></div>
-  </div>
-
-  <!-- Résultat IA en direct -->
-  <div id="coachResult" style="margin:20px auto;padding:20px;background:#001122;border-radius:15px;max-width:800px;box-shadow:0 10px 30px rgba(0,0,0,0.5);min-height:150px;text-align:center;">
-    <p style="color:#00ff9d;font-size:18px;">Clique sur la carte pour analyser ton spot en direct... 🔍</p>
-  </div>
-
-  <!-- Statut actualisation -->
-  <p id="coachStatus" style="text-align:center;color:#aaa;font-size:14px;margin-top:10px;">Actualisation toutes les 60s • Dernière mise à jour : --</p>
-</div>
-<script>
-// === MODE COACH - Analyse IA en direct avec Lune & Marée ===
-document.addEventListener('DOMContentLoaded', () => {
-  let coachMap = null;
-  let coachMarker = null;
-  let coachTimer = null;
-  let currentSpot = null;
-  let lastAdvice = null;
-  let lastTemp = null;
-  let lastPrecip = null;
-  let lastWind = null;
-  let lastMoonPhase = null;
-  let lastTide = null;
-  let userWeatherOverride = null; // 'soleil', 'nuages', 'pluie' ou null
-
-  // Init carte
-  coachMap = L.map('coachMap').setView([46.8, 2.5], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
-  }).addTo(coachMap);
-
-  // Clic sur carte → placer marker + analyser
-  coachMap.on('click', e => {
-    currentSpot = e.latlng;
-
-    if (coachMarker) coachMap.removeLayer(coachMarker);
-    coachMarker = L.marker(currentSpot, {
-      icon: L.divIcon({
-        html: '<div style="background:#00ff9d;color:black;padding:8px 16px;border-radius:50px;font-weight:bold;box-shadow:0 0 15px #00ff9d;">SPOT</div>',
-        iconSize: [100, 40],
-        iconAnchor: [50, 20]
-      })
-    }).addTo(coachMap);
-
-    analyserCoach();
-    if (coachTimer) clearInterval(coachTimer);
-    coachTimer = setInterval(analyserCoach, 60000); // 60s
-  });
-
-  // Gestion override météo utilisateur
-  function setupWeatherButtons() {
-    const buttons = document.querySelectorAll('.weather-btn');
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        buttons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        userWeatherOverride = btn.dataset.value;
-        analyserCoach(); // Re-analyse immédiat
-      });
-    });
-  }
-
-  // Calcul phase lunaire simple (approximation)
-  function getMoonPhase(date = new Date()) {
-    const knownNewMoon = new Date(2025, 0, 13); // Date nouvelle lune connue
-    const days = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
-    const phase = (days % 29.53) / 29.53;
-    if (phase < 0.03 || phase > 0.97) return "Nouvelle Lune";
-    if (phase > 0.47 && phase < 0.53) return "Pleine Lune";
-    if (phase < 0.25) return "Croissante";
-    if (phase < 0.75) return "Décroissante";
-    return "Pleine Lune";
-  }
-
-  async function analyserCoach() {
-    if (!currentSpot) return;
-
-    const resultDiv = document.getElementById('coachResult');
-    const statusDiv = document.getElementById('coachStatus');
-    resultDiv.innerHTML = '<p style="color:#00ff9d;font-size:18px;">Analyse en direct... 📡</p>';
-
-    try {
-      // Fetch météo
-      const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,pressure_msl,cloud_cover,is_day&timezone=Europe/Paris`);
-      const meteo = await meteoRes.json();
-      const c = meteo.current;
-
-      let temp = Math.round(c.temperature_2m);
-      let precip = c.precipitation;
-      let wind = Math.round(c.wind_speed_10m);
-      let pression = Math.round(c.pressure_msl);
-      let isDay = c.is_day === 1;
-      let clouds = c.cloud_cover;
-
-      // Lune
-      const moonPhase = getMoonPhase();
-      const moonText = moonPhase.includes("Pleine") ? "pleine lune" : moonPhase.includes("Nouvelle") ? "nouvelle lune" : moonPhase.toLowerCase();
-
-      // Marée (exemple avec API gratuite - remplace par une meilleure si besoin)
-      let tideText = "marée inconnue";
-      try {
-        const tideRes = await fetch(`https://api.tides.bigdatacloud.net/v1/tide?lat=${currentSpot.lat}&lon=${currentSpot.lng}&date=${new Date().toISOString().split('T')[0]}`);
-        const tideData = await tideRes.json();
-        if (tideData?.data?.[0]) {
-          const tide = tideData.data[0];
-          tideText = tide.height > 0 ? `haute (${Math.round(tide.height)}m)` : `basse (${Math.round(tide.height)}m)`;
-        }
-      } catch (e) {}
-
-      // Conditions auto
-      let conditions = [];
-      if (precip > 0.1) conditions.push('pluie');
-      if (wind > 25) conditions.push('vent fort');
-      if (clouds > 70) conditions.push('nuageux');
-      else conditions.push('clair');
-      if (!isDay) conditions.push('nuit');
-      conditions.push(moonText);
-      conditions.push(tideText);
-      let autoConditions = conditions.join(' ');
-
-      // Override utilisateur
-      let finalConditions = autoConditions;
-      let weatherDisplay = 'Auto-détecté';
-      if (userWeatherOverride) {
-        if (userWeatherOverride === 'soleil') finalConditions = 'clair jour';
-        if (userWeatherOverride === 'nuages') finalConditions = 'nuageux';
-        if (userWeatherOverride === 'pluie') finalConditions = 'pluie';
-        weatherDisplay = `Choisi : ${userWeatherOverride.charAt(0).toUpperCase() + userWeatherOverride.slice(1)}`;
-      }
-
-      // Stabilité
-      let needNewAdvice = true;
-      if (lastTemp !== null && lastPrecip !== null && lastWind !== null && lastMoonPhase && lastTide) {
-        const tempDiff = Math.abs(temp - lastTemp);
-        const precipDiff = Math.abs(precip - lastPrecip);
-        const windDiff = Math.abs(wind - lastWind);
-        const moonSame = moonPhase === lastMoonPhase;
-        const tideSame = tideText === lastTide;
-        if (tempDiff < 1 && precipDiff < 0.1 && windDiff < 2 && moonSame && tideSame) {
-          needNewAdvice = false;
-          resultDiv.innerHTML = lastAdvice;
-        }
-      }
-
-      if (needNewAdvice) {
-        const species = document.getElementById('coachSpecies').value;
-        const milieu = document.getElementById('coachMilieu').value;
-
-        const adviceRes = await fetch('/api/advice', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            targetSpecies: species,
-            structure: "Mixte",
-            conditions: finalConditions,
-            spotType: milieu,
-            temperature: temp
-          })
-        });
-
-        const conseil = await adviceRes.json();
-
-        let html = `
-          <h3 style="color:#00ff9d;margin:0 0 15px;">Conditions à ton spot</h3>
-          <p style="font-size:18px;">
-            🌡️ ${temp}°C • 💨 ${wind} km/h • 🌧️ ${precip}mm • ☁️ ${clouds}% • ${isDay ? 'Jour' : 'Nuit'} • ${pression} hPa<br>
-            🌕 Lune : ${moonPhase} • 🌊 Marée : ${tideText}<br>
-            <strong>${weatherDisplay}</strong>
-          </p>
-          <div style="background:#003366;padding:20px;border-radius:12px;margin:15px 0;">
-            <b style="color:#ffd700;font-size:22px;">${species.toUpperCase()} en ${milieu}</b><br>
-            <b style="color:#00ff9d;font-size:20px;margin-top:10px;display:block;">Conseils IA :</b>
-            ${conseil.lures?.map(l => `<p style="margin:8px 0;font-size:18px;">- ${l}</p>`).join('') || "<p>- Pas de conseil disponible</p>"}
-          </div>
-          <h3 style="color:#00ff9d;margin:20px 0 10px;">C'est quoi le temps vraiment ?</h3>
-          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-            <button class="weather-btn ${userWeatherOverride === 'soleil' ? 'active' : ''}" data-value="soleil" style="background:#ffd700;color:black;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Soleil ☀️</button>
-            <button class="weather-btn ${userWeatherOverride === 'nuages' ? 'active' : ''}" data-value="nuages" style="background:#aaa;color:black;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Nuages ☁️</button>
-            <button class="weather-btn ${userWeatherOverride === 'pluie' ? 'active' : ''}" data-value="pluie" style="background:#4285f4;color:white;padding:10px 20px;border-radius:30px;cursor:pointer;border:none;font-weight:bold;">Pluie 🌧️</button>
-          </div>
-        `;
-
-        resultDiv.innerHTML = html;
-        lastAdvice = html;
-        lastTemp = temp;
-        lastPrecip = precip;
-        lastWind = wind;
-        lastMoonPhase = moonPhase;
-        lastTide = tideText;
-
-        setupWeatherButtons();
-      }
-
-      statusDiv.textContent = `Actualisation toutes les 60s • Dernière : ${new Date().toLocaleTimeString('fr-FR')}`;
-    } catch (e) {
-      resultDiv.innerHTML = '<p style="color:#e74c3c;font-size:18px;">Erreur analyse – réessaie</p>';
-      console.error(e);
-    }
-  }
-
-  // Init carte
-  setTimeout(() => coachMap.invalidateSize(), 300);
-
-  // Style boutons
-  const weatherStyle = document.createElement('style');
-  weatherStyle.textContent = `
-    .weather-btn.active {
-      background: #00ff9d !important;
-      color: black !important;
-      box-shadow: 0 0 15px #00ff9d;
-    }
-  `;
-  document.head.appendChild(weatherStyle);
-});
-</script>
 
 
 
@@ -2669,6 +2681,15 @@ function updateCompetitionUI() {
 }
 
 updateCompetitionUI();
+</script>
+<script>
+function setMode(mode) {
+  document.getElementById("mode-rapide").style.display = "none";
+  document.getElementById("mode-coach").style.display = "none";
+  document.getElementById("mode-expert").style.display = "none";
+
+  document.getElementById("mode-" + mode).style.display = "block";
+}
 </script>
 
     
