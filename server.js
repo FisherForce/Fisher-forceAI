@@ -259,7 +259,7 @@ list.push('Worm marron — Dandine dans les branches et les herbiers ');
 if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
 list.push('Worm marron — Dandine dans les branches et les herbiers ');
 if (saison === "été" && spotType === "canal" && conditions.includes('soleil') && structure.includes('bois'))
-list.push('Worm marron — Dandine dans les branches et les herbiers, envoie un vrai ferrage sans trop d'emballer ');
+list.push('Worm marron — Dandine dans les branches et les herbiers, envoie un vrai ferrage sans trop d\'emballer ');
 if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
 list.push('Écrevisses en punching — Dans les herbiers');
 }
