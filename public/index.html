@@ -506,6 +506,14 @@ document.addEventListener('DOMContentLoaded', () => {
   <button onclick="setMode('coach')" style="flex:1;">🧠 Coach</button>
   <button onclick="setMode('expert')" style="flex:1;">🏆 Expert</button>
 </div>
+          <div class="dashboard">
+        <h3><span class="level-badge">Débutant</span> — <span id="xp">0</span> XP</h3>
+        <div class="stats-grid">
+          <div class="stat-item">Spots : <strong id="spotCount">0</strong></div>
+          <div class="stat-item">Espèces : <strong id="speciesCount">0</strong></div>
+          <div class="stat-item">Réussite : <strong id="successRate">0%</strong></div>
+        </div>
+      </div>
 
   </header>
 
@@ -1550,14 +1558,7 @@ const adviceRes = await fetch('/api/advice', {
 
     <section class="card output-card">
       <h2>Conseils de l'IA</h2>
-      <div class="dashboard">
-        <h3><span class="level-badge">Débutant</span> — <span id="xp">0</span> XP</h3>
-        <div class="stats-grid">
-          <div class="stat-item">Spots : <strong id="spotCount">0</strong></div>
-          <div class="stat-item">Espèces : <strong id="speciesCount">0</strong></div>
-          <div class="stat-item">Réussite : <strong id="successRate">0%</strong></div>
-        </div>
-      </div>
+
 
       <div id="advice"><p class="muted">Remplis le formulaire puis clique sur "Obtenir des conseils".</p></div>
 
