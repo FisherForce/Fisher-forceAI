@@ -177,7 +177,7 @@ else if (temperature > 20) saison += " chaud";
 // Patterns appris
 const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
 if (learnedLures && learnedLures.length > 0) {
-learnedLures.forEach(lure => list.push(${lure} (appris des sessions)));
+learnedLures.forEach(lure => list.push('${lure} (appris des sessions)'));
 }
 if (technique === "leurres") {
 // Cas ultra-ciblés (tes conditions originales)
