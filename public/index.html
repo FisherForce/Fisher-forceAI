@@ -1199,9 +1199,145 @@ function meilleurCreneau(ph,s){
 
 
 </script>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
+background:linear-gradient(180deg,#003366,#001a33);
+color:white;font-family:Arial;
+box-shadow:0 10px 25px rgba(0,0,0,.45);">
+
+  <div style="text-align:center">
+    <div style="color:#00ffcc;font-weight:bold">DÉTECTION RAPIDE D’EAU</div>
+    <div style="font-size:12px;opacity:.8">
+      Spots potentiels dans la zone visible
+    </div>
+        <div style="font-size:12px;opacity:.8">
+      Rayon d'analyse : 800m
+    </div>
+
+  </div>
+
+  <div id="water-map" style="
+    height:200px;
+    margin-top:10px;
+    border-radius:12px;
+    overflow:hidden;
+  "></div>
+
+  <button id="water-btn" onclick="detecterEau()" style="
+    width:100%;
+    margin-top:12px;
+    padding:12px;
+    border:none;
+    border-radius:25px;
+    background:#00ffcc;
+    color:#002;
+    font-weight:bold;
+    cursor:pointer;
+  ">
+    DÉTECTER L’EAU
+  </button>
+
+  <div id="water-status" style="
+    margin-top:8px;
+    font-size:12px;
+    opacity:.85;
+    text-align:center;
+  "></div>
+</div>
+
+<script>
+let waterMap;
+let waterMarkers = [];
+let mapReady = false;
+
+setTimeout(() => {
+  waterMap = L.map("water-map").setView([46.8, 2.5], 6);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18
+  }).addTo(waterMap);
+
+  waterMap.whenReady(() => {
+    mapReady = true;
+    waterMap.invalidateSize();
+  });
+
+}, 100);
+
+function detecterEau() {
+  if (!mapReady) {
+    alert("Carte en cours de chargement…");
+    return;
+  }
+
+  const btn = document.getElementById("water-btn");
+  const status = document.getElementById("water-status");
+
+  btn.disabled = true;
+  btn.innerText = "Analyse en cours…";
+  status.innerText = "🔍 Recherche d’eau dans la zone…";
+
+  // Nettoyage anciens points
+  waterMarkers.forEach(m => waterMap.removeLayer(m));
+  waterMarkers = [];
+
+  const center = waterMap.getCenter();
+  const radius = 800;
+
+  const query = `
+  [out:json][timeout:10];
+  (
+    way["natural"="water"](around:${radius},${center.lat},${center.lng});
+    way["waterway"](around:${radius},${center.lat},${center.lng});
+  );
+  out center;
+  `;
+
+  fetch("https://overpass-api.de/api/interpreter", {
+    method: "POST",
+    body: query
+  })
+  .then(r => r.json())
+  .then(data => {
+    let count = 0;
+
+    data.elements.forEach(e => {
+      if (!e.center) return;
+
+      const m = L.circleMarker(
+        [e.center.lat, e.center.lon],
+        {
+          radius: 7,
+          color: "#00ffcc",
+          fillOpacity: 0.9
+        }
+      ).addTo(waterMap)
+       .bindPopup("💧 Eau détectée<br>🎣 Spot potentiel");
+
+      waterMarkers.push(m);
+      count++;
+    });
+
+    if (count === 0) {
+      status.innerText = "❌ Aucun spot détecté dans cette zone";
+    } else {
+      status.innerText = `✅ ${count} zones d’eau détectées`;
+    }
+  })
+  .catch(() => {
+    status.innerText = "⚠️ Erreur lors de l’analyse";
+  })
+  .finally(() => {
+    btn.disabled = false;
+    btn.innerText = "DÉTECTER L’EAU";
+  });
+}
+</script>
 </div>
       <div id="mode-coach" style="display:none">
-        <!-- MÉTÉO AUTO + TEASING FLOU PREMIUM (résultat visible en flou si gratuit) -->
+                <!-- MÉTÉO AUTO + TEASING FLOU PREMIUM (résultat visible en flou si gratuit) -->
 <div style="margin:30px auto;padding:25px;background:linear-gradient(135deg,#001f3f,#0074D9);border-radius:20px;color:white;text-align:center;max-width:600px;box-shadow:0 12px 40px rgba(0,116,217,0.7);position:relative;overflow:hidden;">
   <h3 style="margin:0 0 20px;color:#00ff9d;font-size:24px;">
     MÉTÉO + CONSEIL IA EN DIRECT
@@ -1680,6 +1816,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.head.appendChild(weatherStyle);
 });
 </script>
+
       </div>
       <div id="mode-expert" style="display:none">
         <!-- PRÉVISION DE TOUCHES 7 JOURS — VERSION PARFAITE (bug affichage fixé) -->
@@ -2116,142 +2253,7 @@ Merci d'intervenir rapidement.
   });
 }
 </script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
-background:linear-gradient(180deg,#003366,#001a33);
-color:white;font-family:Arial;
-box-shadow:0 10px 25px rgba(0,0,0,.45);">
-
-  <div style="text-align:center">
-    <div style="color:#00ffcc;font-weight:bold">DÉTECTION RAPIDE D’EAU</div>
-    <div style="font-size:12px;opacity:.8">
-      Spots potentiels dans la zone visible
-    </div>
-        <div style="font-size:12px;opacity:.8">
-      Rayon d'analyse : 800m
-    </div>
-
-  </div>
-
-  <div id="water-map" style="
-    height:200px;
-    margin-top:10px;
-    border-radius:12px;
-    overflow:hidden;
-  "></div>
-
-  <button id="water-btn" onclick="detecterEau()" style="
-    width:100%;
-    margin-top:12px;
-    padding:12px;
-    border:none;
-    border-radius:25px;
-    background:#00ffcc;
-    color:#002;
-    font-weight:bold;
-    cursor:pointer;
-  ">
-    DÉTECTER L’EAU
-  </button>
-
-  <div id="water-status" style="
-    margin-top:8px;
-    font-size:12px;
-    opacity:.85;
-    text-align:center;
-  "></div>
-</div>
-
-<script>
-let waterMap;
-let waterMarkers = [];
-let mapReady = false;
-
-setTimeout(() => {
-  waterMap = L.map("water-map").setView([46.8, 2.5], 6);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 18
-  }).addTo(waterMap);
-
-  waterMap.whenReady(() => {
-    mapReady = true;
-    waterMap.invalidateSize();
-  });
-
-}, 100);
-
-function detecterEau() {
-  if (!mapReady) {
-    alert("Carte en cours de chargement…");
-    return;
-  }
-
-  const btn = document.getElementById("water-btn");
-  const status = document.getElementById("water-status");
-
-  btn.disabled = true;
-  btn.innerText = "Analyse en cours…";
-  status.innerText = "🔍 Recherche d’eau dans la zone…";
-
-  // Nettoyage anciens points
-  waterMarkers.forEach(m => waterMap.removeLayer(m));
-  waterMarkers = [];
-
-  const center = waterMap.getCenter();
-  const radius = 800;
-
-  const query = `
-  [out:json][timeout:10];
-  (
-    way["natural"="water"](around:${radius},${center.lat},${center.lng});
-    way["waterway"](around:${radius},${center.lat},${center.lng});
-  );
-  out center;
-  `;
-
-  fetch("https://overpass-api.de/api/interpreter", {
-    method: "POST",
-    body: query
-  })
-  .then(r => r.json())
-  .then(data => {
-    let count = 0;
-
-    data.elements.forEach(e => {
-      if (!e.center) return;
-
-      const m = L.circleMarker(
-        [e.center.lat, e.center.lon],
-        {
-          radius: 7,
-          color: "#00ffcc",
-          fillOpacity: 0.9
-        }
-      ).addTo(waterMap)
-       .bindPopup("💧 Eau détectée<br>🎣 Spot potentiel");
-
-      waterMarkers.push(m);
-      count++;
-    });
-
-    if (count === 0) {
-      status.innerText = "❌ Aucun spot détecté dans cette zone";
-    } else {
-      status.innerText = `✅ ${count} zones d’eau détectées`;
-    }
-  })
-  .catch(() => {
-    status.innerText = "⚠️ Erreur lors de l’analyse";
-  })
-  .finally(() => {
-    btn.disabled = false;
-    btn.innerText = "DÉTECTER L’EAU";
-  });
-}
-</script>
 
 
 
