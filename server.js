@@ -179,6 +179,59 @@ const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType
 if (learnedLures && learnedLures.length > 0) {
 learnedLures.forEach(lure => list.push(`${lure} (appris des sessions)`));
 }
+  if (technique === "appats") {
+    // Conseils appâts / mouche / carpe
+    if (species.includes("truite")) {
+      // Liste complète truite (ton original + ajouts pour varier)
+      const fullTruite = [
+        "Ver de terre ou teigne en nymphe ou à soutenir",
+        "Asticot ou pinkies en flotteur léger",
+        "Teigne ou ver rouge pour grosses truites en profondeur",
+        "Petit vairon mort ou vif en plombée", // Ajout
+        "Fromage frais ou pâte à truite pour eau trouble" // Ajout
+      ];
+      // 2 aléatoires parmi la liste complète
+      const shuffled = fullTruite.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2); // Changé lures en list pour intégrer aux conseils
+      depthAdvice = ["0-1m surface ou nymphe près du fond"];
+    }
+  } else if ( technique === "mouche") {
+    if (species.includes("truite")) {
+      const Mouches = [
+        "Conseils mouches",
+        "mettre ici"
+      ];
+      const shuffled = Mouches.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["0-1m surface ou près du fond"];
+    } else if (species.includes("chevesne")) {
+      const chubFly = [
+        "Mouches Chevesne",
+        "Ca arrive"
+      ];
+      const shuffled = chubFly.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["0-1m surface ou près du fond"];
+    }
+  } else if ( technique === "carpe"){
+    const Carpe = [
+      "appats carpe",
+      "ca arrive"
+    ];
+    const shuffled = Carpe.sort(() => 0.5 - Math.random());
+    list = shuffled.slice(0, 2);
+    depthAdvice = ["Fond ou mi-eau"];
+  } else {
+    // Liste générale appâts (ton original)
+    const fullGeneral = [
+      "Ver de terre ou asticot en flotteur",
+      "Teigne ou pinkies pour finesse",
+      "Pain ou fromage pour carpeaux ou gros poissons blancs"
+    ];
+    const shuffled = fullGeneral.sort(() => 0.5 - Math.random());
+    list = shuffled.slice(0, 2);
+    depthAdvice = ["Fond ou mi-eau"];
+  }
 if (technique === "leurres") {
 // Cas ultra-ciblés (tes conditions originales)
 if (species.includes('perche')) {
@@ -1012,49 +1065,9 @@ else depthAdvice.push("Bordure et surface 0-2m, frog et cuillère");
 }
 }
 return { lures: list, depthAdvice };
-} else if (technique === "appats") {
-  if (species.includes('truite')) {
-    list.push('Ver de terre en nymphe — Animation lente en rivière');
-    list.push('Asticot en flotteur — Pour eau calme');
-  if (species.includes('perche')) {
-    list.push('Ver de terre  — pose sur le fond');
-    list.push('Asticot au flotteur — Pour eau calme');
-    // Ajoute plus
-  } else if (species.includes('carpe')) {
-    list.push('Maïs doux en hair rig — Amorçage préalable');
-    list.push('Bouillettes 20mm — Pour grosses carpes');
-    // Ajoute plus
-  } else {
-    list.push('Ver de terre général — En flotteur');
-    // Default
-  }
-  depthAdvice.push('Fond pour appâts');
-} else if (technique === "mouche") {
-  if (species.includes('truite')) {
-    list.push('Mouche sèche mayfly — Surface active');
-    list.push('Nymphe beadhead — Courant profond');
-    // Ajoute plus
-  }
-  depthAdvice.push('Surface pour sèche');
-} else if (technique === "carpe") {
-  list.push('Boilies fruitées — Hair rig fond');
-  list.push('Pellets en PVA — Amorçage massif');
-  // Liste complète carpe
-  depthAdvice.push('Fond');
-} else if (technique === "finesse ultra léger") {
-  if (species.includes('perche')) {
-    list.push('Ned rig 5cm — Pauses longues');
-    list.push('Dropshot worm — Dandine verticale');
-    // Ajoute plus
-  } else if (species.includes('truite')) {
-    list.push('Micro jig 3g — Finesse shad');
-    // Ajoute plus
-  }
-  depthAdvice.push('1-3m finesse');
-} else {
-  // Default ton original
+} 
 }
-}
+
 
 
 
