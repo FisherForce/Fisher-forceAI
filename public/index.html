@@ -501,11 +501,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     </div>
-    <div style="width:340px;margin:15px auto;display:flex;gap:6px;">
-  <button onclick="setMode('rapide')" style="flex:1;">⚡ Rapide</button>
-  <button onclick="setMode('coach')" style="flex:1;">🧠 Coach</button>
-  <button onclick="setMode('expert')" style="flex:1;">🏆 Expert</button>
+<div style="width:340px;margin:15px auto;display:flex;gap:6px;">
+  <button onclick="setMode('rapide', this)" 
+    style="flex:1;background:#0f2233;border-radius:12px;padding:8px;border:none;">
+    ⚡ <span style="color:#ffb300;font-weight:bold;">Rapide</span>
+  </button>
+
+  <button onclick="setMode('coach', this)" 
+    style="flex:1;background:#0f2233;border-radius:12px;padding:8px;border:none;">
+    🧠 <span style="color:#6ee7ff;font-weight:bold;">Coach</span>
+  </button>
+
+  <button onclick="setMode('expert', this)" 
+    style="flex:1;background:#0f2233;border-radius:12px;padding:8px;border:none;">
+    🏆 <span style="color:#ff6b6b;font-weight:bold;">Expert</span>
+  </button>
 </div>
+
           <div class="dashboard">
         <h3><span class="level-badge">Débutant</span> — <span id="xp">0</span> XP</h3>
         <div class="stats-grid">
@@ -2688,14 +2700,23 @@ function updateCompetitionUI() {
 updateCompetitionUI();
 </script>
 <script>
-function setMode(mode) {
-  document.getElementById("mode-rapide").style.display = "none";
-  document.getElementById("mode-coach").style.display = "none";
-  document.getElementById("mode-expert").style.display = "none";
+function setMode(mode, btn) {
+  ["rapide","coach","expert"].forEach(m => {
+    document.getElementById("mode-" + m).style.display = "none";
+  });
 
   document.getElementById("mode-" + mode).style.display = "block";
+
+  // reset boutons
+  document.querySelectorAll("button").forEach(b => {
+    b.style.opacity = "0.6";
+  });
+
+  // bouton actif
+  if (btn) btn.style.opacity = "1";
 }
 </script>
+
 
     
 
