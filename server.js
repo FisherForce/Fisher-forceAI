@@ -1016,6 +1016,9 @@ return { lures: list, depthAdvice };
   if (species.includes('truite')) {
     list.push('Ver de terre en nymphe — Animation lente en rivière');
     list.push('Asticot en flotteur — Pour eau calme');
+  if (species.includes('perche')) {
+    list.push('Ver de terre  — pose sur le fond');
+    list.push('Asticot au flotteur — Pour eau calme');
     // Ajoute plus
   } else if (species.includes('carpe')) {
     list.push('Maïs doux en hair rig — Amorçage préalable');
