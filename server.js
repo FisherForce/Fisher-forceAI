@@ -229,7 +229,7 @@ list.push('Leurres souples de 6cm — Quand il y a du soleil les brochets visent
 if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
 list.push('Propbait — Récupération rapide avec des pauses proche des obstacles');
 if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuageux'))
-list.push('Jerk-Minnow de 12 à 15cm — Twitchs courts avec des pauses en surface, envoie des coups de jerk comme si la cnne était un fouet');
+list.push('Jerk-Minnow de 12 à 15cm — Twitchs courts avec des pauses en surface, envoie des coups de jerk comme si la canne était un fouet');
 if (saison === "printemps" && spotType === "étang" && conditions.includes('soleil'))
 list.push('Cuillère N°4 — Récupération lente en surface');
 if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('nénuphar'))
@@ -243,9 +243,9 @@ list.push('Lipless ou spintail ou lame vibrante — Récupération lente ou dand
 if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux'))
 list.push('Swimbait de 15cm — Récupération lente en surface');
 if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
-list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d'eau');
+list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d\'eau');
 if (saison === "automne" && spotType === "étang" && conditions.includes('vent'))
-list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d'eau au fur et à mesure du temps');
+list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d\'eau au fur et à mesure du temps');
 }
 if (species.includes('bass')) {
 list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');
@@ -260,7 +260,7 @@ list.push('Worm marron — Dandine dans les branches et les herbiers ');
 if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
 list.push('Worm marron — Dandine dans les branches et les herbiers ');
 if (saison === "été" && spotType === "canal" && conditions.includes('soleil') && structure.includes('bois'))
-list.push('Worm marron — Dandine dans les branches et les herbiers, envoie un vrai ferrage sans trop d'emballer ');
+list.push('Worm marron — Dandine dans les branches et les herbiers, envoie un vrai ferrage sans trop d\'emballer ');
 if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
 list.push('Écrevisses en punching — Dans les herbiers');
 }
