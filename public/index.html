@@ -856,7 +856,7 @@ document.getElementById("logCatch").onclick = () => {
     "✔️ Enregistré — Fisher-ForceAI apprend ton style";
 };
 </script>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
@@ -866,10 +866,10 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
 
   <div style="text-align:center">
     <div style="color:#ffb300;font-weight:bold">
-      FENÊTRE DE PÊCHE IA
+      🎣 FENÊTRE DE PÊCHE IA
     </div>
     <div style="font-size:12px;opacity:.8">
-      IA Spot + Saison + Apprentissage
+      IA Spot • Saison • Apprentissage
     </div>
   </div>
 
@@ -884,6 +884,7 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
     margin-top:10px;
     font-size:13px;
     line-height:1.45;
+    min-height:80px;
   ">
     🎯 Clique sur un spot pour analyser
   </div>
@@ -891,6 +892,41 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
 
 <script>
 let speciesMap, speciesMarker, speciesSpot = null;
+
+/* ============================
+   🔄 LOADER IA
+============================ */
+function showLoader(text="Analyse IA en cours…") {
+  document.getElementById("species-result").innerHTML = `
+    <div style="text-align:center;padding:15px">
+      <div style="font-size:20px">🧠</div>
+      <div style="margin-top:6px;font-size:13px;opacity:.85">
+        ${text}
+      </div>
+      <div style="margin-top:8px;
+        width:100%;
+        height:6px;
+        background:#1c2f44;
+        border-radius:10px;
+        overflow:hidden;">
+        <div style="
+          width:40%;
+          height:100%;
+          background:#ffb300;
+          animation: loadmove 1.2s infinite linear;">
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+const style = document.createElement("style");
+style.innerHTML = `
+@keyframes loadmove {
+  0% {transform: translateX(-100%)}
+  100% {transform: translateX(250%)}
+}`;
+document.head.appendChild(style);
 
 /* ============================
    📌 SAISON AUTO
@@ -904,101 +940,80 @@ function getSeason() {
 }
 
 /* ============================
-   📍 SPOT ID (arrondi GPS)
-   → permet apprentissage local
+   📍 SPOT ID
 ============================ */
 function getSpotID(latlng) {
-  return (
-    latlng.lat.toFixed(2) + "_" +
-    latlng.lng.toFixed(2)
-  );
+  return latlng.lat.toFixed(2) + "_" + latlng.lng.toFixed(2);
 }
 
 /* ============================
-   🔥 APPRENTISSAGE IA COMPLET
-   Espèce + Saison + Spot
+   🔥 FEEDBACK IA
 ============================ */
-
-/* Sauvegarde feedback */
 function saveFeedback(espece, success) {
 
   const season = getSeason();
   const spotID = getSpotID(speciesSpot);
 
   let data = JSON.parse(localStorage.getItem("fishAI_learning")) || {};
-
-  // Clé unique
   const key = espece + "_" + season + "_" + spotID;
 
   if (!data[key]) data[key] = { ok: 0, fail: 0 };
-
-  if (success) data[key].ok++;
-  else data[key].fail++;
+  success ? data[key].ok++ : data[key].fail++;
 
   localStorage.setItem("fishAI_learning", JSON.stringify(data));
 
-  alert("✅ Feedback enregistré pour ce spot !");
+  document.getElementById("species-result").innerHTML = `
+    <div style="text-align:center;padding:10px">
+      ${success ? "✅" : "❌"}
+      <b>${success ? "Feedback positif enregistré" : "Feedback négatif enregistré"}</b><br>
+      <span style="font-size:12px;opacity:.7">
+        L’IA apprend ce spot précis 🧠
+      </span>
+    </div>
+  `;
 }
 
-/* Bonus IA selon historique */
+/* ============================
+   BONUS IA
+============================ */
 function getLearningBonus(espece) {
-
   const season = getSeason();
   const spotID = getSpotID(speciesSpot);
-
   let data = JSON.parse(localStorage.getItem("fishAI_learning")) || {};
-
   const key = espece + "_" + season + "_" + spotID;
 
   if (!data[key]) return 0;
-
-  let ok = data[key].ok;
-  let fail = data[key].fail;
-
+  let { ok, fail } = data[key];
   let total = ok + fail;
-
   if (total < 2) return 0;
 
-  let ratio = ok / total;
-
-  if (ratio > 0.75) return +12;
-  if (ratio > 0.6) return +6;
-
-  if (ratio < 0.35) return -10;
-  if (ratio < 0.5) return -5;
-
+  let r = ok / total;
+  if (r > 0.75) return 12;
+  if (r > 0.6) return 6;
+  if (r < 0.35) return -10;
+  if (r < 0.5) return -5;
   return 0;
 }
 
 /* ============================
-   🐟 COMPORTEMENT SAISONNIER
+   COMPORTEMENT SAISON
 ============================ */
 function comportementSaison(type, h, i, season) {
   let c = 0;
   const temp = h.temperature_2m[i];
-
   if (season === "automne" && type === "agressif") c += 10;
   if (season === "hiver" && temp < 8) c -= 8;
   if (season === "ete" && (i < 7 || i > 20)) c += 10;
-
   return c;
 }
 
 /* ============================
-   INIT MAP
+   MAP
 ============================ */
 setTimeout(initSpeciesMap, 100);
-
 function initSpeciesMap() {
-
   speciesMap = L.map("species-map").setView([46.8, 2.5], 5);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 18
-  }).addTo(speciesMap);
-
-  setTimeout(() => speciesMap.invalidateSize(), 300);
-
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(speciesMap);
   speciesMap.on("click", onSpeciesClick);
 }
 
@@ -1006,103 +1021,66 @@ function initSpeciesMap() {
    CLICK SPOT
 ============================ */
 function onSpeciesClick(e) {
-
   speciesSpot = e.latlng;
-
   if (speciesMarker) speciesMap.removeLayer(speciesMarker);
 
-  speciesMarker = L.circleMarker(speciesSpot, {
-    radius: 7,
-    color: "#ffb300",
-    fillOpacity: 0.9
+  speciesMarker = L.circleMarker(speciesSpot,{
+    radius:7,color:"#ffb300",fillOpacity:.9
   }).addTo(speciesMap);
 
-  document.getElementById("species-result").innerHTML =
-    "📡 Analyse météo IA + apprentissage spot…";
+  showLoader("Analyse météo + apprentissage spot…");
 
-  analyserParEspece();
+  setTimeout(analyserParEspece, 900);
 }
 
 /* ============================
-   ANALYSE PRINCIPALE
+   ANALYSE
 ============================ */
 function analyserParEspece() {
 
   const season = getSeason();
 
-  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${speciesSpot.lat}&longitude=${speciesSpot.lng}&hourly=temperature_2m,cloud_cover,wind_speed_10m,pressure_msl&forecast_days=1&timezone=auto`)
-    .then(r => r.json())
-    .then(data => {
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${speciesSpot.lat}&longitude=${speciesSpot.lng}&hourly=temperature_2m,cloud_cover,wind_speed_10m&forecast_days=1&timezone=auto`)
+  .then(r=>r.json())
+  .then(data=>{
 
-      const h = data.hourly;
+    const h=data.hourly;
+    let html=`<b>🎯 Fenêtres optimales (${season})</b><br><br>`;
 
-      let html = `<b>🎣 Fenêtres optimales (${season})</b><br><br>`;
+    const especes=[
+      ["Brochet",scoreBrochet,"agressif"],
+      ["Sandre",scoreSandre,"passif"],
+      ["Perche",scorePerche,"neutre"],
+      ["Black-bass",scoreBass,"agressif"],
+      ["Silure",scoreSilure,"passif"],
+      ["Aspe",scoreAspe,"agressif"]
+    ];
 
-      const especes = [
-        ["Brochet", scoreBrochet, "agressif"],
-        ["Sandre", scoreSandre, "passif"],
-        ["Perche", scorePerche, "neutre"],
-        ["Black-bass", scoreBass, "agressif"],
-        ["Silure", scoreSilure, "passif"],
-        ["Aspe", scoreAspe, "agressif"]
-      ];
+    especes.forEach(([nom,fn,type])=>{
+      let best={hour:6,score:0};
+      for(let i=6;i<=21;i++){
+        let s=fn(h,i)+comportementSaison(type,h,i,season)+getLearningBonus(nom);
+        s=Math.min(95,Math.max(5,s));
+        if(s>best.score) best={hour:i,score:s};
+      }
 
-      especes.forEach(([nom, fn, type]) => {
-
-        let best = { hour: 6, score: 0 };
-
-        for (let i = 6; i <= 21; i++) {
-
-          let s = fn(h, i);
-
-          // Saison
-          s += comportementSaison(type, h, i, season);
-
-          // 🔥 Apprentissage Spot
-          s += getLearningBonus(nom);
-
-          s = Math.min(95, Math.max(5, s));
-
-          if (s > best.score) best = { hour: i, score: s };
-        }
-
-        html += `
-          🔹 <b>${nom}</b><br>
-          ⏰ ${best.hour}h00 – ${best.hour+1}h00<br>
-          🎯 Activité : ${best.score}%<br>
-
-          <button onclick="saveFeedback('${nom}',true)"
-            style="margin-top:4px;padding:4px 8px;border:none;
-            border-radius:8px;background:#2ecc71;color:white;font-size:12px;">
-            ✅ Touche
-          </button>
-
-          <button onclick="saveFeedback('${nom}',false)"
-            style="margin-top:4px;padding:4px 8px;border:none;
-            border-radius:8px;background:#e74c3c;color:white;font-size:12px;">
-            ❌ Rien
-          </button>
-
-          <br><br>
-        `;
-      });
-
-      html += `
-        <div style="font-size:11px;opacity:.7">
-        📌 L’IA apprend ce spot précisément (espèce + saison + lieu).
-        </div>
+      html+=`
+        🔹 <b>${nom}</b><br>
+        ⏰ ${best.hour}h – ${best.hour+1}h<br>
+        🎯 Activité : ${best.score}%<br>
+        <button onclick="saveFeedback('${nom}',true)" style="margin:4px;background:#2ecc71;border:none;border-radius:8px;color:white;padding:4px 8px">✅ Touche</button>
+        <button onclick="saveFeedback('${nom}',false)" style="margin:4px;background:#e74c3c;border:none;border-radius:8px;color:white;padding:4px 8px">❌ Rien</button>
+        <br><br>
       `;
-
-      document.getElementById("species-result").innerHTML = html;
-    })
-    .catch(() => {
-      document.getElementById("species-result").innerHTML =
-        "⚠️ Erreur météo";
     });
+
+    document.getElementById("species-result").innerHTML=html;
+  })
+  .catch(()=>document.getElementById("species-result").innerHTML="⚠️ Erreur météo IA");
 }
 
 /* ============================
-   SCORES BASE
+   SCORES
 ============================ */
 function scoreBrochet(h,i){let v=50;if(h.cloud_cover[i]>60)v+=15;if(i<=9||i>=18)v+=15;return v;}
 function scoreSandre(h,i){let v=45;if(h.cloud_cover[i]>70)v+=15;if(i<8||i>19)v+=15;return v;}
