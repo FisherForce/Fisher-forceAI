@@ -174,25 +174,12 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (temperature < 10) saison += " froid";
     else if (temperature > 20) saison += " chaud";
   }
-  // Détection fermeture seulement pour brochet, sandre, black-bass
-  const now = new Date();
-  const isClosedPeriod = now.getMonth() < 4; // Mois 0-3 = janv-avril
-  const closedSpecies = ["brochet", "sandre", "black-bass", "black bass"];
-  let isClosedForSpecies = isClosedPeriod && closedSpecies.some(cs => species.toLowerCase().includes(cs));
-  let fallbackMessage = [];
-  if (isClosedForSpecies && technique === "leurres") {
-    fallbackMessage = [
-      "- Période de fermeture pour " + species + " ! Toute prise = infraction grave.",
-      "- Essaie les appâts naturels, mouche ou finesse pour truite, carpe, perche, silure..."
-    ];
-    technique = "appats"; // Force appâts
-  }
   // Patterns appris
   const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
   if (learnedLures && learnedLures.length > 0) {
     learnedLures.forEach(lure => list.push(`${lure} (appris des sessions)`));
   }
-  let depthAdvice = [];
+  let depthAdvice = []; // Défini ici pour éviter undefined
   if (technique === "leurres") {
     // Cas ultra-ciblés (tes conditions originales)
     if (species.includes('perche')) {
@@ -298,6 +285,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (species.includes('silure')) {
       list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
     }
+
     // === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET) ===
     const randomParEspece = {
       brochet: [
@@ -962,54 +950,103 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     "Micro crankbait Duo Realis Spinbait."
   ]
 };
-  // Normalisation robuste
-  let normalized = species.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, '');
-  const speciesMap = {
-    brochet: 'brochet',
-    perche: 'perche',
-    sandre: 'sandre',
-    blackbass: 'blackbass',
-    bass: 'blackbass',
-    chevesne: 'chevesne',
-    aspe: 'aspe',
-    silure: 'silure',
-    truite: 'truite'
-  };
-  let matched = null;
-  for (const key in speciesMap) {
-    if (normalized.includes(key)) {
-      matched = speciesMap[key];
-      break;
+
+// Normalisation robuste
+let normalized = species.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, '');
+const speciesMap = {
+brochet: 'brochet',
+perche: 'perche',
+sandre: 'sandre',
+blackbass: 'blackbass',
+bass: 'blackbass',
+chevesne: 'chevesne',
+aspe: 'aspe',
+silure: 'silure',
+truite: 'truite'
+};
+let matched = null;
+for (const key in speciesMap) {
+if (normalized.includes(key)) {
+matched = speciesMap[key];
+break;
+}
+}
+if (matched && randomParEspece[matched]) {
+const conseils = randomParEspece[matched];
+let random1 = conseils[Math.floor(Math.random() * conseils.length)];
+let random2 = conseils[Math.floor(Math.random() * conseils.length)];
+while (random2 === random1 && conseils.length > 1) {
+random2 = conseils[Math.floor(Math.random() * conseils.length)];
+}
+list.push(random1);
+list.push(random2);
+} 
+  } else if (technique === "appats") {
+    if (species.includes("truite")) {
+      const fullTruite = [
+        "Ver de terre ou teigne en nymphe ou à soutenir",
+        "Asticot ou pinkies en flotteur léger",
+        "Teigne ou ver rouge pour grosses truites en profondeur",
+        "Petit vairon mort ou vif en plombée",
+        "Fromage frais ou pâte à truite pour eau trouble"
+      ];
+      const shuffled = fullTruite.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2); // 2 aléatoires pour appats truite
+      depthAdvice = ["0-1m surface ou nymphe près du fond"];
+    } else if (species.includes("carpe")) {
+      const fullCarpe = [
+        "Maïs doux ou bouillettes 15-20mm",
+        "Pellets en PVA bag ou spod",
+        "Pain de mie ou pâte à carpe",
+        "Boilies saveur fruitée ou poisson",
+        "Maïs fermenté ou pellets en method feeder",
+        "Tiger nuts ou hemp seed pour carpe sélective"
+      ];
+      const shuffled = fullCarpe.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["Fond ou mi-eau selon amorçage"];
+    } else {
+      const fullGeneral = [
+        "Ver de terre ou asticot en flotteur",
+        "Teigne ou pinkies pour finesse",
+        "Pain ou fromage pour carpeaux ou gros poissons blancs"
+      ];
+      const shuffled = fullGeneral.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["Fond ou mi-eau"];
     }
-  }
-  if (matched && randomParEspece[matched]) {
-    const conseils = randomParEspece[matched];
-    let random1 = conseils[Math.floor(Math.random() * conseils.length)];
-    let random2 = conseils[Math.floor(Math.random() * conseils.length)];
-    while (random2 === random1 && conseils.length > 1) {
-      random2 = conseils[Math.floor(Math.random() * conseils.length)];
+  } else if (technique === "mouche") {
+    if (species.includes("truite")) {
+      const Mouches = [
+        "Conseils mouches",
+        "mettre ici"
+      ];
+      const shuffled = Mouches.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["0-1m surface ou près du fond"];
+    } else if (species.includes("chevesne")) {
+      const chubFly = [
+        "Mouches Chevesne",
+        "Ca arrive"
+      ];
+      const shuffled = chubFly.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["0-1m surface ou près du fond"];
     }
-    list.push(random1);
-    list.push(random2);
-  } else {
-    // Conseils génériques si espèce inconnue
-    const generiques = [
-      "Prospection variée avec un leurre souple naturel en linéaire.",
-      "Essaie un crankbait moyen pour couvrir de l'eau rapidement.",
-      "Pêche en réaction avec une lame vibrante ou un spinner.",
-      "Animation lente au fond avec un jig ou un texas rig.",
-      "Varie les profondeurs jusqu'à trouver les poissons actifs."
+  } else if (technique === "carpe") {
+    const Carpe = [
+      "appats carpe",
+      "ca arrive"
     ];
-    let random1 = generiques[Math.floor(Math.random() * generiques.length)];
-    let random2 = generiques[Math.floor(Math.random() * generiques.length)];
-    while (random2 === random1) random2 = generiques[Math.floor(Math.random() * generiques.length)];
-    list.push(random1);
-    list.push(random2);
+    const shuffled = Carpe.sort(() => 0.5 - Math.random());
+    list = shuffled.slice(0, 2);
+    depthAdvice = ["Fond ou mi-eau"];
+  } else {
+    list.push("Pas de conseils disponible pour cette technique.");
   }
   list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
   list.push("Enregistre ta session pour faire progresser l'IA !");
   // Profondeur
-  const depthAdvice = [];
   if (temperature !== null) {
     if (species.includes('perche')) {
       if (temperature < 10) depthAdvice.push("Profondeur 3-5m, jigs verticaux et dropshot");
@@ -1024,7 +1061,6 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
   return { lures: list, depthAdvice };
 }
-
 
 
 
