@@ -989,16 +989,19 @@ function scoreAspe(h,i){let v=45;if(h.wind_speed_10m[i]>15)v+=15;return v;}
 
  <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
 <!-- MODULE ANALYSE SPOT PAR POINT (FIX CLIQUE) -->
+<!-- MODULE ANALYSE SPOT PÊCHE IA – ÉTAPE 3 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
 background:linear-gradient(180deg,#003366,#001a33);color:white;font-family:Arial;
-box-shadow:0 10px 25px rgba(0,0,0,0.45);">
+box-shadow:0 10px 25px rgba(0,0,0,.45);">
 
   <div style="text-align:center">
     <div style="color:#00ffcc;font-weight:bold">ANALYSE SPOT PÊCHE IA</div>
-    <div style="font-size:12px;opacity:.85">Clique sur la carte (800 m)</div>
+    <div style="font-size:12px;opacity:.85">
+      Mémoire • Coach • Progression
+    </div>
   </div>
 
   <div id="spot-map" style="
@@ -1008,15 +1011,37 @@ box-shadow:0 10px 25px rgba(0,0,0,0.45);">
     overflow:hidden;
   "></div>
 
-  <div id="spot-result" style="margin-top:10px;font-size:13px;line-height:1.4">
+  <!-- MODE COACH -->
+  <select id="coachSpecies" style="
+    width:100%;margin-top:10px;
+    padding:6px;border-radius:8px;border:none">
+    <option>Brochet</option>
+    <option>Sandre</option>
+    <option>Perche</option>
+    <option>Black-bass</option>
+    <option>Silure</option>
+    <option>Aspe</option>
+  </select>
+
+  <div id="spot-result" style="margin-top:10px;font-size:13px;line-height:1.45">
     🎯 Clique sur la carte pour analyser un spot précis
+  </div>
+
+  <!-- STATS -->
+  <div id="spot-stats" style="
+    margin-top:10px;
+    padding:8px;
+    border-radius:12px;
+    background:#0e1e2c;
+    font-size:12px;
+    opacity:.9">
   </div>
 </div>
 
 <script>
 let spotMap, spotMarker, spotCircle;
 
-setTimeout(initSpotMap, 100);
+setTimeout(initSpotMap,100);
 
 function initSpotMap(){
   spotMap = L.map("spot-map").setView([46.8,2.5],6);
@@ -1025,16 +1050,26 @@ function initSpotMap(){
     maxZoom:18
   }).addTo(spotMap);
 
-  setTimeout(() => {
-    spotMap.invalidateSize();
-  }, 300);
+  setTimeout(()=>spotMap.invalidateSize(),300);
 
-  spotMap.on("click", e => {
-    console.log("CLICK MAP", e.latlng);
-    analyseSpot(e.latlng);
-  });
+  spotMap.on("click",e=>analyseSpot(e.latlng));
+  updateSpotStats();
 }
 
+/* ===== MEMOIRE SPOTS ===== */
+function saveSpot(pos){
+  let data = JSON.parse(localStorage.getItem("ffai_spots")) || [];
+  data.push({lat:pos.lat,lng:pos.lng,time:Date.now()});
+  localStorage.setItem("ffai_spots",JSON.stringify(data));
+}
+
+function updateSpotStats(){
+  let data = JSON.parse(localStorage.getItem("ffai_spots")) || [];
+  document.getElementById("spot-stats").innerHTML =
+    `📊 Spots analysés : <b>${data.length}</b>`;
+}
+
+/* ===== ANALYSE SPOT ===== */
 function analyseSpot(pos){
   if(spotMarker) spotMap.removeLayer(spotMarker);
   if(spotCircle) spotMap.removeLayer(spotCircle);
@@ -1050,6 +1085,9 @@ function analyseSpot(pos){
   document.getElementById("spot-result").innerHTML =
     "📡 Analyse IA du spot en cours…";
 
+  saveSpot(pos);
+  updateSpotStats();
+
   const q = `
   [out:json][timeout:25];
   (
@@ -1058,12 +1096,10 @@ function analyseSpot(pos){
     way["building"](around:800,${pos.lat},${pos.lng});
     way["highway"="path"](around:800,${pos.lat},${pos.lng});
   );
-  out geom;
-  `;
+  out geom;`;
 
   fetch("https://overpass-api.de/api/interpreter",{
-    method:"POST",
-    body:q
+    method:"POST",body:q
   })
   .then(r=>r.json())
   .then(d=>{
@@ -1087,13 +1123,19 @@ function analyseSpot(pos){
     const horaire = pressionHoraire(pression,sauvage);
     const creneau = meilleurCreneau(horaire,sauvage);
 
+    const espece = document.getElementById("coachSpecies").value;
+    const conseil = coachAdvice(espece,pression,sauvage);
+
     document.getElementById("spot-result").innerHTML = `
       🎣 <b>Spot analysé</b><br><br>
       💧 Eau détectée : <b>${water}</b><br>
       🌿 Sauvage : <b>${sauvage}/100</b><br>
       🎣 Pression humaine : <b>${pression}/100</b><br>
       ⏰ Pression horaire : <b>${horaire}/100</b><br><br>
-      ⭐ <b>Meilleur créneau</b><br>${creneau}
+      ⭐ <b>Meilleur créneau</b><br>${creneau}<br><br>
+      🎓 <b>Mode Coach – ${espece}</b><br>
+      ${conseil}<br><br>
+      <i>${smartFeedback()}</i>
     `;
   })
   .catch(()=>{
@@ -1102,9 +1144,32 @@ function analyseSpot(pos){
   });
 }
 
-function clamp(v){
-  return Math.max(0,Math.min(100,Math.round(v)));
+/* ===== COACH ===== */
+function coachAdvice(e,p,s){
+  if(e==="Brochet"){
+    if(p>60) return "Pêche lente, bordures ombragées";
+    if(s>70) return "Spot sauvage → gros brochet possible";
+  }
+  if(e==="Sandre") return "Fin de journée / zones calmes";
+  if(e==="Perche") return "Prospection active conseillée";
+  if(e==="Black-bass") return "Discrétion + zones chaudes";
+  if(e==="Silure") return "Nuit / pression basse";
+  if(e==="Aspe") return "Activité rapide, courant";
+  return "Analyse comportementale standard";
 }
+
+/* ===== UTILS ===== */
+function smartFeedback(){
+  const m=[
+    "🧠 L’IA affine ton profil",
+    "📈 Ton analyse devient plus précise",
+    "🎯 Décision pertinente",
+    "🔥 Bon choix de spot"
+  ];
+  return m[Math.floor(Math.random()*m.length)];
+}
+
+function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
 
 function pressionHoraire(p,s){
   let h=new Date().getHours(),k=1;
@@ -1124,6 +1189,7 @@ function meilleurCreneau(ph,s){
     "⛔ À éviter (pression forte)";
 }
 </script>
+
 
 
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
