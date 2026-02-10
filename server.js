@@ -983,6 +983,7 @@ list.push(random2);
 } 
   } else if (technique === "appats") {
     if (species.includes("truite")) {
+      list.push('Asticot en flotteur — Pour eau calme en soleil');
       const fullTruite = [
         "Ver de terre ou teigne en nymphe ou à soutenir",
         "Asticot ou pinkies en flotteur léger",
