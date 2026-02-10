@@ -988,6 +988,7 @@ function scoreAspe(h,i){let v=45;if(h.wind_speed_10m[i]>15)v+=15;return v;}
 </script>
 
  <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
+<!-- MODULE ANALYSE SPOT PAR POINT -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -996,137 +997,90 @@ background:linear-gradient(180deg,#003366,#001a33);color:white;font-family:Arial
 box-shadow:0 10px 25px rgba(0,0,0,0.45);">
 
   <div style="text-align:center">
-    <div style="color:#00ffcc;font-weight:bold">ANALYSE CARTE SPOT PÊCHE</div>
-    <div style="font-size:12px;opacity:.85">IA • Pression • Créneau idéal</div>
+    <div style="color:#00ffcc;font-weight:bold">ANALYSE SPOT PÊCHE IA</div>
+    <div style="font-size:12px;opacity:.85">Clique → Analyse 800 m</div>
   </div>
 
-  <div id="ff-map" style="height:200px;margin-top:10px;border-radius:12px"></div>
+  <div id="spot-map" style="height:200px;margin-top:10px;border-radius:12px"></div>
 
-  <button id="ff-btn" style="width:100%;margin-top:12px;
-  padding:12px;border:none;border-radius:25px;background:#ffd700;font-weight:bold;cursor:pointer">
-    ANALYSER LA CARTE
-  </button>
-
-  <div id="ff-msg" style="margin-top:8px;font-size:12px;opacity:.8;"></div>
+  <div id="spot-result" style="margin-top:10px;font-size:13px;line-height:1.4">
+    🎯 Clique sur la carte pour analyser un spot précis
+  </div>
 </div>
 
 <script>
-const map = L.map("ff-map").setView([46.8,2.5],6);
+const map = L.map("spot-map").setView([46.8,2.5],6);
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(map);
 
-let running=false,anim=null;
-let markers=[];
+let marker=null, circle=null;
 
-document.getElementById("ff-btn").onclick = ffAnalyserCarte;
+map.on("click", e => analyseSpot(e.latlng));
 
-function ffAnalyserCarte(){
-  if(running) return;
-  running=true;
+function analyseSpot(pos){
+  if(marker) map.removeLayer(marker);
+  if(circle) map.removeLayer(circle);
 
-  // reset
-  markers.forEach(m=>map.removeLayer(m));
-  markers=[];
-  document.getElementById("ff-msg").innerText="";
+  marker = L.circleMarker(pos,{
+    radius:7,color:"#00ffcc",fillOpacity:.9
+  }).addTo(map);
 
-  const btn=document.getElementById("ff-btn");
-  const base=btn.innerHTML;
-  let d=0;
-  anim=setInterval(()=>{
-    d=(d+1)%4;
-    btn.innerHTML="Analyse IA"+'.'.repeat(d);
-  },400);
+  circle = L.circle(pos,{
+    radius:800,color:"#00ffcc",fillOpacity:0.05
+  }).addTo(map);
 
-  const c = map.getCenter();
-  const r = 1200; // rayon fixe fiable
+  document.getElementById("spot-result").innerHTML =
+    "📡 Analyse IA du spot en cours…";
 
-  const query = `
+  const q = `
   [out:json][timeout:25];
   (
-    way["natural"="water"](around:${r},${c.lat},${c.lng});
-    way["waterway"](around:${r},${c.lat},${c.lng});
-    way["highway"="path"](around:${r},${c.lat},${c.lng});
-    way["building"](around:${r},${c.lat},${c.lng});
+    way["natural"="water"](around:800,${pos.lat},${pos.lng});
+    way["waterway"](around:800,${pos.lat},${pos.lng});
+    way["building"](around:800,${pos.lat},${pos.lng});
+    way["highway"="path"](around:800,${pos.lat},${pos.lng});
   );
   out geom;
   `;
 
   fetch("https://overpass-api.de/api/interpreter",{
     method:"POST",
-    body:query
+    body:q
   })
   .then(r=>r.json())
-  .then(data=>{
-    const eaux=[],bat=[],pth=[];
-    data.elements.forEach(e=>{
-      if(!e.geometry) return;
-      if(e.tags?.natural==="water"||e.tags?.waterway) eaux.push(e);
-      if(e.tags?.building) bat.push(e);
-      if(e.tags?.highway==="path") pth.push(e);
+  .then(d=>{
+    let water=0,build=0,path=0;
+
+    d.elements.forEach(e=>{
+      if(!e.tags) return;
+      if(e.tags.natural==="water"||e.tags.waterway) water++;
+      if(e.tags.building) build++;
+      if(e.tags.highway==="path") path++;
     });
 
-    if(eaux.length===0){
-      document.getElementById("ff-msg").innerText =
-        "⚠️ Aucun spot détecté ici — zoome ou déplace la carte";
-      stopAnim(base);
+    if(water===0){
+      document.getElementById("spot-result").innerHTML =
+        "❌ Aucun plan d’eau détecté dans un rayon de 800 m";
       return;
     }
 
-    eaux.slice(0,6).forEach(e=>{
-      const cs=center(e.geometry);
-      const B=count(bat,cs);
-      const P=count(pth,cs);
+    const sauvage = clamp(100 - build*6 - path*8);
+    const pression = clamp(build*8 + path*10);
+    const horaire = pressionHoraire(pression,sauvage);
+    const creneau = meilleurCreneau(horaire,sauvage);
 
-      const sauvage = clamp(100 - B*3 - P*4);
-      const pression = clamp(B*5 + P*6 + (100-sauvage)*0.3);
-      const horaire = pressionHoraire(pression,sauvage);
-      const creneau = meilleurCreneau(horaire,sauvage);
-
-      const m=L.circleMarker([cs.lat,cs.lon],{
-        radius:7,
-        color:horaire<30?"#00ff99":horaire<60?"#ffcc00":"#ff5555",
-        fillOpacity:.9
-      }).addTo(map).bindPopup(`
-        🎣 <b>Spot potentiel</b><br>
-        🌿 Sauvage : <b>${sauvage}/100</b><br>
-        🎣 Pression : <b>${pression}/100</b><br>
-        ⏰ Pression horaire : <b>${horaire}/100</b><br>
-        ⭐ <b>Meilleur créneau</b><br>${creneau}
-      `);
-
-      markers.push(m);
-    });
-
-    document.getElementById("ff-msg").innerText =
-      `✅ ${markers.length} spots analysés par l’IA`;
-    stopAnim(base);
+    document.getElementById("spot-result").innerHTML = `
+      🎣 <b>Spot analysé</b><br><br>
+      💧 Eau détectée : <b>${water}</b><br>
+      🌿 Sauvage : <b>${sauvage}/100</b><br>
+      🎣 Pression humaine : <b>${pression}/100</b><br>
+      ⏰ Pression horaire : <b>${horaire}/100</b><br><br>
+      ⭐ <b>Meilleur créneau</b><br>${creneau}
+    `;
   })
   .catch(()=>{
-    document.getElementById("ff-msg").innerText =
-      "❌ Erreur Overpass — réessaie dans quelques secondes";
-    stopAnim(base);
+    document.getElementById("spot-result").innerHTML =
+      "⚠️ Erreur d’analyse — réessaie";
   });
-}
-
-function stopAnim(base){
-  clearInterval(anim);
-  document.getElementById("ff-btn").innerHTML=base;
-  running=false;
-}
-
-function center(g){
-  let a=0,o=0;
-  g.forEach(p=>{a+=p.lat;o+=p.lon});
-  return {lat:a/g.length,lon:o/g.length};
-}
-
-function count(list,c){
-  return list.filter(e=>dist(center(e.geometry),c)<300).length;
-}
-
-function dist(a,b){
-  const dLat=(b.lat-a.lat)*Math.PI/180;
-  const dLon=(b.lon-a.lon)*Math.PI/180;
-  return Math.sqrt(dLat*dLat+dLon*dLon)*6371000;
 }
 
 function clamp(v){
@@ -1142,15 +1096,16 @@ function pressionHoraire(p,s){
 }
 
 function meilleurCreneau(ph,s){
-  if(ph<30) return "🌅 Aube (6h–9h)<br>🌇 Crépuscule (19h–22h)";
+  if(ph<30) return "🌅 Aube / 🌇 Crépuscule";
   if(ph<60) return s>60?
-    "🌅 Très tôt (5h30–7h30)":
-    "🌇 Soir tardif (21h–23h)";
+    "🌅 Très tôt le matin":
+    "🌇 Fin de journée";
   return s>70?
-    "🌌 Nuit profonde (23h–4h)":
-    "⛔ Pression trop forte";
+    "🌌 Nuit":
+    "⛔ À éviter (pression forte)";
 }
 </script>
+
 
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
