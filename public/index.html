@@ -988,7 +988,7 @@ function scoreAspe(h,i){let v=45;if(h.wind_speed_10m[i]>15)v+=15;return v;}
 </script>
 
  <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
-<!-- MODULE ANALYSE SPOT PAR POINT -->
+<!-- MODULE ANALYSE SPOT PAR POINT (FIX CLIQUE) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -998,10 +998,15 @@ box-shadow:0 10px 25px rgba(0,0,0,0.45);">
 
   <div style="text-align:center">
     <div style="color:#00ffcc;font-weight:bold">ANALYSE SPOT PÊCHE IA</div>
-    <div style="font-size:12px;opacity:.85">Clique → Analyse 800 m</div>
+    <div style="font-size:12px;opacity:.85">Clique sur la carte (800 m)</div>
   </div>
 
-  <div id="spot-map" style="height:200px;margin-top:10px;border-radius:12px"></div>
+  <div id="spot-map" style="
+    height:200px;
+    margin-top:10px;
+    border-radius:12px;
+    overflow:hidden;
+  "></div>
 
   <div id="spot-result" style="margin-top:10px;font-size:13px;line-height:1.4">
     🎯 Clique sur la carte pour analyser un spot précis
@@ -1009,24 +1014,38 @@ box-shadow:0 10px 25px rgba(0,0,0,0.45);">
 </div>
 
 <script>
-const map = L.map("spot-map").setView([46.8,2.5],6);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(map);
+let spotMap, spotMarker, spotCircle;
 
-let marker=null, circle=null;
+setTimeout(initSpotMap, 100);
 
-map.on("click", e => analyseSpot(e.latlng));
+function initSpotMap(){
+  spotMap = L.map("spot-map").setView([46.8,2.5],6);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    maxZoom:18
+  }).addTo(spotMap);
+
+  setTimeout(() => {
+    spotMap.invalidateSize();
+  }, 300);
+
+  spotMap.on("click", e => {
+    console.log("CLICK MAP", e.latlng);
+    analyseSpot(e.latlng);
+  });
+}
 
 function analyseSpot(pos){
-  if(marker) map.removeLayer(marker);
-  if(circle) map.removeLayer(circle);
+  if(spotMarker) spotMap.removeLayer(spotMarker);
+  if(spotCircle) spotMap.removeLayer(spotCircle);
 
-  marker = L.circleMarker(pos,{
+  spotMarker = L.circleMarker(pos,{
     radius:7,color:"#00ffcc",fillOpacity:.9
-  }).addTo(map);
+  }).addTo(spotMap);
 
-  circle = L.circle(pos,{
+  spotCircle = L.circle(pos,{
     radius:800,color:"#00ffcc",fillOpacity:0.05
-  }).addTo(map);
+  }).addTo(spotMap);
 
   document.getElementById("spot-result").innerHTML =
     "📡 Analyse IA du spot en cours…";
@@ -1079,7 +1098,7 @@ function analyseSpot(pos){
   })
   .catch(()=>{
     document.getElementById("spot-result").innerHTML =
-      "⚠️ Erreur d’analyse — réessaie";
+      "⚠️ Erreur d’analyse Overpass";
   });
 }
 
