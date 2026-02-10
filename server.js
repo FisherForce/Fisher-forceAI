@@ -984,6 +984,8 @@ list.push(random2);
   } else if (technique === "appats") {
     if (species.includes("truite")) {
       list.push('Asticot en flotteur — Pour eau calme en soleil');
+      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
+      list.push('Asticot en flotteur — Pour eau calme en soleil');
       const fullTruite = [
         "Ver de terre ou teigne en nymphe ou à soutenir",
         "Asticot ou pinkies en flotteur léger",
@@ -995,6 +997,9 @@ list.push(random2);
       list = shuffled.slice(0, 2); // 2 aléatoires pour appats truite
       depthAdvice = ["0-1m surface ou nymphe près du fond"];
     } else if (species.includes("carpe")) {
+      list.push('Maïs doux — Hair rig fond pour été');
+    if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
+      list.push('Pellets en PVA — Amorçage massif en nuageux');
       const fullCarpe = [
         "Maïs doux ou bouillettes 15-20mm",
         "Pellets en PVA bag ou spod",
@@ -1018,6 +1023,9 @@ list.push(random2);
     }
   } else if (technique === "mouche") {
     if (species.includes("truite")) {
+      list.push('Mouche sèche mayfly — Surface active pour été');
+    if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
+      list.push('Nymphe beadhead — Courant profond en soleil');
       const Mouches = [
         "Conseils mouches",
         "mettre ici"
