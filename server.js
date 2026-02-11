@@ -179,9 +179,9 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   if (learnedLures && learnedLures.length > 0) {
     learnedLures.forEach(lure => list.push(`${lure} (appris des sessions)`));
   }
-  let depthAdvice = []; // Défini ici pour éviter undefined
+  let depthAdvice = [];
   if (technique === "leurres") {
-    // Cas ultra-ciblés (tes conditions originales)
+    // Cas ultra-ciblés pour leurres (ton code original)
     if (species.includes('perche')) {
       list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
       if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
@@ -285,6 +285,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (species.includes('silure')) {
       list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
     }
+
 
     // === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET) ===
     const randomParEspece = {
@@ -980,82 +981,67 @@ random2 = conseils[Math.floor(Math.random() * conseils.length)];
 }
 list.push(random1);
 list.push(random2);
-} 
+}
   } else if (technique === "appats") {
-    if (species.includes("truite")) {
-      list.push('Asticot en flotteur — Pour eau calme en soleil');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
-      list.push('Asticot en flotteur — Pour eau calme en soleil');
-      const fullTruite = [
-        "Ver de terre ou teigne en nymphe ou à soutenir",
-        "Asticot ou pinkies en flotteur léger",
-        "Teigne ou ver rouge pour grosses truites en profondeur",
-        "Petit vairon mort ou vif en plombée",
-        "Fromage frais ou pâte à truite pour eau trouble"
-      ];
-      const shuffled = fullTruite.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2); // 2 aléatoires pour appats truite
-      depthAdvice = ["0-1m surface ou nymphe près du fond"];
-    } else if (species.includes("carpe")) {
-      list.push('Maïs doux — Hair rig fond pour été');
-    if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
-      list.push('Pellets en PVA — Amorçage massif en nuageux');
-      const fullCarpe = [
-        "Maïs doux ou bouillettes 15-20mm",
-        "Pellets en PVA bag ou spod",
-        "Pain de mie ou pâte à carpe",
-        "Boilies saveur fruitée ou poisson",
-        "Maïs fermenté ou pellets en method feeder",
-        "Tiger nuts ou hemp seed pour carpe sélective"
-      ];
-      const shuffled = fullCarpe.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2);
-      depthAdvice = ["Fond ou mi-eau selon amorçage"];
-    } else {
-      const fullGeneral = [
-        "Ver de terre ou asticot en flotteur",
-        "Teigne ou pinkies pour finesse",
-        "Pain ou fromage pour carpeaux ou gros poissons blancs"
-      ];
-      const shuffled = fullGeneral.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2);
-      depthAdvice = ["Fond ou mi-eau"];
+    // Cas ultra-ciblés pour appats (list.push ciblés)
+    if (species.includes('truite')) {
+      list.push('Ver de terre ou teigne en nymphe ou à soutenir');
+      if (saison === "hiver" && spotType === "rivière" && conditions.includes('nuageux'))
+        list.push('Asticot ou pinkies en flotteur léger — Pour eau calme');
+      // Ajoute plus de list.push ciblés pour appats truite
     }
+    if (species.includes('carpe')) {
+      list.push('Maïs doux ou bouillettes 15-20mm');
+      if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
+        list.push('Pellets en PVA bag ou spod — Amorçage massif');
+      // Ajoute plus de list.push ciblés pour appats carpe
+    }
+    // ... (ajoute pour autres species en appats)
+    depthAdvice = ["Fond ou mi-eau selon amorçage"];
   } else if (technique === "mouche") {
-    if (species.includes("truite")) {
-      list.push('Mouche sèche mayfly — Surface active pour été');
-    if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
-      list.push('Nymphe beadhead — Courant profond en soleil');
-      const Mouches = [
-        "Conseils mouches",
-        "mettre ici"
-      ];
-      const shuffled = Mouches.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2);
-      depthAdvice = ["0-1m surface ou près du fond"];
-    } else if (species.includes("chevesne")) {
-      const chubFly = [
-        "Mouches Chevesne",
-        "Ca arrive"
-      ];
-      const shuffled = chubFly.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2);
-      depthAdvice = ["0-1m surface ou près du fond"];
+    // Cas ultra-ciblés pour mouche (list.push ciblés)
+    if (species.includes('truite')) {
+      list.push('Conseils mouches');
+      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
+        list.push('Mouche artificielle sèche ou nymphe si eau claire — Pour surface');
+      // Ajoute plus de list.push ciblés pour mouche truite
     }
+    if (species.includes('chevesne')) {
+      list.push('Mouches Chevesne');
+      if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
+        list.push('Ca arrive — Pour courant');
+      // Ajoute plus de list.push ciblés pour mouche chevesne
+    }
+    depthAdvice = ["0-1m surface ou près du fond"];
   } else if (technique === "carpe") {
-    const Carpe = [
-      "appats carpe",
-      "ca arrive"
-    ];
-    const shuffled = Carpe.sort(() => 0.5 - Math.random());
-    list = shuffled.slice(0, 2);
+    // Cas ultra-ciblés pour carpe (list.push ciblés)
+    list.push('appats carpe');
+    if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
+      list.push('ca arrive — Amorçage fond');
+    // Ajoute plus de list.push ciblés pour carpe
     depthAdvice = ["Fond ou mi-eau"];
+  } else if (technique === "finesse ultra léger") {
+    // Cas ultra-ciblés pour finesse (list.push ciblés)
+    if (species.includes('perche')) {
+      list.push('Ned Rig ou ver manié — Récupération lente ou dandine en verticale');
+      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
+        list.push('Dropshot mini worm 4-6cm — Dandine');
+      // Ajoute plus de list.push ciblés pour finesse perche
+    }
+    if (species.includes('truite')) {
+      list.push('Micro jig 3-5g ou finesse shad');
+      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
+        list.push('Wacky rig finesse pour eau calme');
+      // Ajoute plus de list.push ciblés pour finesse truite
+    }
+    depthAdvice = ["1-3m avec dropshot ou ned rig lent"];
   } else {
     list.push("Pas de conseils disponible pour cette technique.");
   }
   list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
   list.push("Enregistre ta session pour faire progresser l'IA !");
   // Profondeur
+  const depthAdvice = [];
   if (temperature !== null) {
     if (species.includes('perche')) {
       if (temperature < 10) depthAdvice.push("Profondeur 3-5m, jigs verticaux et dropshot");
@@ -1070,7 +1056,6 @@ list.push(random2);
   }
   return { lures: list, depthAdvice };
 }
-
 
 
 
