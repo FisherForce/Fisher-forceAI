@@ -222,13 +222,13 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     } else if (technique === "appats") {
       list.push('Ver de terre ou teigne en nymphe ou à soutenir — Pour perche en appâts');
       if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Vers de terre posés — pPoche des structures');
+        list.push('Asticot en flotteur — Lente proche des structures');
       // Ajoute plus de list.push ciblés pour appats perche
     } else if (technique === "mouche") {
       list.push('Mouche sèche ou nymphe — Pour perche en mouche');
       // Ajoute plus de list.push ciblés pour mouche perche
     } else if (technique === "carpe") {
-      list.push('Je ne sais pas comment on cible la perche en visant la carpe  —)');
+      list.push('Maïs doux — Pour perche en carpe style (adapté)');
       // Ajoute plus
     } else if (technique === "finesse ultra léger") {
       list.push('Ned Rig — Pour perche en finesse');
@@ -242,32 +242,6 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
       if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
         list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
-      if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Leurres souples de 6cm — Quand il y a du soleil les brochets visent les petites proies');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Propbait — Récupération rapide avec des pauses proche des obstacles');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Jerk-Minnow de 12 à 15cm — Twitchs courts avec des pauses en surface, envoie des coups de jerk comme si la cnne était un fouet');
-      if (saison === "printemps" && spotType === "étang" && conditions.includes('soleil'))
-        list.push('Cuillère N°4 — Récupération lente en surface');
-      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('nénuphar'))
-        list.push('Frog — Récupération par a coups avec pauses dans les trouées, attention faut ferrer comme si tu voulait envoyer le poisson sur la lune !');
-      if (saison === "été" && spotType === "rivière" && conditions.includes('soleil') && structure.includes('nénuphar'))
-        list.push('Frog — Récupération par a coups avec pauses dans les trouées , attention faut ferrer super fort');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('soleil'))
-        list.push('Shad de 16cm — Récupération lente');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Lipless ou spintail ou lame vibrante — Récupération lente ou dandine en verticale');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Swimbait de 15cm — Récupération lente en surface');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
-        list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d\'eau');
-      if (saison === "automne" && spotType === "étang" && conditions.includes('vent'))
-        list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d\'eau au fur et à mesure du temps');
-
-
       // ... (tout ton bloc brochet pour leurres)
     } else if (technique === "appats") {
       list.push('Vif ou vers — Pour brochet en appâts');
@@ -278,7 +252,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push('Streamer — Pour brochet en mouche');
       // Ajoute plus
     } else if (technique === "carpe") {
-      list.push('Je ne sais pas comment cibler le brochet en visant la carpe');
+      list.push('Boilies — Adapté pour brochet ?');
       // Ajoute plus
     } else if (technique === "finesse ultra léger") {
       list.push('Micro shad — Pour brochet en finesse');
@@ -334,7 +308,6 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
   return { lures: list, depthAdvice };
 }
-
 
 
 
