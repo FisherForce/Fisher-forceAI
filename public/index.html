@@ -2999,57 +2999,7 @@ function setMode(mode, btn) {
     display: none; /* CACHÉES tant que pas cliqué sur le menu */
   }
 </style>
-<script>
-// === FIX BOUTON "OBTENIR DES CONSEILS" - ENVOIE VRAIMENT LA TECHNIQUE ===
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('getAdvice');
-  if (!btn) {
-    console.warn("Bouton #getAdvice non trouvé");
-    return;
-  }
 
-  btn.addEventListener('click', async () => {
-    const adviceDiv = document.getElementById('advice');
-    adviceDiv.innerHTML = '<p style="color:#00ff9d;">Analyse en cours...</p>';
-
-    // Récupère TOUS les champs
-    const data = {
-      targetSpecies: document.getElementById('targetSpecies')?.value || '',
-      structure: document.getElementById('structure')?.value || 'Mixte',
-      conditions: document.getElementById('conditions')?.value || 'clair',
-      spotType: document.getElementById('waterType')?.value || 'Étang',
-      temperature: parseInt(document.getElementById('temperature')?.value) || 15,
-      technique: document.getElementById('technique')?.value || 'leurres'  // ← LIT LE SELECT ICI
-    };
-
-    console.log('Envoi réel au serveur :', data);  // ← tu verras la vraie valeur
-
-    try {
-      const res = await fetch('/api/advice', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-
-      if (!res.ok) throw new Error('Erreur ' + res.status);
-
-      const result = await res.json();
-
-      let html = '<h3>Conseils :</h3>';
-      if (result.lures && result.lures.length > 0) {
-        html += result.lures.map(l => `<p>${l}</p>`).join('');
-      } else {
-        html += '<p>Aucun conseil spécifique.</p>';
-      }
-
-      adviceDiv.innerHTML = html;
-    } catch (err) {
-      console.error(err);
-      adviceDiv.innerHTML = '<p style="color:red;">Erreur lors de la récupération.</p>';
-    }
-  });
-});
-</script>
   <!-- CLASSEMENT + DATE DANS LES CONSEILS (dans app.js) -->
   <script src="app.js"></script>
 </body>
