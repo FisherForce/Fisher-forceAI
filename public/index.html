@@ -2999,6 +2999,59 @@ function setMode(mode, btn) {
     display: none; /* CACHÉES tant que pas cliqué sur le menu */
   }
 </style>
+  <script>
+// === GESTION DU BOUTON "OBTENIR DES CONSEILS" (le formulaire classique) ===
+document.getElementById('getAdvice').addEventListener('click', async () => {
+  const adviceDiv = document.getElementById('advice');
+  adviceDiv.innerHTML = '<p>Analyse en cours...</p>';
+
+  // Récupère les valeurs des champs
+  const species = document.getElementById('targetSpecies')?.value || '';
+  const structure = document.getElementById('structure')?.value || 'Mixte';
+  const conditions = document.getElementById('conditions')?.value || 'clair';
+  const spotType = document.getElementById('waterType')?.value || 'Étang';
+  const temperature = parseInt(document.getElementById('temperature')?.value) || 15;
+  
+  // LA LIGNE MAGIQUE : on prend la vraie valeur du select
+  const technique = document.getElementById('technique')?.value || 'leurres';
+
+  console.log('Envoi au serveur :', { species, structure, conditions, spotType, temperature, technique });
+
+  try {
+    const response = await fetch('/api/advice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        targetSpecies: species,
+        structure: structure,
+        conditions: conditions,
+        spotType: spotType,
+        temperature: temperature,
+        technique: technique   // ← c’est envoyé ici !
+      })
+    });
+
+    if (!response.ok) throw new Error('Erreur serveur');
+
+    const data = await response.json();
+
+    // Affiche le résultat
+    let html = `<p><strong>Conseils pour ${species || 'espèce inconnue'} :</strong></p>`;
+    if (data.lures && data.lures.length > 0) {
+      html += '<ul>';
+      data.lures.forEach(l => html += `<li>${l}</li>`);
+      html += '</ul>';
+    } else {
+      html += '<p>Aucun conseil spécifique trouvé.</p>';
+    }
+
+    adviceDiv.innerHTML = html;
+  } catch (err) {
+    console.error('Erreur fetch :', err);
+    adviceDiv.innerHTML = '<p style="color:red;">Erreur lors de la récupération des conseils.</p>';
+  }
+});
+</script>
 
   <!-- CLASSEMENT + DATE DANS LES CONSEILS (dans app.js) -->
   <script src="app.js"></script>
