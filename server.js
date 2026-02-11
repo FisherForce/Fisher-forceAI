@@ -1041,7 +1041,7 @@ list.push(random2);
   list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
   list.push("Enregistre ta session pour faire progresser l'IA !");
   // Profondeur
-  const depthAdvice = [];
+  depthAdvice = [];
   if (temperature !== null) {
     if (species.includes('perche')) {
       if (temperature < 10) depthAdvice.push("Profondeur 3-5m, jigs verticaux et dropshot");
