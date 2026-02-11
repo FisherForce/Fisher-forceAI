@@ -841,6 +841,7 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
 
 <script>
 let speciesMap, speciesMarker, speciesSpot = null;
+let analysingSpecies = false;
 
 /* ============================
    🔄 LOADER IA
@@ -888,6 +889,8 @@ function getSpotID(p){
    🧠 LEARNING IA
 ============================ */
 function saveFeedback(espece,success){
+  if(!speciesSpot) return;
+
   const season=getSeason();
   const spotID=getSpotID(speciesSpot);
   let data=JSON.parse(localStorage.getItem("fishAI_learning"))||{};
@@ -908,6 +911,8 @@ function saveFeedback(espece,success){
 }
 
 function getLearningBonus(espece){
+  if(!speciesSpot) return 0;
+
   const season=getSeason();
   const spotID=getSpotID(speciesSpot);
   let data=JSON.parse(localStorage.getItem("fishAI_learning"))||{};
@@ -927,46 +932,89 @@ function getLearningBonus(espece){
 }
 
 /* ============================
-   🗺️ MAP
+   🗺️ MAP INIT (MOBILE FIX)
 ============================ */
 setTimeout(()=>{
   speciesMap=L.map("species-map").setView([46.8,2.5],5);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(speciesMap);
-  speciesMap.on("click",e=>{
-    speciesSpot=e.latlng;
-    if(speciesMarker)speciesMap.removeLayer(speciesMarker);
-    speciesMarker=L.circleMarker(e.latlng,{
-      radius:7,color:"#ffb300",fillOpacity:.9
-    }).addTo(speciesMap);
 
-    showLoader("Analyse météo + IA adaptative…");
-    setTimeout(analyserParEspece,900);
-  });
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+    .addTo(speciesMap);
+
+  setTimeout(()=>speciesMap.invalidateSize(),300);
+
+  // Handler universel mobile + PC
+  speciesMap.on("click",handleSpeciesInteraction);
+  speciesMap.on("touchend",handleSpeciesInteraction);
+
 },100);
+
+/* ============================
+   HANDLER MOBILE + DESKTOP
+============================ */
+function handleSpeciesInteraction(e){
+  if(analysingSpecies) return;
+
+  let latlng=e.latlng;
+
+  if(!latlng && e.originalEvent?.changedTouches){
+    latlng=speciesMap.mouseEventToLatLng(
+      e.originalEvent.changedTouches[0]
+    );
+  }
+
+  if(!latlng) return;
+
+  onSpeciesClick(latlng);
+}
+
+function onSpeciesClick(latlng){
+
+  speciesSpot=latlng;
+
+  if(speciesMarker) speciesMap.removeLayer(speciesMarker);
+
+  speciesMarker=L.circleMarker(latlng,{
+    radius:7,
+    color:"#ffb300",
+    fillOpacity:.9
+  }).addTo(speciesMap);
+
+  showLoader("Analyse météo + IA adaptative…");
+
+  setTimeout(analyserParEspece,900);
+}
 
 /* ============================
    📊 ANALYSE ESPÈCES
 ============================ */
 function analyserParEspece(){
+  if(!speciesSpot) return;
+
+  analysingSpecies=true;
   const season=getSeason();
 
   fetch(`https://api.open-meteo.com/v1/forecast?latitude=${speciesSpot.lat}&longitude=${speciesSpot.lng}&hourly=temperature_2m,cloud_cover,wind_speed_10m&forecast_days=1&timezone=auto`)
   .then(r=>r.json())
   .then(d=>{
     const h=d.hourly;
+    if(!h){
+      throw new Error("Données météo invalides");
+    }
+
     let html=`<b>🎯 Fenêtres optimales (${season})</b><br><br>`;
 
     const especes=[
-      ["Brochet",scoreBrochet,"agressif"],
-      ["Sandre",scoreSandre,"passif"],
-      ["Perche",scorePerche,"neutre"],
-      ["Black-bass",scoreBass,"agressif"],
-      ["Silure",scoreSilure,"passif"],
-      ["Aspe",scoreAspe,"agressif"]
+      ["Brochet",scoreBrochet],
+      ["Sandre",scoreSandre],
+      ["Perche",scorePerche],
+      ["Black-bass",scoreBass],
+      ["Silure",scoreSilure],
+      ["Aspe",scoreAspe]
     ];
 
-    especes.forEach(([n,f,t])=>{
+    especes.forEach(([n,f])=>{
       let best={h:6,s:0};
+
       for(let i=6;i<=21;i++){
         let s=f(h,i)+getLearningBonus(n);
         s=Math.min(95,Math.max(5,s));
@@ -983,19 +1031,49 @@ function analyserParEspece(){
     });
 
     document.getElementById("species-result").innerHTML=html;
+    analysingSpecies=false;
   })
-  .catch(()=>document.getElementById("species-result").innerHTML="⚠️ Erreur météo IA");
+  .catch(()=>{
+    analysingSpecies=false;
+    document.getElementById("species-result").innerHTML="⚠️ Erreur météo IA";
+  });
 }
 
 /* ============================
    🎯 SCORES
 ============================ */
-function scoreBrochet(h,i){let v=50;if(h.cloud_cover[i]>60)v+=15;if(i<=9||i>=18)v+=15;return v;}
-function scoreSandre(h,i){let v=45;if(h.cloud_cover[i]>70)v+=15;if(i<8||i>19)v+=15;return v;}
-function scorePerche(h,i){let v=55;if(h.temperature_2m[i]>12&&h.temperature_2m[i]<22)v+=15;return v;}
-function scoreBass(h,i){let v=40;if(h.temperature_2m[i]>18)v+=25;return v;}
-function scoreSilure(h,i){let v=35;if(h.temperature_2m[i]>16)v+=20;return v;}
-function scoreAspe(h,i){let v=45;if(h.wind_speed_10m[i]>15)v+=15;return v;}
+function scoreBrochet(h,i){
+  let v=50;
+  if(h.cloud_cover?.[i]>60)v+=15;
+  if(i<=9||i>=18)v+=15;
+  return v;
+}
+function scoreSandre(h,i){
+  let v=45;
+  if(h.cloud_cover?.[i]>70)v+=15;
+  if(i<8||i>19)v+=15;
+  return v;
+}
+function scorePerche(h,i){
+  let v=55;
+  if(h.temperature_2m?.[i]>12&&h.temperature_2m?.[i]<22)v+=15;
+  return v;
+}
+function scoreBass(h,i){
+  let v=40;
+  if(h.temperature_2m?.[i]>18)v+=25;
+  return v;
+}
+function scoreSilure(h,i){
+  let v=35;
+  if(h.temperature_2m?.[i]>16)v+=20;
+  return v;
+}
+function scoreAspe(h,i){
+  let v=45;
+  if(h.wind_speed_10m?.[i]>15)v+=15;
+  return v;
+}
 </script>
 
 
