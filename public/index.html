@@ -1029,25 +1029,31 @@ function scoreAspe(h,i){
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+<style>
+#spot-map{
+  height:200px;
+  width:100%;
+  border-radius:12px;
+  touch-action: manipulation;
+}
+.leaflet-container{
+  touch-action: manipulation;
+}
+</style>
+
 <div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
 background:linear-gradient(180deg,#003366,#001a33);color:white;font-family:Arial;
 box-shadow:0 10px 25px rgba(0,0,0,.45);">
 
   <div style="text-align:center">
-    <div style="color:#00ffcc;font-weight:bold">ANALYSE SPOT PÊCHE IA</div>
+    <div style="color:#00ffcc;font-weight:bold"> 🎣 ANALYSE SPOT PÊCHE IA</div>
     <div style="font-size:12px;opacity:.85">
       Mémoire • Coach • Progression
     </div>
   </div>
 
-  <div id="spot-map" style="
-    height:200px;
-    margin-top:10px;
-    border-radius:12px;
-    overflow:hidden;
-  "></div>
+  <div id="spot-map" style="margin-top:10px;"></div>
 
-  <!-- MODE COACH -->
   <select id="coachSpecies" style="
     width:100%;margin-top:10px;
     padding:6px;border-radius:8px;border:none">
@@ -1063,7 +1069,6 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
     🎯 Clique sur la carte pour analyser un spot précis
   </div>
 
-  <!-- STATS -->
   <div id="spot-stats" style="
     margin-top:10px;
     padding:8px;
@@ -1075,24 +1080,35 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
 </div>
 
 <script>
-let spotMap, spotMarker, spotCircle;
+let spotMap, spotMarker=null, spotCircle=null;
 
-setTimeout(initSpotMap,100);
+/* ============================
+   INIT MAP (STABLE MOBILE)
+============================ */
+document.addEventListener("DOMContentLoaded",function(){
 
-function initSpotMap(){
-  spotMap = L.map("spot-map").setView([46.8,2.5],6);
+  spotMap = L.map("spot-map",{
+    tap:true,
+    touchZoom:true,
+    dragging:true
+  }).setView([46.8,2.5],6);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
     maxZoom:18
   }).addTo(spotMap);
 
-  setTimeout(()=>spotMap.invalidateSize(),300);
+  setTimeout(()=>spotMap.invalidateSize(),500);
 
-  spotMap.on("click",e=>analyseSpot(e.latlng));
+  spotMap.on("click",function(e){
+    analyseSpot(e.latlng);
+  });
+
   updateSpotStats();
-}
+});
 
-/* ===== MEMOIRE SPOTS ===== */
+/* ============================
+   MEMOIRE SPOTS
+============================ */
 function saveSpot(pos){
   let data = JSON.parse(localStorage.getItem("ffai_spots")) || [];
   data.push({lat:pos.lat,lng:pos.lng,time:Date.now()});
@@ -1105,8 +1121,11 @@ function updateSpotStats(){
     `📊 Spots analysés : <b>${data.length}</b>`;
 }
 
-/* ===== ANALYSE SPOT ===== */
+/* ============================
+   ANALYSE SPOT
+============================ */
 function analyseSpot(pos){
+
   if(spotMarker) spotMap.removeLayer(spotMarker);
   if(spotCircle) spotMap.removeLayer(spotCircle);
 
@@ -1135,10 +1154,16 @@ function analyseSpot(pos){
   out geom;`;
 
   fetch("https://overpass-api.de/api/interpreter",{
-    method:"POST",body:q
+    method:"POST",
+    body:q
   })
   .then(r=>r.json())
   .then(d=>{
+
+    if(!d.elements){
+      throw new Error("Overpass invalide");
+    }
+
     let water=0,build=0,path=0;
 
     d.elements.forEach(e=>{
@@ -1173,6 +1198,7 @@ function analyseSpot(pos){
       ${conseil}<br><br>
       <i>${smartFeedback()}</i>
     `;
+
   })
   .catch(()=>{
     document.getElementById("spot-result").innerHTML =
@@ -1180,7 +1206,9 @@ function analyseSpot(pos){
   });
 }
 
-/* ===== COACH ===== */
+/* ============================
+   COACH
+============================ */
 function coachAdvice(e,p,s){
   if(e==="Brochet"){
     if(p>60) return "Pêche lente, bordures ombragées";
@@ -1194,7 +1222,9 @@ function coachAdvice(e,p,s){
   return "Analyse comportementale standard";
 }
 
-/* ===== UTILS ===== */
+/* ============================
+   UTILS
+============================ */
 function smartFeedback(){
   const m=[
     "🧠 L’IA affine ton profil",
@@ -1205,7 +1235,9 @@ function smartFeedback(){
   return m[Math.floor(Math.random()*m.length)];
 }
 
-function clamp(v){return Math.max(0,Math.min(100,Math.round(v)))}
+function clamp(v){
+  return Math.max(0,Math.min(100,Math.round(v)));
+}
 
 function pressionHoraire(p,s){
   let h=new Date().getHours(),k=1;
@@ -1225,6 +1257,7 @@ function meilleurCreneau(ph,s){
     "⛔ À éviter (pression forte)";
 }
 </script>
+
 
 
 
