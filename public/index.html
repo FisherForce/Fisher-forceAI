@@ -1798,6 +1798,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (needNewAdvice) {
         const species = document.getElementById('coachSpecies').value;
         const milieu = document.getElementById('coachMilieu').value;
+        console.log("Valeur du select technique :", document.getElementById('technique')?.value);
+console.log("ID du select trouvé :", document.getElementById('technique') ? 'OK' : 'NON TROUVÉ');
 
         const adviceRes = await fetch('/api/advice', {
           method: 'POST',
