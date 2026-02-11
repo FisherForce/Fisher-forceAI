@@ -405,6 +405,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('temperature')) {
           document.getElementById('temperature').value = temp;
         }
+        console.log("Valeur du select technique :", document.getElementById('technique')?.value);
+console.log("ID du select trouvé :", document.getElementById('technique') ? 'OK' : 'NON TROUVÉ');
+
+const adviceRes = await fetch('/api/advice', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    targetSpecies: ...,
+    structure: ...,
+    conditions: ...,
+    spotType: ...,
+    temperature: ...,
+    technique: document.getElementById('technique')?.value   // ← sans || "leurres"
+  })
+});
 const adviceRes = await fetch('/api/advice', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },  // ← VIRGULE AJOUTÉE ICI !
