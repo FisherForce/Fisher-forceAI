@@ -592,63 +592,68 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
 </div>
 
 <script>
-let liveMap, liveMarker, liveSpot = null, liveTimer = null;
+let liveMap;
+let liveMarker = null;
+let liveSpot = null;
+let liveTimer = null;
 let analysing = false;
 
-setTimeout(initLiveMap, 100);
+/* =========================
+   INIT PROPRE (DOM READY)
+========================= */
+document.addEventListener("DOMContentLoaded", function () {
+  initLiveMap();
+});
 
 function initLiveMap() {
-  liveMap = L.map("livebite-map").setView([46.8, 2.5], 5);
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
-    .addTo(liveMap);
+  const mapContainer = document.getElementById("livebite-map");
+  if (!mapContainer) return;
 
-  // IMPORTANT mobile
+  liveMap = L.map("livebite-map", {
+    tap: true,              // IMPORTANT mobile
+    touchZoom: true,
+    dragging: true
+  }).setView([46.8, 2.5], 5);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18
+  }).addTo(liveMap);
+
   setTimeout(() => {
     liveMap.invalidateSize();
-  }, 300);
+  }, 400);
 
-  // 👇 handler universel mobile + PC
-  liveMap.on("click", handleLiveInteraction);
-  liveMap.on("touchend", handleLiveInteraction);
+  // Leaflet gère déjà mobile + desktop
+  liveMap.on("click", function(e) {
+    handleLiveClick(e.latlng);
+  });
 }
 
 /* =========================
-   HANDLER MOBILE + DESKTOP
+   CLICK HANDLER
 ========================= */
-function handleLiveInteraction(e) {
+function handleLiveClick(latlng) {
+
   if (analysing) return;
-
-  let latlng = e.latlng;
-
-  // Si mobile et pas de latlng direct
-  if (!latlng && e.originalEvent?.changedTouches) {
-    latlng = liveMap.mouseEventToLatLng(
-      e.originalEvent.changedTouches[0]
-    );
-  }
-
-  if (!latlng) return;
-
-  onLiveClick(latlng);
-}
-
-function onLiveClick(latlng) {
 
   liveSpot = latlng;
 
-  if (liveMarker) liveMap.removeLayer(liveMarker);
+  if (liveMarker) {
+    liveMap.removeLayer(liveMarker);
+  }
 
   liveMarker = L.circleMarker(liveSpot, {
-    radius:7,
-    color:"#00ffd5",
-    fillOpacity:0.9
+    radius: 7,
+    color: "#00ffd5",
+    fillOpacity: 0.9
   }).addTo(liveMap);
 
-  document.getElementById("livebite-result").innerHTML =
-    `<span class="ffai-loader"></span>
-     <b>IA en train d’analyser la zone…</b><br>
-     📡 Données météo • apprentissage • pression de pêche`;
+  document.getElementById("livebite-result").innerHTML = `
+    <span class="ffai-loader"></span>
+    <b>IA analyse en cours…</b><br>
+    📡 Météo • pression • comportement
+  `;
 
   if (liveTimer) clearInterval(liveTimer);
 
@@ -660,6 +665,7 @@ function onLiveClick(latlng) {
    ANALYSE LIVE
 ========================= */
 function analyserLive() {
+
   if (!liveSpot) return;
   analysing = true;
 
@@ -667,49 +673,53 @@ function analyserLive() {
     .then(r => r.json())
     .then(data => {
 
+      if (!data.current) throw new Error("No data");
+
       const c = data.current;
       const h = data.hourly;
       const hour = new Date().getHours();
 
-      // Sauvegarde pour apprentissage
       window.ff_temp = c.temperature_2m;
       window.ff_cloud = c.cloud_cover;
       window.ff_wind = c.wind_speed_10m;
 
       const instabilite =
-        Math.abs((h.pressure_msl[hour] || 0) - (h.pressure_msl[hour-2] || 0)) +
-        Math.abs((h.cloud_cover[hour] || 0) - (h.cloud_cover[hour-2] || 0));
+        Math.abs((h.pressure_msl[hour] || 0) - (h.pressure_msl[hour - 2] || 0)) +
+        Math.abs((h.cloud_cover[hour] || 0) - (h.cloud_cover[hour - 2] || 0));
 
       const luminosite = 100 - c.cloud_cover;
 
       const pressionPeche =
-        (hour>=17 && hour<=20 ? 20 : 0) +
-        (c.cloud_cover<30 ? 10 : 0) +
-        (c.temperature_2m>18 ? 10 : 0);
+        (hour >= 17 && hour <= 20 ? 20 : 0) +
+        (c.cloud_cover < 30 ? 10 : 0) +
+        (c.temperature_2m > 18 ? 10 : 0);
 
       const especes = {
-        "Brochet": v => v + (c.cloud_cover>70?20:0) + (c.wind_speed_10m>8&&c.wind_speed_10m<18?10:0) - (luminosite>70?15:0),
-        "Sandre": v => v + (c.pressure_msl<1012?20:0) + (luminosite<40?15:0) + ((hour>=20||hour<=6)?20:0),
-        "Perche": v => v + (c.temperature_2m>12&&c.temperature_2m<22?15:0) + (c.cloud_cover>40?10:0),
-        "Black-bass": v => v + (c.temperature_2m>18?25:0) + (c.wind_speed_10m<10?15:0),
-        "Silure": v => v + ((hour<7||hour>21)?25:0) + (c.pressure_msl<1010?15:0),
-        "Aspe": v => v + (c.wind_speed_10m>15?15:0) + (luminosite>50?10:0)
+        "Brochet": v => v + (c.cloud_cover > 70 ? 20 : 0) + (c.wind_speed_10m > 8 && c.wind_speed_10m < 18 ? 10 : 0) - (luminosite > 70 ? 15 : 0),
+        "Sandre": v => v + (c.pressure_msl < 1012 ? 20 : 0) + (luminosite < 40 ? 15 : 0) + ((hour >= 20 || hour <= 6) ? 20 : 0),
+        "Perche": v => v + (c.temperature_2m > 12 && c.temperature_2m < 22 ? 15 : 0) + (c.cloud_cover > 40 ? 10 : 0),
+        "Black-bass": v => v + (c.temperature_2m > 18 ? 25 : 0) + (c.wind_speed_10m < 10 ? 15 : 0),
+        "Silure": v => v + ((hour < 7 || hour > 21) ? 25 : 0) + (c.pressure_msl < 1010 ? 15 : 0),
+        "Aspe": v => v + (c.wind_speed_10m > 15 ? 15 : 0) + (luminosite > 50 ? 10 : 0)
       };
 
       let html = `<b>🎣 Probabilité LIVE des touches</b><br><br>`;
 
       Object.entries(especes).forEach(([nom, fn]) => {
-        let score = 50 + instabilite*0.2 + luminosite*0.2;
+
+        let score = 50 + instabilite * 0.2 + luminosite * 0.2;
         score = fn(score) - pressionPeche;
+
         score = Math.max(5, Math.min(95, Math.round(score)));
 
         html += `🔹 <b>${nom}</b> — ${score}%<br>`;
       });
 
-      html += `<br>
-        📉 Pression de pêche : ${pressionPeche}%<br>
+      html += `
+        <br>
+        📉 Pression : ${pressionPeche}%<br>
         🌫️ Luminosité : ${luminosite}%<br>
-        ⚡ Instabilité météo : ${Math.round(instabilite)}%
+        ⚡ Instabilité : ${Math.round(instabilite)}%
       `;
 
       document.getElementById("livebite-result").innerHTML = html;
@@ -722,6 +732,7 @@ function analyserLive() {
     });
 }
 </script>
+
 
 
     <!-- ====== APPRENTISSAGE UTILISATEUR ====== -->
