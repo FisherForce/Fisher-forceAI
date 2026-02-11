@@ -181,9 +181,9 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     learnedLures.forEach(lure => list.push(`${lure} (appris des sessions)`));
   }
   let depthAdvice = []; // Défini ici pour éviter undefined
-  if (technique === "leurres") {
     // Cas ultra-ciblés (tes conditions originales)
     if (species.includes('perche')) {
+        if (technique === "leurres") {
       list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
       if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
         list.push('Dropshot — Animation lente proche des structures');
@@ -219,6 +219,13 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
         list.push('Leurre souple de 7cm en Ned Rig ou Lame Vibrante — Tente les grosses perches sur le fond');
       if (saison === "automne" && spotType === "étang" && conditions.includes('pluie'))
         list.push('Leurre souple de 7cm en Ned Rig — Tente les grosses perches dans les obstacles');
+        } else  if (technique === "appats") {
+          list.push('Le ver de terre est une valeur sure !')
+    } else  if (technique === "mouche") {
+        list.push('Utilise des micros streamers')
+        } else if (technique === "finesse ultra léger") {
+          list.push('micro leurres pour un max de discrétion ')
+        }
     }
     if (species.includes('brochet')) {
       list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
@@ -982,78 +989,7 @@ random2 = conseils[Math.floor(Math.random() * conseils.length)];
 list.push(random1);
 list.push(random2);
 } 
-  } else if (technique === "appats") {
-    if (species.includes("truite")) {
-      list.push('Asticot en flotteur — Pour eau calme en soleil');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
-      list.push('Asticot en flotteur — Pour eau calme en soleil');
-      const fullTruite = [
-        "Ver de terre ou teigne en nymphe ou à soutenir",
-        "Asticot ou pinkies en flotteur léger",
-        "Teigne ou ver rouge pour grosses truites en profondeur",
-        "Petit vairon mort ou vif en plombée",
-        "Fromage frais ou pâte à truite pour eau trouble"
-      ];
-      const shuffled = fullTruite.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2); // 2 aléatoires pour appats truite
-      depthAdvice = ["0-1m surface ou nymphe près du fond"];
-    } else if (species.includes("carpe")) {
-      list.push('Maïs doux — Hair rig fond pour été');
-    if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
-      list.push('Pellets en PVA — Amorçage massif en nuageux');
-      const fullCarpe = [
-        "Maïs doux ou bouillettes 15-20mm",
-        "Pellets en PVA bag ou spod",
-        "Pain de mie ou pâte à carpe",
-        "Boilies saveur fruitée ou poisson",
-        "Maïs fermenté ou pellets en method feeder",
-        "Tiger nuts ou hemp seed pour carpe sélective"
-      ];
-      const shuffled = fullCarpe.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2);
-      depthAdvice = ["Fond ou mi-eau selon amorçage"];
-    } else {
-      const fullGeneral = [
-        "Ver de terre ou asticot en flotteur",
-        "Teigne ou pinkies pour finesse",
-        "Pain ou fromage pour carpeaux ou gros poissons blancs"
-      ];
-      const shuffled = fullGeneral.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2);
-      depthAdvice = ["Fond ou mi-eau"];
-    }
-  } else if (technique === "mouche") {
-    if (species.includes("truite")) {
-      list.push('Mouche sèche mayfly — Surface active pour été');
-    if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
-      list.push('Nymphe beadhead — Courant profond en soleil');
-      const Mouches = [
-        "Conseils mouches",
-        "mettre ici"
-      ];
-      const shuffled = Mouches.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2);
-      depthAdvice = ["0-1m surface ou près du fond"];
-    } else if (species.includes("chevesne")) {
-      const chubFly = [
-        "Mouches Chevesne",
-        "Ca arrive"
-      ];
-      const shuffled = chubFly.sort(() => 0.5 - Math.random());
-      list = shuffled.slice(0, 2);
-      depthAdvice = ["0-1m surface ou près du fond"];
-    }
-  } else if (technique === "carpe") {
-    const Carpe = [
-      "appats carpe",
-      "ca arrive"
-    ];
-    const shuffled = Carpe.sort(() => 0.5 - Math.random());
-    list = shuffled.slice(0, 2);
-    depthAdvice = ["Fond ou mi-eau"];
-  } else {
-    list.push("Pas de conseils disponible pour cette technique.");
-  }
+
   list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
   list.push("Enregistre ta session pour faire progresser l'IA !");
   // Profondeur
@@ -1099,20 +1035,7 @@ app.post('/api/advice', (req, res) => {
     }
 
     // Détection fermeture carnassiers (janvier-avril)
-    const now = new Date();
-    const isClosedPeriod = now.getMonth() < 4; // Mois 0-3 = janv-avril
-    const closedSpecies = ["brochet", "sandre", "black-bass", "black bass"]; // Liste espèces fermées
 
-    let isClosedForSpecies = isClosedPeriod && closedSpecies.some(cs => species.toLowerCase().includes(cs));
-
-    let fallbackMessage = [];
-    if (isClosedForSpecies && technique === "leurres") {
-      fallbackMessage = [
-        "- Période de fermeture pour " + species + " ! Toute prise = infraction grave.",
-        "- Essaie les appâts naturels, mouche ou finesse pour truite, carpe, perche, silure..."
-      ];
-      technique = "appats naturels"; // Force appâts pour éviter conseils leurres illégaux
-    }
 
     const result = suggestLures(species, structure, conditions, spotType, temperature, technique); // Passe technique à suggestLures
 
