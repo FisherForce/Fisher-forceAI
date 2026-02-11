@@ -373,6 +373,7 @@ app.post('/api/advice', (req, res) => {
     structure = (structure || "").toLowerCase();
     conditions = (conditions || "").toLowerCase();
     spotType = (spotType || "").toLowerCase();
+    technique  = technique ? technique.toLowerCase().trim() : undefined;
     failedLures = Array.isArray(failedLures) ? failedLures.map(l => l.trim().toLowerCase()) : [];
 
      if (!structure || !conditions) {
