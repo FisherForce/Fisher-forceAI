@@ -165,6 +165,10 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   structure = (structure || "").toLowerCase();
   conditions = (conditions || "").toLowerCase();
   spotType  = (spotType  || "").toLowerCase();
+  let tech = "";
+  if (technique && typeof technique === 'string') {
+    tech = technique.toLowerCase().trim();
+  }
 
   saveSpot(spotType);
 
@@ -373,8 +377,10 @@ app.post('/api/advice', (req, res) => {
     structure = (structure || "").toLowerCase();
     conditions = (conditions || "").toLowerCase();
     spotType = (spotType || "").toLowerCase();
-    technique  = technique ? technique.toLowerCase().trim() : undefined;
     failedLures = Array.isArray(failedLures) ? failedLures.map(l => l.trim().toLowerCase()) : [];
+    if (technique && typeof technique === 'string') {
+      technique = technique.toLowerCase().trim();
+    }
 
      if (!structure || !conditions) {
       return res.status(400).json({ error: 'Champs requis manquants' });
