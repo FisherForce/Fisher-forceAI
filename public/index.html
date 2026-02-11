@@ -1757,14 +1757,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Marée (exemple avec API gratuite - remplace par une meilleure si besoin)
       let tideText = "marée inconnue";
-      try {
-        const tideRes = await fetch(`https://api.tides.bigdatacloud.net/v1/tide?lat=${currentSpot.lat}&lon=${currentSpot.lng}&date=${new Date().toISOString().split('T')[0]}`);
-        const tideData = await tideRes.json();
-        if (tideData?.data?.[0]) {
-          const tide = tideData.data[0];
-          tideText = tide.height > 0 ? `haute (${Math.round(tide.height)}m)` : `basse (${Math.round(tide.height)}m)`;
-        }
-      } catch (e) {}
+
 
       // Conditions auto
       let conditions = [];
