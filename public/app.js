@@ -405,8 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('temperature')) {
           document.getElementById('temperature').value = temp;
         }
-        console.log("Valeur du select technique :", document.getElementById('technique')?.value);
-console.log("ID du select trouvé :", document.getElementById('technique') ? 'OK' : 'NON TROUVÉ');
 
 
 const adviceRes = await fetch('/api/advice', {
