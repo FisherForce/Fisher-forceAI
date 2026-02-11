@@ -802,11 +802,29 @@ document.getElementById("logCatch").onclick = () => {
 };
 </script>
 <!-- ============================
-     ÉTAPE 3 — FENÊTRE DE PÊCHE IA
+     ÉTAPE 3 — FENÊTRE DE PÊCHE IA (FIX MOBILE)
 ============================ -->
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+#species-map{
+  height:150px;
+  width:100%;
+  border-radius:12px;
+  touch-action: manipulation;
+}
+
+.leaflet-container{
+  touch-action: manipulation;
+}
+
+@keyframes loadmove{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(250%)}
+}
+</style>
 
 <div style="width:340px;margin:20px auto;padding:15px;border-radius:18px;
 background:linear-gradient(180deg,#16293a,#0a1622);
@@ -822,32 +840,26 @@ box-shadow:0 10px 25px rgba(0,0,0,.45);">
     </div>
   </div>
 
-  <div id="species-map" style="
-    height:150px;
-    margin-top:10px;
-    border-radius:12px;
-    overflow:hidden;
-  "></div>
+  <div id="species-map" style="margin-top:10px;"></div>
 
   <div id="species-result" style="
     margin-top:10px;
     font-size:13px;
     line-height:1.45;
-    min-height:80px;
-  ">
+    min-height:80px;">
     🎯 Clique sur un spot pour afficher les fenêtres de pêche IA
   </div>
 </div>
 
 <script>
-let speciesMap, speciesMarker, speciesSpot = null;
-let analysingSpecies = false;
+let speciesMap, speciesMarker=null, speciesSpot=null;
+let analysingSpecies=false;
 
 /* ============================
-   🔄 LOADER IA
+   LOADER
 ============================ */
-function showLoader(text="Analyse IA en cours…") {
-  document.getElementById("species-result").innerHTML = `
+function showLoader(text="Analyse IA en cours…"){
+  document.getElementById("species-result").innerHTML=`
     <div style="text-align:center;padding:15px">
       <div style="font-size:20px">🧠</div>
       <div style="margin-top:6px;font-size:13px;opacity:.85">${text}</div>
@@ -860,15 +872,8 @@ function showLoader(text="Analyse IA en cours…") {
     </div>`;
 }
 
-const style=document.createElement("style");
-style.innerHTML=`@keyframes loadmove{
-  0%{transform:translateX(-100%)}
-  100%{transform:translateX(250%)}
-}`;
-document.head.appendChild(style);
-
 /* ============================
-   📅 SAISON AUTO
+   SAISON
 ============================ */
 function getSeason(){
   const m=new Date().getMonth()+1;
@@ -879,99 +884,40 @@ function getSeason(){
 }
 
 /* ============================
-   📍 SPOT ID
+   MAP INIT (ULTRA STABLE)
 ============================ */
-function getSpotID(p){
-  return p.lat.toFixed(2)+"_"+p.lng.toFixed(2);
-}
+document.addEventListener("DOMContentLoaded",function(){
 
-/* ============================
-   🧠 LEARNING IA
-============================ */
-function saveFeedback(espece,success){
-  if(!speciesSpot) return;
-
-  const season=getSeason();
-  const spotID=getSpotID(speciesSpot);
-  let data=JSON.parse(localStorage.getItem("fishAI_learning"))||{};
-  const key=espece+"_"+season+"_"+spotID;
-
-  if(!data[key])data[key]={ok:0,fail:0};
-  success?data[key].ok++:data[key].fail++;
-
-  localStorage.setItem("fishAI_learning",JSON.stringify(data));
-
-  document.getElementById("species-result").innerHTML=`
-    <div style="text-align:center;padding:10px">
-      ${success?"✅":"❌"} <b>Feedback enregistré</b><br>
-      <span style="font-size:12px;opacity:.7">
-        L’IA apprend ce spot précis 🧠
-      </span>
-    </div>`;
-}
-
-function getLearningBonus(espece){
-  if(!speciesSpot) return 0;
-
-  const season=getSeason();
-  const spotID=getSpotID(speciesSpot);
-  let data=JSON.parse(localStorage.getItem("fishAI_learning"))||{};
-  const key=espece+"_"+season+"_"+spotID;
-  if(!data[key])return 0;
-
-  const {ok,fail}=data[key];
-  const t=ok+fail;
-  if(t<2)return 0;
-  const r=ok/t;
-
-  if(r>0.75)return 12;
-  if(r>0.6)return 6;
-  if(r<0.35)return -10;
-  if(r<0.5)return -5;
-  return 0;
-}
-
-/* ============================
-   🗺️ MAP INIT (MOBILE FIX)
-============================ */
-setTimeout(()=>{
-  speciesMap=L.map("species-map").setView([46.8,2.5],5);
+  speciesMap=L.map("species-map",{
+    tap:true,
+    touchZoom:true,
+    dragging:true
+  }).setView([46.8,2.5],5);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
     .addTo(speciesMap);
 
-  setTimeout(()=>speciesMap.invalidateSize(),300);
+  setTimeout(()=>speciesMap.invalidateSize(),500);
 
-  // Handler universel mobile + PC
-  speciesMap.on("click",handleSpeciesInteraction);
-  speciesMap.on("touchend",handleSpeciesInteraction);
+  speciesMap.on("click",function(e){
+    if(analysingSpecies) return;
+    triggerSpecies(e.latlng);
+  });
 
-},100);
+});
 
 /* ============================
-   HANDLER MOBILE + DESKTOP
+   CLICK HANDLER
 ============================ */
-function handleSpeciesInteraction(e){
-  if(analysingSpecies) return;
-
-  let latlng=e.latlng;
-
-  if(!latlng && e.originalEvent?.changedTouches){
-    latlng=speciesMap.mouseEventToLatLng(
-      e.originalEvent.changedTouches[0]
-    );
-  }
+function triggerSpecies(latlng){
 
   if(!latlng) return;
 
-  onSpeciesClick(latlng);
-}
-
-function onSpeciesClick(latlng){
-
   speciesSpot=latlng;
 
-  if(speciesMarker) speciesMap.removeLayer(speciesMarker);
+  if(speciesMarker){
+    speciesMap.removeLayer(speciesMarker);
+  }
 
   speciesMarker=L.circleMarker(latlng,{
     radius:7,
@@ -981,26 +927,28 @@ function onSpeciesClick(latlng){
 
   showLoader("Analyse météo + IA adaptative…");
 
-  setTimeout(analyserParEspece,900);
+  setTimeout(analyserParEspece,800);
 }
 
 /* ============================
-   📊 ANALYSE ESPÈCES
+   ANALYSE
 ============================ */
 function analyserParEspece(){
-  if(!speciesSpot) return;
 
+  if(!speciesSpot) return;
   analysingSpecies=true;
+
   const season=getSeason();
 
   fetch(`https://api.open-meteo.com/v1/forecast?latitude=${speciesSpot.lat}&longitude=${speciesSpot.lng}&hourly=temperature_2m,cloud_cover,wind_speed_10m&forecast_days=1&timezone=auto`)
   .then(r=>r.json())
   .then(d=>{
-    const h=d.hourly;
-    if(!h){
-      throw new Error("Données météo invalides");
+
+    if(!d.hourly){
+      throw new Error("Meteo invalide");
     }
 
+    const h=d.hourly;
     let html=`<b>🎯 Fenêtres optimales (${season})</b><br><br>`;
 
     const especes=[
@@ -1012,26 +960,24 @@ function analyserParEspece(){
       ["Aspe",scoreAspe]
     ];
 
-    especes.forEach(([n,f])=>{
+    especes.forEach(([nom,fn])=>{
       let best={h:6,s:0};
 
       for(let i=6;i<=21;i++){
-        let s=f(h,i)+getLearningBonus(n);
+        let s=fn(h,i);
         s=Math.min(95,Math.max(5,s));
-        if(s>best.s)best={h:i,s};
+        if(s>best.s) best={h:i,s};
       }
 
       html+=`
-        🔹 <b>${n}</b><br>
+        🔹 <b>${nom}</b><br>
         ⏰ ${best.h}h – ${best.h+1}h<br>
-        🎯 Activité : ${best.s}%<br>
-        <button onclick="saveFeedback('${n}',true)" style="margin:4px;background:#2ecc71;border:none;border-radius:8px;color:white;padding:4px 8px">✅ Touche</button>
-        <button onclick="saveFeedback('${n}',false)" style="margin:4px;background:#e74c3c;border:none;border-radius:8px;color:white;padding:4px 8px">❌ Rien</button>
-        <br><br>`;
+        🎯 Activité : ${best.s}%<br><br>`;
     });
 
     document.getElementById("species-result").innerHTML=html;
     analysingSpecies=false;
+
   })
   .catch(()=>{
     analysingSpecies=false;
@@ -1040,7 +986,7 @@ function analyserParEspece(){
 }
 
 /* ============================
-   🎯 SCORES
+   SCORES
 ============================ */
 function scoreBrochet(h,i){
   let v=50;
