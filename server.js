@@ -366,7 +366,7 @@ app.post('/api/advice', (req, res) => {
       spotType, 
       temperature, 
       failedLures = [],
-      technique = "leurres"  // Nouveau paramètre, par défaut leurres
+      technique   // Nouveau paramètre, par défaut leurres
     } = req.body;
 
     species = (species || "").toLowerCase();
