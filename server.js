@@ -180,10 +180,10 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   if (learnedLures && learnedLures.length > 0) {
     learnedLures.forEach(lure => list.push(`${lure} (appris des sessions)`));
   }
-  let depthAdvice = [];
-  // Cas ultra-ciblés par espèce (avec technique nested)
-  if (species.includes('perche')) {
-    if (technique === "leurres") {
+  let depthAdvice = []; // Défini ici pour éviter undefined
+  if (technique === "leurres") {
+    // Cas ultra-ciblés (tes conditions originales)
+    if (species.includes('perche')) {
       list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
       if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
         list.push('Dropshot — Animation lente proche des structures');
@@ -219,81 +219,844 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
         list.push('Leurre souple de 7cm en Ned Rig ou Lame Vibrante — Tente les grosses perches sur le fond');
       if (saison === "automne" && spotType === "étang" && conditions.includes('pluie'))
         list.push('Leurre souple de 7cm en Ned Rig — Tente les grosses perches dans les obstacles');
-    } else if (technique === "appats") {
-      list.push('Ver de terre ou teigne en nymphe ou à soutenir — Pour perche en appâts');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Asticot en flotteur — Lente proche des structures');
-      // Ajoute plus de list.push ciblés pour appats perche
-    } else if (technique === "mouche") {
-      list.push('Mouche sèche ou nymphe — Pour perche en mouche');
-      // Ajoute plus de list.push ciblés pour mouche perche
-    } else if (technique === "carpe") {
-      list.push('Maïs doux — Pour perche en carpe style (adapté)');
-      // Ajoute plus
-    } else if (technique === "finesse ultra léger") {
-      list.push('Ned Rig — Pour perche en finesse');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Dropshot mini worm — Lente en soleil');
-      // Ajoute plus
     }
-  }
-  if (species.includes('brochet')) {
-    if (technique === "leurres") {
+    if (species.includes('brochet')) {
       list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
       if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
         list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
-      // ... (tout ton bloc brochet pour leurres)
-    } else if (technique === "appats") {
-      list.push('Vif ou vers — Pour brochet en appâts');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Ver manié — Lente au fond');
-      // Ajoute plus de list.push ciblés pour appats brochet
-    } else if (technique === "mouche") {
-      list.push('Streamer — Pour brochet en mouche');
-      // Ajoute plus
-    } else if (technique === "carpe") {
-      list.push('Boilies — Adapté pour brochet ?');
-      // Ajoute plus
-    } else if (technique === "finesse ultra léger") {
-      list.push('Micro shad — Pour brochet en finesse');
-      // Ajoute plus
-    }
-  }
-  // ... (ajoute les mêmes blocs if (species.includes('bass')) { if (technique === "leurres") { ... } else if (technique === "appats") { list.push('...'); } } pour toutes les espèces : sandre, chevesne, aspe, silure, truite, etc.)
-  // Exemple pour une autre espèce
-  if (species.includes('truite')) {
-    if (technique === "leurres") {
-      // Ton code pour leurres truite si tu en as
-      list.push('Cuillère N°1 — Pour truite en leurres');
-      // Ajoute plus
-    } else if (technique === "appats") {
-      list.push('Ver de terre — Pour truite en appâts');
+      if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
+        list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
+      if (saison === "automne" && spotType === "rivière" && conditions.includes('soleil'))
+        list.push('Leurres souples de 6cm — Quand il y a du soleil les brochets visent les petites proies');
+      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
+        list.push('Propbait — Récupération rapide avec des pauses proche des obstacles');
       if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Teigne — En nymphe pour nuageux');
-      // Ajoute plus de list.push ciblés pour appats truite
-    } else if (technique === "mouche") {
-      list.push('Mouche artificielle sèche — Pour truite en mouche');
-      // Ajoute plus
-    } else if (technique === "carpe") {
-      list.push('Pâte — Adapté pour truite ?');
-      // Ajoute plus
-    } else if (technique === "finesse ultra léger") {
-      list.push('Micro jig — Pour truite en finesse');
-      // Ajoute plus
+        list.push('Jerk-Minnow de 12 à 15cm — Twitchs courts avec des pauses en surface, envoie des coups de jerk comme si la cnne était un fouet');
+      if (saison === "printemps" && spotType === "étang" && conditions.includes('soleil'))
+        list.push('Cuillère N°4 — Récupération lente en surface');
+      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('nénuphar'))
+        list.push('Frog — Récupération par a coups avec pauses dans les trouées, attention faut ferrer comme si tu voulait envoyer le poisson sur la lune !');
+      if (saison === "été" && spotType === "rivière" && conditions.includes('soleil') && structure.includes('nénuphar'))
+        list.push('Frog — Récupération par a coups avec pauses dans les trouées , attention faut ferrer super fort');
+      if (saison === "hiver" && spotType === "étang" && conditions.includes('soleil'))
+        list.push('Shad de 16cm — Récupération lente');
+      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
+        list.push('Lipless ou spintail ou lame vibrante — Récupération lente ou dandine en verticale');
+      if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux'))
+        list.push('Swimbait de 15cm — Récupération lente en surface');
+      if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
+        list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d\'eau');
+      if (saison === "automne" && spotType === "étang" && conditions.includes('vent'))
+        list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d\'eau au fur et à mesure du temps');
     }
+    if (species.includes('bass')) {
+      list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');
+      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
+        list.push('Ned Rig ou ver manié — Récupération lente ou dandine en verticale');
+      if (saison === "printemps" && spotType === "étang" && conditions.includes('vent'))
+        list.push('Spinner-bait — Récupération lente sous la surface');
+      if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
+        list.push('Worm en wacky ou Tube texan ou Frog ou finesse Rb — Récupération par à-coups ou en dandine');
+      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('herbiers'))
+        list.push('Worm marron — Dandine dans les branches et les herbiers ');
+      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
+        list.push('Worm marron — Dandine dans les branches et les herbiers ');
+      if (saison === "été" && spotType === "canal" && conditions.includes('soleil') && structure.includes('bois'))
+        list.push('Worm marron — Dandine dans les branches et les herbiers, envoie un vrai ferrage sans trop d\'emballer ');
+      if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
+        list.push('Écrevisses en punching — Dans les herbiers');
+    }
+    if (species.includes('chevesne')) {
+      list.push('Lame Vibrante — Récupération rapide avec des pauses proche des obstacles');
+      if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
+        list.push('Cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
+      if (saison === "été" && spotType === "rivière")
+        list.push('Leurres Insectes — Récupération par à coups pour déclencher des attaques de réaction');
+    }
+    if (species.includes('sandre')) {
+      list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session je te donnerais de meilleurs conseils !');
+      if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
+        list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
+      if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux') && structure.includes('pont'))
+        list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
+    }
+    if (species.includes('aspe')) {
+      list.push('Essaie un jerkminnow de 7cm — Ramène le très vite, puis un jig de 10G à utiliser près du fond, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
+    }
+    if (species.includes('silure')) {
+      list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
+    }
+
+    // === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET) ===
+    const randomParEspece = {
+      brochet: [
+        "Jerkbait suspending avec pauses très longues en eau profonde.",
+        "Gros shad souple 20cm en linéaire ultra-lent au fond.",
+        "Blade bait en yo-yo lent sur tombants rocheux.",
+        "Rubber jig lourd avec trailer volumineux en verticale.",
+        "Dead sticking avec gros tube posé plusieurs minutes.",
+        "Lipless lourd en récupération stop and go.",
+        "Swimbait slow sinking en pauses longues.",
+        "Jig vibrant posé au fond avec twitchs rares.",
+        "Texas rig gros worm gratté lentement sur roche.",
+        "Balancier métallique lourd en verticale lac.",
+        "Gros shad line-thru en linéaire glacial.",
+        "Jerkbait longbill countdown structures profondes.",
+        "Gros tailworm drop shot lourd cassures.",
+        "Rubber jig football traîné gravier profond.",
+        "Leurre souple 20cm screw head posé.",
+        "Blade bait vibration minimale eau claire froide.",
+        "Verticale gros spoon récupération morte.",
+        "Texas rig creature dandine verticale.",
+        "Jerkbait suspending naturel pauses 90s.",
+        "Gros swimbait jointed slow sinking profond.",
+        "Lipless lourd eau trouble pauses.",
+        "Shad finesse linéaire ultra-lent soirée.",
+        "Rubber jig 50g gros trailer dandine.",
+        "Dead slow jerkbait long 10m+.",
+        "Verticale tailspin lourd hiver.",
+        "Leurre souple 25cm texan 40g gratté.",
+        "Blade bait eau teintée vibration faible.",
+        "Swimbait réaliste pause 60s+.",
+        "Gros rubber jig nuit glaciale trailer volumineux.",
+        "Lipless 60g stop and go structures.",
+        "Texas rig gros creature gratté.",
+        "Verticale gros tube zone profonde.",
+        "Shad weighted posé.",
+        "Jerkbait pauses 90s.",
+        "Blade bait yo-yo.",
+        "Gros swimbait jointed profond.",
+        "Rubber jig dandine.",
+        "Lipless vibration faible.",
+        "Texas rig 20cm worm.",
+        "Verticale balancier lourd.",
+        "Jerkbait countdown profond.",
+        "Gros shad screw head.",
+        "Blade bait chromé lent.",
+        "Swimbait slow sinking pause.",
+        "Rubber jig football traîné.",
+        "Lipless stop and go.",
+        "Texas rig creature dandine.",
+        "Verticale spoon récupération morte.",
+        "Jerkbait suspending 90s.",
+        "Gros tailworm drop shot.",
+        "Blade bait vibration minimale.",
+        "Swimbait réaliste 60s pause.",
+        "Rubber jig night glaciale.",
+        "Lipless 60g stop and go.",
+        "Texas rig brush hog gratté.",
+        "Verticale gros tube zone profonde.",
+        "Shad 18cm weighted posé.",
+        "Jerkbait long pauses très longues.",
+        "Blade bait yo-yo minimal.",
+        "Gros swimbait 8-figure lent profond.",
+        "Rubber jig living trailer gros.",
+        "Lipless vibration minimale eau trouble.",
+        "Texas rig sweet beaver gratté lent.",
+        "Verticale jigging rap naturel.",
+        "Leurre souple 22cm line-thru glacial.",
+        "Jerkbait pointer suspending.",
+        "Gros blade bait yo-yo.",
+        "Swimbait slide swimmer slow sinking.",
+        "Rubber jig dirty black/blue."
+      ],
+      perche: [
+        "Micro-jig ou drop shot en verticale sur tombants rocheux.",
+        "Petits crankbaits en récupération variée.",
+        "Leurres souples finesse en linéaire lent imitant écrevisses.",
+        "Ned rig avec pauses longues sur fonds propres.",
+        "Cuillère ondulante fine en récupération variée.",
+        "Finesse jig tête ronde en dandine verticale.",
+        "Dandine avec petit shad sous branches noyées.",
+        "Wacky rig en weightless autour obstacles.",
+        "Micro spinnerbait en récupération lente.",
+        "Petit tube jig en verticale.",
+        "Drop shot finesse worm en pause longue.",
+        "Micro crankbait shallow en prospection rapide.",
+        "Leurre souple 5-7cm en texan léger herbiers.",
+        "Petite lame vibrante en récupération régulière.",
+        "Ned rig mushroom head avec finesse worm.",
+        "Micro jigging spoon en verticale hiver.",
+        "Petit swimbait 7cm en linéaire lent.",
+        "Tube jig 6cm en dandine rochers.",
+        "Finesse spinnerbait en slow roll bordure.",
+        "Leurre souple dropshot shad imitation alevin.",
+        "Micro lipless en récupération rapide hauts-fonds.",
+        "Wacky rig senko en chute libre.",
+        "Petit jerkbait SP en twitching rapide.",
+        "Cuillère n°1 en récupération variée rivière.",
+        "Finesse football jig avec trailer craw gravier.",
+        "Micro crankbait squarebill fouille souches.",
+        "Leurre souple finesse en weightless obstacles.",
+        "Petit chatterbait en zone peu profonde.",
+        "Tail spin en verticale perchoirs.",
+        "Drop shot smallie beaver imitation gobie.",
+        "Micro crankbait flat side en twitching.",
+        "Leurre souple curly tail linéaire lent.",
+        "Ned rig mushroom head elaztech worm.",
+        "Petit lipless chrome soleil plateaux.",
+        "Tube jig en free rig eau moyenne.",
+        "Finesse jig arkie head trailer chunk.",
+        "Micro spinnerbait double willow burn léger.",
+        "Leurre souple shad 8cm weighted hook.",
+        "Petit topwater pencil en walking.",
+        "Drop shot finesse worm pause très longue.",
+        "Micro blade bait yo-yo lent.",
+        "Leurre souple creature bait ned rig.",
+        "Petit crankbait lipless red craw.",
+        "Wacky rig yamamoto style green pumpkin.",
+        "Micro jig ronde dandine branches.",
+        "Tube small skipping.",
+        "Finesse swimbait keitech style linéaire lent.",
+        "Petit jerkbait vision junior twitching.",
+        "Cuillère n°2 or eau trouble.",
+        "Drop shot roboworm straight tail.",
+        "Micro chatterbait trailer ménure finesse.",
+        "Leurre souple jackall clone fry imitation alevin.",
+        "Ned rig half shell finesse craw.",
+        "Petit lipless jackall TN38 vibration fine.",
+        "Tube jig coffee style.",
+        "Finesse football jig baby rage craw.",
+        "Micro crankbait duo realis.",
+        "Leurre souple deathadder 6cm no sinker.",
+        "Petit spinnerbait micro slow roll.",
+        "Drop shot osp dolive stick pause longue.",
+        "Micro blade bait damiki vault verticale.",
+        "Leurre souple geecrack bellows shad linéaire.",
+        "Ned rig missile baits shockwave.",
+        "Petit topwater illex chubby popper matin.",
+        "Tube strike king coffee tube.",
+        "Finesse jig pitchin yamamoto hula grub.",
+        "Micro lipless yo-zuri 3DB récupération variée.",
+        "Leurre souple keitech swing impact fat 3.3.",
+        "Petit jerkbait megabass x-80 twitching.",
+        "Cuillère mepps black fury n°2 eau teintée.",
+        "Drop shot jackall crosstail shad.",
+        "Micro crankbait lucky craft bevy shallow.",
+        "Leurre souple z-man finesse shroomz.",
+        "Ned rig berkley powerbait maxscent flat worm.",
+        "Petit chatterbait z-man micro finesse.",
+        "Tube big bite baits smallie tube.",
+        "Finesse swimbait basstrix trailer jig.",
+        "Micro lipless rapala rippin rap ultra light.",
+        "Leurre souple strike king rage menace ned.",
+        "Petit jerkbait yo-zuri pins minnow.",
+        "Cuillère savage gear rotabell n°1.",
+        "Drop shot reins swamp mover.",
+        "Micro blade bait b fish n pulse-r.",
+        "Leurre souple deps basirisky weightless.",
+        "Ned rig xzone muscle back finesse craw.",
+        "Petit topwater rebel pop-r micro.",
+        "Tube missile baits mini tube.",
+        "Finesse jig arky head keitech little spider.",
+        "Micro crankbait panther martin inline.",
+        "Leurre souple jackall rhythm wag.",
+        "Petit spinnerbait strike king mini king.",
+        "Drop shot big bite baits trick stick.",
+        "Micro lipless hed don blade bait.",
+        "Leurre souple geecrack dum dum hog.",
+        "Ned rig zoom beatdown.",
+        "Petit jerkbait rapala x-rap 6.",
+        "Cuillère blue fox vibrax shallow.",
+        "Drop shot berkley gulp minnow.",
+        "Micro chatterbait booyah boss pop micro.",
+        "Leurre souple z-man TRD ticklerz.",
+        "Tube strike king bitsy tube.",
+        "Finesse swimbait damiki air pocket."
+      ],
+      sandre: [
+        "Pêche au fond avec jig ou texas rig en animation très lente.",
+        "Verticale avec shad ou finesse jig sur cassures profondes.",
+        "Linéaire lent avec gros leurre souple par faible luminosité.",
+        "Dead slow avec jerkbait suspendu en soirée.",
+        "Leurre souple vibrant gratté sur le fond.",
+        "Shad en linéaire très lent près des piles de pont.",
+        "Lame vibrante en récupération lente sur plateaux.",
+        "Verticale avec tailworm en période froide.",
+        "Jigging rap ou balancier en hiver profond.",
+        "Leurre souple monté en drop shot sur tombants.",
+        "Finesse shad 10-12cm en linéaire ultra-lent au crépuscule.",
+        "Texas rig worm 15cm gratté sur fonds sableux.",
+        "Verticale finesse jig près des obstacles en soirée.",
+        "Leurre souple curly tail en traction lente au fond.",
+        "Jerkbait longbill en pauses longues en eau profonde.",
+        "Blade bait en récupération lente sur cassures.",
+        "Shad plombé en verticale sous le bateau en hiver.",
+        "Carolina rig lizard sur plaines graveleuses.",
+        "Leurre souple imitant poissonnet mort en dead sticking.",
+        "Jig vibrant posé au fond avec longues pauses.",
+        "Finesse tube en dandine autour des rochers en soirée.",
+        "Linéaire très lent avec swimbait réaliste.",
+        "Drop shot finesse worm sur tombants profonds.",
+        "Leurre souple en texan léger gratté près des piles.",
+        "Jerkbait suspending en twitching minimaliste par eau froide.",
+        "Verticale balancier métallique en hiver.",
+        "Shad 12cm linéaire lent le long des berges abruptes.",
+        "Texas rig creature bait en flipping dans bois noyés.",
+        "Lame vibrante slow roll sur plateaux sableux.",
+        "Leurre souple en dead ringing posé au fond la nuit.",
+        "Verticale avec gros finesse jig en période post-frontal.",
+        "Jerkbait suspending naturel en eau claire froide.",
+        "Shad monté en screw head en linéaire lent.",
+        "Finesse jig arkie avec trailer chunk sur fonds durs.",
+        "Leurre souple tail en verticale sur cassures.",
+        "Blade bait chromé en yo-yo sur radiers.",
+        "Drop shot avec straight worm en pause très longue.",
+        "Texas rig 10cm en skipping sous branches surplombantes.",
+        "Jerkbait deep diver en counting down sur fosses.",
+        "Leurre souple paddle tail en traction sur fond.",
+        "Verticale avec petit swimbait plombé en hiver.",
+        "Lame vibrante lourde en récupération lente en courant.",
+        "Shad finesse en linéaire au ras du fond en soirée.",
+        "Jig football avec trailer craw sur gravier.",
+        "Leurre souple en free rig en eau profonde.",
+        "Dead sticking avec finesse worm sur tombants.",
+        "Verticale avec jigging spoon en lac profond.",
+        "Texas rig finesse avec small creature en post-frontal.",
+        "Jerkbait en eau froide claire.",
+        "Leurre souple vibrating jig en trailer fin.",
+        "Drop shot avec straight tail en green pumpkin.",
+        "Lame vibrante argentée en soleil sur plateaux.",
+        "Shad 15cm en texan dans obstacles submergés.",
+        "Verticale avec rubber jig finesse en hiver.",
+        "Linéaire lent avec jerkbait suspending.",
+        "Blade bait noir en eau trouble.",
+        "Texas rig lizard en carolina sur flats.",
+        "Leurre souple tube en dandine verticale.",
+        "Jerkbait long en pauses 30 secondes par eau très froide.",
+        "Finesse swimbait en linéaire lent en soirée.",
+        "Drop shot straight tail en green pumpkin.",
+        "Verticale avec tailworm monté offset.",
+        "Leurre souple en screw lock pour meilleure tenue.",
+        "Jig vibrating en récupération stop and go.",
+        "Shad finesse en weighted hook près des structures.",
+        "Texas rig small beaver en imitation écrevisse.",
+        "Lame vibrante or en eau teintée.",
+        "Verticale avec balancier en couleur perch.",
+        "Leurre souple curly en dead slow au fond.",
+        "Jerkbait en suspending parfait.",
+        "Drop shot avec finesse craw en zone rocailleuse.",
+        "Blade bait firetiger en période active.",
+        "Texas rig 12cm worm en linéaire très lent.",
+        "Verticale avec gros tube en hiver profond.",
+        "Leurre souple paddle tail en screw head gratté.",
+        "Jig arkie avec trailer twin tail.",
+        "Shad 10cm en linéaire au ras du fond en nuit.",
+        "Drop shot avec flat worm en pause longue.",
+        "Lame vibrante black en eau trouble.",
+        "Texas rig finesse en zone claire post-frontal.",
+        "Verticale avec jigging rap en couleur naturelle.",
+        "Leurre souple en texan léger sur tombants.",
+        "Jerkbait en twitching fin.",
+        "Blade bait chrome/blue en soleil.",
+        "Shad finesse en drop shot en eau froide.",
+        "Texas rig small lizard en carolina rig.",
+        "Verticale avec tail en couleur chartreuse.",
+        "Leurre souple vibrating en trailer shad.",
+        "Jig football en traîne lente sur gravier.",
+        "Drop shot avec straight worm en green pumpkin.",
+        "Lame vibrante slow en récupération variée.",
+        "Shad 12cm en linéaire lent en hiver profond.",
+        "Texas rig creature en flipping léger.",
+        "Verticale avec balancier en couleur perch.",
+        "Leurre souple en dead sticking sur fond propre.",
+        "Jerkbait en suspending.",
+        "Blade bait gold en eau claire.",
+        "Drop shot avec smallie beaver en imitation gobie.",
+        "Texas rig 10cm en skipping en zone boisée.",
+        "Verticale avec finesse jig en soirée d'hiver."
+      ],
+      blackbass: [
+        "Flipping & pitching avec jig ou texas dans herbiers épais.",
+        "Topwater frog ou popper au lever/coucher du soleil.",
+        "Crankbait profond sur structures submergées.",
+        "Finesse shakey head ou wacky rig quand c'est dur.",
+        "Swimbait en linéaire moyen pour imiter les proies.",
+        "Spinnerbait slow roll le long des bordures boisées.",
+        "Carolina rig sur plaines graveleuses.",
+        "Buzzbait en surface dans zones peu profondes.",
+        "Tube jig en dandine autour des rochers.",
+        "Chatterbait dans herbiers clairsemés.",
+        "Punching jig gros poids dans mats d'herbiers.",
+        "Topwater walking bait en zone calme au lever du jour.",
+        "Crankbait squarebill pour fouiller souches et obstacles.",
+        "Swimbait glide bait en pauses longues près des cassures.",
+        "Jig football avec trailer écrevisse sur fonds durs.",
+        "Wacky rig senko en chute libre autour des docks.",
+        "Spinnerbait willow tandem en burn en période active.",
+        "Drop shot finesse sur tombants en post-frontal.",
+        "Chatterbait avec trailer swimbait en zone venteuse.",
+        "Texas rig worm 20cm en linéaire lent sur flats.",
+        "Topwater whopper plopper en prospection rapide.",
+        "Crankbait lipless rouge en automne sur herbiers mourants.",
+        "Jig skipping sous branches surplombantes.",
+        "Finesse ned rig sur zones graveleuses propres.",
+        "Swimbait paddletail en slow sinking le long des berges.",
+        "Buzzbait noir en soirée dans zones sombres.",
+        "Tube en free rig autour des rochers en eau claire.",
+        "Carolina rig lizard en traîne lente sur flats.",
+        "Jerkbait finesse en twitching minimal en eau froide.",
+        "Big worm texas en pitching précis dans poches d'herbiers.",
+        "Chatterbait jackhammer style en trailer parfait.",
+        "Topwater spook en zig-zag rapide.",
+        "Crankbait flat side en twitching en eau peu profonde.",
+        "Swimbait huddleston en 8-figure lent.",
+        "Jig living rubber avec trailer chunk.",
+        "Spinnerbait double colorado en slow roll eau trouble.",
+        "Texas rig rage craw en flipping.",
+        "Drop shot roboworm en straight tail.",
+        "Topwater frog booyah pad crasher en herbiers.",
+        "Crankbait rapala DT en profondeurs.",
+        "Chatterbait z-man en trailer diezel.",
+        "Wacky rig yamamoto senko green pumpkin.",
+        "Swimbait keitech swing impact fat.",
+        "Jig arkie avec hula grub.",
+        "Buzzbait booyah counter strike clacker.",
+        "Tube strike king coffee tube.",
+        "Carolina rig zoom lizard.",
+        "Finesse shakey head missile baits.",
+        "Topwater river2sea rover.",
+        "Crankbait strike king 6XD.",
+        "Spinnerbait war eagle spot remover.",
+        "Texas rig zoom ol' monster.",
+        "Drop shot jackall crosstail.",
+        "Chatterbait evergreen jack hammer.",
+        "Swimbait deps basirisky.",
+        "Jig dirty jigs tour level.",
+        "Topwater savage gear 3D suicide duck.",
+        "Crankbait lucky craft LC silent.",
+        "Tube big bite baits salt tube.",
+        "Wacky rig z-man zinkerz.",
+        "Spinnerbait booyah pond magic.",
+        "Carolina rig strike king rage lizard.",
+        "Finesse ned rig z-man finesse TRD.",
+        "Topwater illex bonnie.",
+        "Crankbait megabass deep-x.",
+        "Chatterbait booyah boss pop.",
+        "Texas rig berkley powerbait chigger craw.",
+        "Swimbait savage gear 4D line thru.",
+        "Jig pitchin' with yamamoto flappin hog.",
+        "Drop shot reins rockvibe shad.",
+        "Buzzbait cavitron.",
+        "Tube xzone muscle back.",
+        "Wacky rig gary yamamoto fat senko.",
+        "Spinnerbait strike king premier pro.",
+        "Carolina rig netbait paca craw.",
+        "Finesse football jig keitech tungsten.",
+        "Topwater deps buzzjet.",
+        "Crankbait spro little john DD.",
+        "Chatterbait thunder cricket.",
+        "Texas rig strike king rage menace.",
+        "Swimbait basstrix paddle tail.",
+        "Jig no jack flipping jig.",
+        "Drop shot osp dolive stick.",
+        "Buzzbait double blade d&m.",
+        "Tube missile baits bomb shot.",
+        "Wacky rig zoom finesse worm.",
+        "Spinnerbait revenge double willow.",
+        "Carolina rig missle baits baby d bomb."
+      ],
+      chevesne: [
+        "Petits leurres de surface ou insectes pour attaques en surface.",
+        "Cuillère ou micro-crank en récupération rapide dans le courant.",
+        "Lame vibrante ou petit spinner pour les chasses.",
+        "Petit popper ou stickbait en zone calme.",
+        "Leurre souple imitant poissonnet en linéaire rapide.",
+        "Micro jig sous les branches surplombantes.",
+        "Petit crankbait shallow en eau peu profonde.",
+        "Insecte en mousse en sèche par beau temps.",
+        "Petit jerkbait en twitching rapide.",
+        "Cuillère ultra-légère en récupération continue.",
+        "Micro lipless en récupération rapide sur les radiers.",
+        "Petit poisson nageur sinking en linéaire dans le courant.",
+        "Leurre souple 3-5cm en drop shot sous les arbres.",
+        "Micro spinner en burn pour déclencher les attaques.",
+        "Petit topwater pencil en walking the dog en été.",
+        "Cuillère n°0 argentée en récupération variée en rivière.",
+        "Insecte dur cicada ou beetle en surface par temps chaud.",
+        "Micro crankbait en twitching près des obstacles.",
+        "Petit stickbait sinking en jerks courts.",
+        "Leurre souple imitant ver en linéaire lent sous surface.",
+        "Lame vibrante ultra-légère en récupération continue.",
+        "Petit popper en zone calme au lever du jour.",
+        "Micro jig tête ronde en dandine sous les berges.",
+        "Cuillère ondulante fine argentée en soleil.",
+        "Leurre de surface tiny torpedo en zone calme.",
+        "Micro crankbait lipless pour chasses en surface.",
+        "Micro swimbait en linéaire rapide dans veines de courant.",
+        "Insecte flottant en dead drifting sous branches.",
+        "Petit jerkbait SP en pauses longues en eau calme.",
+        "Cuillère rotating légère en récupération saccadée.",
+        "Micro popper en skipping sous les arbres.",
+        "Petit crankbait sinking en traîne derrière rocher.",
+        "Leurre souple 4cm vairon en linéaire naturel.",
+        "Micro blade bait en yo-yo sur radiers.",
+        "Insecte dur grasshopper en surface en été.",
+        "Petit lipless en vibration forte pour chasses.",
+        "Cuillère n°1 or en eau trouble.",
+        "Micro jerkbait en twitching ultra-rapide.",
+        "Leurre souple imitant sauterelle en surface.",
+        "Petit spinnerbait en burn léger en courant.",
+        "Micro topwater chugger en popping en zone calme.",
+        "Cuillère blue fox vibrax n°0 en eau claire.",
+        "Petit poisson nageur jointed en linéaire rapide.",
+        "Insecte en foam beetle en dead drift.",
+        "Micro crankbait squarebill pour obstacles.",
+        "Leurre souple 3cm en drop shot finesse.",
+        "Petit stickbait en zig-zag rapide.",
+        "Cuillère savage gear rotabell n°0.",
+        "Micro lipless jackall TN38 en vibration.",
+        "Petit popper illex chubby en matin.",
+        "Leurre souple imitant moucheron en surface.",
+        "Micro spinner mepps comet n°0.",
+        "Petit crankbait yo-zuri pins minnow.",
+        "Insecte dur ant ou bee en sèche.",
+        "Micro jig en skipping sous branches.",
+        "Cuillère panther martin n°1 en couleur naturelle.",
+        "Petit topwater rebel crickhopper.",
+        "Leurre souple 4cm en weightless sous surface.",
+        "Micro blade bait damiki vault.",
+        "Petit jerkbait rapala x-rap 4.",
+        "Cuillère acme phoebe ultra-légère.",
+        "Micro popper hed don tiny chugger.",
+        "Leurre souple imitant guêpe en surface.",
+        "Micro spinner strike king micro king.",
+        "Petit crankbait rebel bumble bug.",
+        "Insecte foam cicada en été chaud.",
+        "Micro lipless yo-zuri 3DB pencil micro.",
+        "Petit stickbait sinking en jerks violents.",
+        "Cuillère worden's rooster tail n°1/16.",
+        "Micro topwater torpédo baby.",
+        "Leurre souple 3cm en linéaire rapide.",
+        "Micro jig ronde en dandine en courant.",
+        "Petit popper arbogast jitterbug baby.",
+        "Cuillère blue fox pixee spoon micro.",
+        "Micro crankbait duo realis crank micro.",
+        "Insecte dur japanese beetle.",
+        "Micro spinner panther martin deluxe.",
+        "Petit jerkbait lucky craft bevy pencil micro.",
+        "Leurre souple imitant fourmi en surface.",
+        "Micro lipless rapala ultra light rippin rap.",
+        "Petit topwater hed don baby torpedo.",
+        "Cuillère acme kastmaster micro.",
+        "Micro popper rebel pop-r tiny.",
+        "Leurre souple 2.5cm en drop shot ultra-finesse.",
+        "Micro blade bait b fish n h20.",
+        "Petit crankbait rebel teeny wee.",
+        "Insecte foam hopper en rivière.",
+        "Micro spinner yakima rooster tail.",
+        "Petit stickbait yo-zuri snap beans.",
+        "Cuillère mepps bug.",
+        "Micro topwater zara spook puppy.",
+        "Leurre souple imitant abeille.",
+        "Micro jig en skipping ultra-léger.",
+        "Petit popper cotton cordell boy howdy.",
+        "Cuillère thomas buoyant micro.",
+        "Micro crankbait strike king bitsy minnow.",
+        "Insecte dur cricket en été.",
+        "Micro spinner worden's lures tiny.",
+        "Petit jerkbait rapala countdown micro.",
+        "Leurre souple 3cm en weightless surface.",
+        "Micro lipless evergreen little max.",
+        "Petit topwater illex tiny fry popper.",
+        "Cuillère savage gear nail micro."
+          ],
+  aspe: [
+    "Jerkminnow 7cm en récupération rapide en surface.",
+    "Jig 10g lancé loin et ramené vite près du fond.",
+    "Petit crankbait en linéaire ultra-rapide.",
+    "Lame vibrante en récupération continue rapide.",
+    "Petit swimbait en burn en zone de courant.",
+    "Cuillère lourde en long cast et récupération rapide.",
+    "Leurre souple shad 8cm en linéaire rapide.",
+    "Micro jerkbait en twitching ultra-rapide.",
+    "Petit lipless en récupération rapide.",
+    "Spinner long cast en récupération continue.",
+    "Petit poisson nageur minnow en linéaire rapide.",
+    "Jig metal en verticale rapide.",
+    "Crankbait diving en récupération rapide.",
+    "Lame vibrante longue en long cast.",
+    "Swimbait 10cm en burn rapide.",
+    "Cuillère ondulante lourde en récupération rapide.",
+    "Leurre souple paddletail en linéaire rapide.",
+    "Micro jerkbait sinking en twitching.",
+    "Lipless crankbait en récupération ultra-rapide.",
+    "Spinnerbait long blade en récupération rapide.",
+    "Minnow longbill en linéaire rapide profond.",
+    "Metal jig 15g en yo-yo rapide.",
+    "Crankbait lipless en burn.",
+    "Lame vibrante slim en long cast.",
+    "Swimbait paddletail en récupération continue.",
+    "Cuillère rotating lourde en récupération rapide.",
+    "Leurre souple curly tail en linéaire rapide.",
+    "Jerkbait long en twitching rapide.",
+    "Lipless vibrating en récupération rapide.",
+    "Spinner double willow en burn.",
+    "Minnow sinking en récupération rapide.",
+    "Jig spoon en yo-yo rapide.",
+    "Crankbait shallow en linéaire ultra-rapide.",
+    "Lame vibrante gold en eau claire.",
+    "Swimbait jointed en récupération rapide.",
+    "Cuillère ondulante heavy en long cast.",
+    "Leurre souple shad tail en linéaire rapide.",
+    "Micro jerkbait floating en twitching.",
+    "Lipless crankbait chrome en soleil.",
+    "Spinnerbait tandem en récupération rapide.",
+    "Minnow diving en linéaire rapide.",
+    "Metal jig slim en yo-yo.",
+    "Crankbait lipless red en automne.",
+    "Lame vibrante black en eau trouble.",
+    "Swimbait 12cm en burn rapide.",
+    "Cuillère lourde gold en récupération rapide.",
+    "Leurre souple vibrotail en linéaire rapide.",
+    "Jerkbait suspending en twitching rapide.",
+    "Lipless crankbait blue en eau claire.",
+    "Spinnerbait tandem colorado en slow burn rapide.",
+    "Minnow sinking longbill en récupération rapide.",
+    "Jig metal spoon en yo-yo rapide.",
+    "Crankbait deep lipless en linéaire rapide.",
+    "Lame vibrante chrome en soleil.",
+    "Swimbait paddletail jointed en récupération rapide.",
+    "Cuillère ondulante heavy silver en long cast.",
+    "Leurre souple shad tail paddletail en linéaire rapide.",
+    "Micro jerkbait sinking deep en twitching.",
+    "Lipless crankbait firetiger en eau teintée.",
+    "Spinnerbait double colorado black en récupération rapide.",
+    "Minnow longbill diving en linéaire rapide.",
+    "Metal jig vibrating slim en yo-yo.",
+    "Crankbait lipless silent red en automne.",
+    "Lame vibrante black/chrome en eau claire.",
+    "Swimbait paddletail 15cm en burn rapide.",
+    "Cuillère rotating heavy gold en récupération rapide.",
+    "Leurre souple curly tail shad en linéaire rapide.",
+    "Jerkbait long suspending naturel en twitching rapide.",
+    "Lipless crankbait gold/chrome en soleil.",
+    "Spinnerbait tandem willow colorado en burn.",
+    "Minnow sinking longbill en récupération rapide.",
+    "Jig spoon heavy slim en yo-yo rapide.",
+    "Crankbait shallow diver lipless en linéaire ultra-rapide.",
+    "Lame vibrante or/black en eau trouble.",
+    "Swimbait jointed paddletail 10cm en récupération rapide.",
+    "Cuillère ondulante slim heavy gold en long cast.",
+    "Leurre souple paddle tail 10cm en linéaire rapide.",
+    "Micro jerkbait deep suspending en twitching.",
+    "Lipless crankbait black/chrome en eau trouble.",
+    "Spinnerbait double willow silver en récupération rapide.",
+    "Minnow diving sinking en linéaire rapide.",
+    "Metal jig slim spoon en yo-yo.",
+    "Crankbait lipless red silent en automne."
+  ],
+  truite: [
+    "Cuillère ondulante ou rotating en rivière avec courant.",
+    "Leurre souple imitant vairon en récupération naturelle.",
+    "Micro-jig ou spinner en zone calme.",
+    "Petit crankbait en eau claire.",
+    "Nymphe ou streamer en pêches fines.",
+    "Cuillère légère en récupération variée.",
+    "Petit poisson nageur en linéaire lent.",
+    "Micro crankbait shallow en ruisseau.",
+    "Leurre souple finesse en drop shot.",
+    "Rotating ultra-légère en eau vive.",
+    "Cuillère n°0 argentée en récupération saccadée dans pools.",
+    "Petit jerkbait SP en twitching en eau calme.",
+    "Leurre souple 5cm vairon en linéaire naturel.",
+    "Micro lipless ou lame vibrante en récupération rapide.",
+    "Spinner Mepps Aglia n°1 naturel.",
+    "Petit crankbait sinking en traîne derrière rocher.",
+    "Cuillère ondulante fine argentée en soleil.",
+    "Leurre souple insecte en surface par éclosions.",
+    "Micro jig tête ronde en dandine en poches profondes.",
+    "Petit stickbait sinking en jerks courts.",
+    "Rotating Black Fury n°1 en eau teintée.",
+    "Leurre souple finesse worm en drop shot sous berges.",
+    "Cuillère lourde en récupération lente en trous profonds.",
+    "Petit popper ou insecte dur en zone calme.",
+    "Crankbait ultra-light en linéaire en ruisseau.",
+    "Micro spoon en récupération continue en courant fort.",
+    "Leurre souple vairon monté en texan léger.",
+    "Spinner Comet naturel en eau claire.",
+    "Petit jigging spoon en verticale en lac.",
+    "Cuillère ondulante cuivrée par temps couvert.",
+    "Micro crankbait shallow en prospection rapide.",
+    "Leurre souple 4cm en weightless sous surface.",
+    "Spinner Panther Martin n°2 argent.",
+    "Petit poisson nageur jointed en linéaire lent.",
+    "Cuillère Blue Fox Vibrax n°1 en couleur firetiger.",
+    "Micro jerkbait en twitching rapide en eau claire.",
+    "Leurre souple insecte dur en surface été.",
+    "Drop shot finesse avec micro worm.",
+    "Cuillère Savage Gear Rotabell n°1.",
+    "Petit crankbait Yo-Zuri Pins Minnow.",
+    "Rotating Mepps XD en eau profonde.",
+    "Leurre souple vairon 6cm en linéaire naturel.",
+    "Micro blade bait en yo-yo en poches.",
+    "Spinner Worden's Lil' Rooster.",
+    "Petit topwater insecte en zone calme.",
+    "Cuillère Acme Phoebe micro.",
+    "Micro crankbait Rapala Countdown.",
+    "Leurre souple 3cm en drop shot ultra-finesse.",
+    "Spinner Blue Fox Pixee spoon.",
+    "Petit jerkbait Lucky Craft Bevy.",
+    "Cuillère Thomas Speedee.",
+    "Micro lipless Jackall TN38.",
+    "Leurre souple imitant nymphe en subsurface.",
+    "Spinner Panther Martin Deluxe.",
+    "Petit crankbait Duo Realis Crank.",
+    "Cuillère Mepps Bug en imitation insecte.",
+    "Micro jig en skipping en ruisseau.",
+    "Leurre souple 4cm vairon en weighted hook.",
+    "Spinner Yakima Bait Rooster Tail.",
+    "Petit popper Rebel Crickhopper.",
+    "Cuillère Worden's Tiny.",
+    "Micro crankbait Strike King Bitsy.",
+    "Leurre souple insecte foam hopper.",
+    "Spinner Savage Gear Nail.",
+    "Petit jerkbait Rapala X-Rap micro.",
+    "Cuillère Acme Kastmaster micro.",
+    "Micro topwater Heddon Tiny Torpedo.",
+    "Leurre souple 3.5cm en linéaire lent.",
+    "Spinner Mepps Timber Doodle.",
+    "Petit crankbait Rebel Teeny Wee.",
+    "Cuillère Blue Fox Vibrax Shallow.",
+    "Micro lipless Yo-Zuri 3DB.",
+    "Leurre souple vairon 5cm en drop shot.",
+    "Spinner Panther Martin Holographic.",
+    "Petit poisson nageur Yo-Zuri Snap Beans.",
+    "Cuillère Mepps Comet Mino.",
+    "Micro jerkbait Duo Spearhead.",
+    "Leurre souple insecte cicada.",
+    "Spinner Blue Fox Minnow Spin.",
+    "Petit crankbait Illex Tiny Fry.",
+    "Cuillère Savage Gear Sticklebait.",
+    "Micro topwater Illex Chubby Popper.",
+    "Leurre souple 4cm en no sinker.",
+    "Spinner Mepps Flying C.",
+    "Petit jerkbait Megabass Baby Griffon.",
+    "Cuillère Thomas Speedee.",
+    "Micro crankbait Jackall Chubby.",
+    "Leurre souple vairon 6cm en texan light.",
+    "Spinner Worden's Lil' Rooster.",
+    "Petit popper Arbogast Jitterbug Baby.",
+    "Cuillère Acme Little Cleo micro.",
+    "Micro lipless Evergreen Little Max.",
+    "Leurre souple insecte beetle.",
+    "Spinner Blue Fox Vibrax Bullet.",
+    "Petit crankbait Rapala Ultra Light Minnow.",
+    "Cuillère Mepps Aglia Long.",
+    "Micro topwater Rebel Bumble Bug.",
+    "Leurre souple 3cm en subsurface.",
+    "Spinner Panther Martin Spinnerbait micro.",
+    "Petit jerkbait Yo-Zuri Crystal Minnow micro.",
+    "Cuillère Savage Gear Seeker.",
+    "Micro crankbait Duo Realis Spinbait."
+  ]
+};
+
+// Normalisation robuste
+let normalized = species.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z]/g, '');
+const speciesMap = {
+brochet: 'brochet',
+perche: 'perche',
+sandre: 'sandre',
+blackbass: 'blackbass',
+bass: 'blackbass',
+chevesne: 'chevesne',
+aspe: 'aspe',
+silure: 'silure',
+truite: 'truite'
+};
+let matched = null;
+for (const key in speciesMap) {
+if (normalized.includes(key)) {
+matched = speciesMap[key];
+break;
+}
+}
+if (matched && randomParEspece[matched]) {
+const conseils = randomParEspece[matched];
+let random1 = conseils[Math.floor(Math.random() * conseils.length)];
+let random2 = conseils[Math.floor(Math.random() * conseils.length)];
+while (random2 === random1 && conseils.length > 1) {
+random2 = conseils[Math.floor(Math.random() * conseils.length)];
+}
+list.push(random1);
+list.push(random2);
+} 
+  } else if (technique === "appats") {
+    if (species.includes("truite")) {
+      list.push('Asticot en flotteur — Pour eau calme en soleil');
+      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
+      list.push('Asticot en flotteur — Pour eau calme en soleil');
+      const fullTruite = [
+        "Ver de terre ou teigne en nymphe ou à soutenir",
+        "Asticot ou pinkies en flotteur léger",
+        "Teigne ou ver rouge pour grosses truites en profondeur",
+        "Petit vairon mort ou vif en plombée",
+        "Fromage frais ou pâte à truite pour eau trouble"
+      ];
+      const shuffled = fullTruite.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2); // 2 aléatoires pour appats truite
+      depthAdvice = ["0-1m surface ou nymphe près du fond"];
+    } else if (species.includes("carpe")) {
+      list.push('Maïs doux — Hair rig fond pour été');
+    if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
+      list.push('Pellets en PVA — Amorçage massif en nuageux');
+      const fullCarpe = [
+        "Maïs doux ou bouillettes 15-20mm",
+        "Pellets en PVA bag ou spod",
+        "Pain de mie ou pâte à carpe",
+        "Boilies saveur fruitée ou poisson",
+        "Maïs fermenté ou pellets en method feeder",
+        "Tiger nuts ou hemp seed pour carpe sélective"
+      ];
+      const shuffled = fullCarpe.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["Fond ou mi-eau selon amorçage"];
+    } else {
+      const fullGeneral = [
+        "Ver de terre ou asticot en flotteur",
+        "Teigne ou pinkies pour finesse",
+        "Pain ou fromage pour carpeaux ou gros poissons blancs"
+      ];
+      const shuffled = fullGeneral.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["Fond ou mi-eau"];
+    }
+  } else if (technique === "mouche") {
+    if (species.includes("truite")) {
+      list.push('Mouche sèche mayfly — Surface active pour été');
+    if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
+      list.push('Nymphe beadhead — Courant profond en soleil');
+      const Mouches = [
+        "Conseils mouches",
+        "mettre ici"
+      ];
+      const shuffled = Mouches.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["0-1m surface ou près du fond"];
+    } else if (species.includes("chevesne")) {
+      const chubFly = [
+        "Mouches Chevesne",
+        "Ca arrive"
+      ];
+      const shuffled = chubFly.sort(() => 0.5 - Math.random());
+      list = shuffled.slice(0, 2);
+      depthAdvice = ["0-1m surface ou près du fond"];
+    }
+  } else if (technique === "carpe") {
+    const Carpe = [
+      "appats carpe",
+      "ca arrive"
+    ];
+    const shuffled = Carpe.sort(() => 0.5 - Math.random());
+    list = shuffled.slice(0, 2);
+    depthAdvice = ["Fond ou mi-eau"];
+  } else {
+    list.push("Pas de conseils disponible pour cette technique.");
   }
-  // ... (répète pour chaque espèce comme ci-dessus)
-  // === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET) ===
-  // (ton bloc randomParEspece complet – il reste ici, à la fin, mais comme il est après les if species, il s'applique seulement si technique === "leurres" car tout est dans le if "leurres")
-  const randomParEspece = {
-    // Ton objet randomParEspece
-  };
-  // Ton bloc normalisation et if matched
-  // ...
   list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
   list.push("Enregistre ta session pour faire progresser l'IA !");
   // Profondeur
- depthAdvice = [];
   if (temperature !== null) {
     if (species.includes('perche')) {
       if (temperature < 10) depthAdvice.push("Profondeur 3-5m, jigs verticaux et dropshot");
@@ -308,6 +1071,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
   return { lures: list, depthAdvice };
 }
+
 
 
 
