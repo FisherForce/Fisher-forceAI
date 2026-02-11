@@ -160,7 +160,7 @@ try {
   console.warn("Pas de patterns appris");
 }
 //SUGGEST LURE //
-function suggestLures(species, structure, conditions, spotType, temperature = null, technique = "leurres") {
+function suggestLures(species, structure, conditions, spotType, temperature = null, technique ) {
   species   = (species   || "").toLowerCase();
   structure = (structure || "").toLowerCase();
   conditions = (conditions || "").toLowerCase();
