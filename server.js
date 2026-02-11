@@ -248,7 +248,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
       list.push("Streamer petit (type clouser minnow) – animation lente");
       list.push("Nymphe lestée – toc ou dérive");
     } 
-    else if (technique === "finesse ultra léger") {
+    else if (technique === "finesse ultra léger"|| tech === "finesse") {
       list.push("Ned rig ver finesse 5-7 cm – ultra lent / dandine");
       list.push("Dropshot micro-worm ou mini-shad – 1-3 m");
       list.push("Micro jig 2-5 g – vertical ou lent");
