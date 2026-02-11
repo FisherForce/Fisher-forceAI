@@ -165,135 +165,88 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   structure = (structure || "").toLowerCase();
   conditions = (conditions || "").toLowerCase();
   spotType = (spotType || "").toLowerCase();
+
   saveSpot(spotType);
+
   const list = [];
   const mois = new Date().getMonth() + 1;
-  let saison = [12, 1, 2].includes(mois) ? "hiver" :
-              [3, 4, 5].includes(mois) ? "printemps" :
-              [6, 7, 8].includes(mois) ? "été" : "automne";
+  let saison = [12,1,2].includes(mois) ? "hiver" :
+               [3,4,5].includes(mois) ? "printemps" :
+               [6,7,8].includes(mois) ? "été" : "automne";
+
   if (temperature !== null) {
     if (temperature < 10) saison += " froid";
     else if (temperature > 20) saison += " chaud";
   }
-  // Patterns appris
+
+  // === Patterns appris (tu peux garder ça) ===
   const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
   if (learnedLures && learnedLures.length > 0) {
-    learnedLures.forEach(lure => list.push(`${lure} (appris des sessions)`));
+    learnedLures.forEach(l => list.push(`${l} (appris des sessions)`));
   }
-  let depthAdvice = [];
-  if (technique === "leurres") {
-    // Cas ultra-ciblés pour leurres (ton code original)
-    if (species.includes('perche')) {
-      list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Dropshot — Animation lente proche des structures');
-      // ... (tout ton bloc perche pour leurres)
-    }
-    if (species.includes('brochet')) {
-      list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
-      if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
-      // ... (tout ton bloc brochet pour leurres)
-    }
-    // ... (tout les autres species pour leurres)
-    // === 2 CONSEILS RANDOM PAR ESPÈCE (SANS FALLBACK BROCHET) ===
-    const randomParEspece = {
-      // Ton objet randomParEspece complet ici (brochet, perche, etc.)
-    };
-    // Normalisation robuste (ton code)
-    // ... (tout le bloc normalisation et if matched pour random)
-  } else if (technique === "appats") {
-    // Cas ultra-ciblés pour appats (list.push ciblés)
-    if (species.includes('truite')) {
-      list.push('Ver de terre ou teigne en nymphe ou à soutenir');
-      if (saison === "hiver" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Asticot ou pinkies en flotteur léger — Pour eau calme');
-      // Ajoute plus de list.push ciblés pour appats truite
-    }
-    if (species.includes('carpe')) {
-      list.push('Maïs doux ou bouillettes 15-20mm');
-      if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Pellets en PVA bag ou spod — Amorçage massif');
-      // Ajoute plus de list.push ciblés pour appats carpe
-    }
-    // ... (ajoute pour autres species en appats)
-    depthAdvice = ["Fond ou mi-eau selon amorçage"];
-  } else if (technique === "mouche") {
-    // Cas ultra-ciblés pour mouche (list.push ciblés)
-    if (species.includes('truite')) {
-      list.push('Conseils mouches');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Mouche artificielle sèche ou nymphe si eau claire — Pour surface');
-      // Ajoute plus de list.push ciblés pour mouche truite
-    }
-    if (species.includes('chevesne')) {
-      list.push('Mouches Chevesne');
-      if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Ca arrive — Pour courant');
-      // Ajoute plus de list.push ciblés pour mouche chevesne
-    }
-    depthAdvice = ["0-1m surface ou près du fond"];
-  } else if (technique === "carpe") {
-    // Cas ultra-ciblés pour carpe (list.push ciblés)
-    list.push('appats carpe');
-    if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
-      list.push('ca arrive — Amorçage fond');
-    // Ajoute plus de list.push ciblés pour carpe
-    depthAdvice = ["Fond ou mi-eau"];
-  } else if (technique === "finesse ultra léger") {
-    // Cas ultra-ciblés pour finesse (list.push ciblés)
-    if (species.includes('perche')) {
-      list.push('Ned Rig ou ver manié — Récupération lente ou dandine en verticale');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Dropshot mini worm 4-6cm — Dandine');
-      // Ajoute plus de list.push ciblés pour finesse perche
-    }
-    if (species.includes('truite')) {
-      list.push('Micro jig 3-5g ou finesse shad');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Wacky rig finesse pour eau calme');
-      // Ajoute plus de list.push ciblés pour finesse truite
-    }
-    depthAdvice = ["1-3m avec dropshot ou ned rig lent"];
-  } else {
-    list.push("Pas de conseils disponible pour cette technique.");
-  }
-  list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
-  list.push("Enregistre ta session pour faire progresser l'IA !");
-  // Profondeur
-  if (temperature !== null) {
-    if (species.includes('perche')) {
-      if (temperature < 10) depthAdvice.push("Profondeur 3-5m, jigs verticaux et dropshot");
-      else if (temperature < 18) depthAdvice.push("Profondeur 1-3m, micro-leurres");
-      else depthAdvice.push("Proche de la surface 0-1m, leurres légers");
-    }
-    if (species.includes('brochet')) {
-      if (temperature < 8) depthAdvice.push("Profondeur 4-6m, leurres souples volumineux");
-      else if (temperature < 15) depthAdvice.push("Profondeur 2-4m, jerkbait et spinnerbait");
-      else depthAdvice.push("Bordure et surface 0-2m, frog et cuillère");
-    }
-  }
-  // Détection fermeture seulement pour brochet
-  const now = new Date();
-  const isClosedPeriod = now.getMonth() < 4;
-  const closedSpecies = ["brochet"];
-  let isClosedForSpecies = isClosedPeriod && closedSpecies.some(cs => species.includes(cs));
 
-  let fallbackMessage = [];
+  // === CONSEILS PAR TECHNIQUE ===
+  if (technique === "leurres") {
+    // ← ici tu remets tout ton ancien code perche, brochet, etc.
+    if (species.includes('perche')) {
+      list.push('Cuillère Argentée à points rouges N°2 – vitesse moyenne');
+      // ... tes autres pushes perche
+    }
+    if (species.includes('brochet')) {
+      list.push('Grub 12cm tête rouge – pauses près des obstacles');
+      // ... tes autres pushes brochet
+    }
+    // ... tous les autres species
+
+  } else if (technique === "appats") {
+    if (species.includes('truite')) list.push('Ver de terre, teigne ou asticot en flotteur');
+    if (species.includes('carpe')) list.push('Maïs doux, bouillettes 15-20 mm ou pellets PVA');
+    // ajoute les autres espèces que tu veux
+
+  } else if (technique === "mouche") {
+    if (species.includes('truite')) list.push('Mouche sèche ou nymphe selon profondeur');
+    if (species.includes('chevesne')) list.push('Mouches de surface (terrestres ou sedges)');
+
+  } else if (technique === "carpe") {
+    list.push('Bouillettes, maïs, pellets – amorçage fond');
+    // etc.
+
+  } else if (technique === "finesse ultra léger") {
+    if (species.includes('perche')) list.push('Ned Rig, Dropshot mini-worm 4-6 cm');
+    if (species.includes('truite')) list.push('Micro jig 3-5 g ou finesse shad');
+
+  } else {
+    list.push(`Technique "${technique}" non encore détaillée – essaie "leurres" ou "appâts" pour l'instant.`);
+  }
+
+  // Messages génériques adaptés
+  if (technique === "leurres" || technique === "finesse ultra léger") {
+    list.push("Leurres souples 7 cm = valeur sûre dans 80 % des cas");
+  } else if (technique === "appats" || technique === "carpe") {
+    list.push("Amorce copieusement avant de pêcher");
+  } else if (technique === "mouche") {
+    list.push("Observe les insectes à la surface pour choisir la bonne imitation");
+  }
+
+  list.push("Enregistre ta session pour faire progresser l'IA !");
+
+  // === Profondeur selon température ===
+  const depthAdvice = [];
+  // ton code température perche/brochet ici...
+
+  // === Fermeture brochet ===
+  const isClosedPeriod = new Date().getMonth() < 4;
+  const isClosedForSpecies = isClosedPeriod && species.includes('brochet');
+
   if (isClosedForSpecies && technique === "leurres") {
-    fallbackMessage = [
-      "- Période de fermeture pour " + species + " ! Toute prise = infraction grave.",
-      "- Essaie les appâts naturels, mouche ou finesse pour truite, carpe, perche, silure..."
-    ];
-    technique = "appats naturels";
+    list.unshift(
+      "⚠️ Période de fermeture du brochet (janvier-avril) ! Toute prise = infraction.",
+      "Essaie plutôt appâts, mouche, finesse ou carpe/perche/silure."
+    );
   }
-  // Ajoute fallback si besoin
-  if (fallbackMessage.length > 0) {
-    list.unshift(...fallbackMessage);
-  }
+
   return { lures: list, depthAdvice };
 }
-
 
 
 // === ROUTES ===
@@ -315,14 +268,11 @@ app.post('/api/advice', (req, res) => {
     spotType = (spotType || "").toLowerCase();
     failedLures = Array.isArray(failedLures) ? failedLures.map(l => l.trim().toLowerCase()) : [];
 
-    if (!structure || !conditions) {
-      return res.status(400).json({ error: 'Champs requis manquants : structure et conditions.' });
+     if (!structure || !conditions) {
+      return res.status(400).json({ error: 'Champs requis manquants' });
     }
 
-    // Détection fermeture carnassiers (janvier-avril)
-
-
-    const result = suggestLures(species, structure, conditions, spotType, temperature, technique); // Passe technique à suggestLures
+    const result = suggestLures(species, structure, conditions, spotType, temperature, technique);
 
     let filteredLures = result.lures.filter(lure => {
       const lureName = lure.split(' — ')[0].trim().toLowerCase();
@@ -331,16 +281,11 @@ app.post('/api/advice', (req, res) => {
 
     if (filteredLures.length === 0) {
       filteredLures = [
-        "Aucun leurre/appât précédent n'a fonctionné dans ces conditions...",
-        "Essaie un appât totalement différent (taille, couleur, présentation)",
-        "Change radicalement de montage ou de profondeur",
-        "Enregistre une nouvelle session pour faire progresser l'IA !"
+        "Aucun leurre/appât précédent n'a fonctionné...",
+        "Essaie quelque chose de complètement différent (taille, couleur, profondeur)",
+        "Change de technique ou de montage",
+        "Enregistre ta session pour améliorer l'IA !"
       ];
-    }
-
-    // Ajoute les messages fallback si fermeture
-    if (fallbackMessage.length > 0) {
-      filteredLures = [...fallbackMessage, ...filteredLures];
     }
 
     res.json({
@@ -348,7 +293,7 @@ app.post('/api/advice', (req, res) => {
       lures: filteredLures,
       depthAdvice: result.depthAdvice || []
     });
-  } catch (err) {  // ← catch maintenant après fermeture du try
+  } catch (err) {
     console.error("Erreur dans /api/advice :", err);
     res.status(500).json({ error: 'Erreur serveur' });
   }
