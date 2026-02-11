@@ -599,15 +599,44 @@ setTimeout(initLiveMap, 100);
 
 function initLiveMap() {
   liveMap = L.map("livebite-map").setView([46.8, 2.5], 5);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(liveMap);
-  setTimeout(() => liveMap.invalidateSize(), 300);
-  liveMap.on("click", onLiveClick);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png")
+    .addTo(liveMap);
+
+  // IMPORTANT mobile
+  setTimeout(() => {
+    liveMap.invalidateSize();
+  }, 300);
+
+  // 👇 handler universel mobile + PC
+  liveMap.on("click", handleLiveInteraction);
+  liveMap.on("touchend", handleLiveInteraction);
 }
 
-function onLiveClick(e) {
+/* =========================
+   HANDLER MOBILE + DESKTOP
+========================= */
+function handleLiveInteraction(e) {
   if (analysing) return;
 
-  liveSpot = e.latlng;
+  let latlng = e.latlng;
+
+  // Si mobile et pas de latlng direct
+  if (!latlng && e.originalEvent?.changedTouches) {
+    latlng = liveMap.mouseEventToLatLng(
+      e.originalEvent.changedTouches[0]
+    );
+  }
+
+  if (!latlng) return;
+
+  onLiveClick(latlng);
+}
+
+function onLiveClick(latlng) {
+
+  liveSpot = latlng;
+
   if (liveMarker) liveMap.removeLayer(liveMarker);
 
   liveMarker = L.circleMarker(liveSpot, {
@@ -617,14 +646,19 @@ function onLiveClick(e) {
   }).addTo(liveMap);
 
   document.getElementById("livebite-result").innerHTML =
-    `<span class="ffai-loader"></span><b>IA en train d’analyser la zone…</b><br>
+    `<span class="ffai-loader"></span>
+     <b>IA en train d’analyser la zone…</b><br>
      📡 Données météo • apprentissage • pression de pêche`;
 
   if (liveTimer) clearInterval(liveTimer);
+
   analyserLive();
   liveTimer = setInterval(analyserLive, 60000);
 }
 
+/* =========================
+   ANALYSE LIVE
+========================= */
 function analyserLive() {
   if (!liveSpot) return;
   analysing = true;
@@ -637,6 +671,7 @@ function analyserLive() {
       const h = data.hourly;
       const hour = new Date().getHours();
 
+      // Sauvegarde pour apprentissage
       window.ff_temp = c.temperature_2m;
       window.ff_cloud = c.cloud_cover;
       window.ff_wind = c.wind_speed_10m;
@@ -667,6 +702,7 @@ function analyserLive() {
         let score = 50 + instabilite*0.2 + luminosite*0.2;
         score = fn(score) - pressionPeche;
         score = Math.max(5, Math.min(95, Math.round(score)));
+
         html += `🔹 <b>${nom}</b> — ${score}%<br>`;
       });
 
@@ -686,6 +722,7 @@ function analyserLive() {
     });
 }
 </script>
+
 
     <!-- ====== APPRENTISSAGE UTILISATEUR ====== -->
 <div style="width:320px;margin-top:10px;padding:10px;border-radius:12px;background:#181818;color:#fff;font-family:sans-serif">
