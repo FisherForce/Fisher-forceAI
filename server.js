@@ -161,87 +161,194 @@ try {
 }
 //SUGGEST LURE //
 function suggestLures(species, structure, conditions, spotType, temperature = null, technique = "leurres") {
-  species = (species || "").toLowerCase();
+  species   = (species   || "").toLowerCase();
   structure = (structure || "").toLowerCase();
   conditions = (conditions || "").toLowerCase();
-  spotType = (spotType || "").toLowerCase();
+  spotType  = (spotType  || "").toLowerCase();
 
   saveSpot(spotType);
 
   const list = [];
+  const depthAdvice = [];
+
   const mois = new Date().getMonth() + 1;
   let saison = [12,1,2].includes(mois) ? "hiver" :
                [3,4,5].includes(mois) ? "printemps" :
                [6,7,8].includes(mois) ? "été" : "automne";
 
   if (temperature !== null) {
-    if (temperature < 10) saison += " froid";
+    if (temperature < 10)  saison += " froid";
     else if (temperature > 20) saison += " chaud";
   }
 
-  // === Patterns appris (tu peux garder ça) ===
-  const learnedLures = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
-  if (learnedLures && learnedLures.length > 0) {
-    learnedLures.forEach(l => list.push(`${l} (appris des sessions)`));
+  // Patterns appris (on garde ça tel quel)
+  const learned = learnedPatterns[species]?.[saison]?.[conditions]?.[spotType];
+  if (learned && learned.length > 0) {
+    learned.forEach(l => list.push(`${l} (appris des sessions)`));
   }
 
-  // === CONSEILS PAR TECHNIQUE ===
-  if (technique === "leurres") {
-    // ← ici tu remets tout ton ancien code perche, brochet, etc.
-    if (species.includes('perche')) {
-      list.push('Cuillère Argentée à points rouges N°2 – vitesse moyenne');
-      // ... tes autres pushes perche
+  // ────────────────────────────────────────────────
+  // BROCHET
+  // ────────────────────────────────────────────────
+  if (species.includes('brochet')) {
+    if (technique === "leurres") {
+      list.push("Grub 10-15 cm tête rouge ou chartreuse – récup moyenne + pauses près obstacles");
+      list.push("Spinnerbait ou chatterbait – powerfishing en zone herbeuse/nuageux");
+      if (saison.includes("été") || saison.includes("chaud")) {
+        list.push("Frog ou leurre de surface – herbiers / bordures herbeuses");
+      }
+      if (saison.includes("hiver") || saison.includes("froid")) {
+        list.push("Gros leurre souple 18-25 cm – animation lente / verticale");
+      }
+    } 
+    else if (technique === "appats") {
+      list.push("Poisson mort ou vif (éperlan, gardon, ablette) – montage mort manié ou posé");
+      list.push("Gros ver de terre ou morceaux de poisson – en hiver/eau froide");
+    } 
+    else if (technique === "mouche") {
+      list.push("Gros streamer coloré (type pike fly) avec bas de ligne acier");
+      list.push("Animation saccadée – zones peu profondes / herbiers");
+    } 
+    else if (technique === "finesse ultra léger") {
+      list.push("Petit shad finesse 7-10 cm sur tête 3-7 g – ultra lent / ned rig like");
+      list.push("Drop shot mini – quand brochet apathique (froid ou pression forte)");
+    } 
+    else {
+      list.push(`Technique ${technique} peu adaptée au brochet – essaie plutôt leurres ou appâts naturels`);
     }
-    if (species.includes('brochet')) {
-      list.push('Grub 12cm tête rouge – pauses près des obstacles');
-      // ... tes autres pushes brochet
+
+    // Profondeur brochet (exemple simple)
+    if (temperature !== null) {
+      if (temperature < 8)  depthAdvice.push("4-7 m – gros leurres lents / fond");
+      else if (temperature < 15) depthAdvice.push("2-5 m – jerkbait / spinnerbait");
+      else depthAdvice.push("0-3 m – surface / bordures / frog");
     }
-    // ... tous les autres species
-
-  } else if (technique === "appats") {
-    if (species.includes('truite')) list.push('Ver de terre, teigne ou asticot en flotteur');
-    if (species.includes('carpe')) list.push('Maïs doux, bouillettes 15-20 mm ou pellets PVA');
-    // ajoute les autres espèces que tu veux
-
-  } else if (technique === "mouche") {
-    if (species.includes('truite')) list.push('Mouche sèche ou nymphe selon profondeur');
-    if (species.includes('chevesne')) list.push('Mouches de surface (terrestres ou sedges)');
-
-  } else if (technique === "carpe") {
-    list.push('Bouillettes, maïs, pellets – amorçage fond');
-    // etc.
-
-  } else if (technique === "finesse ultra léger") {
-    if (species.includes('perche')) list.push('Ned Rig, Dropshot mini-worm 4-6 cm');
-    if (species.includes('truite')) list.push('Micro jig 3-5 g ou finesse shad');
-
-  } else {
-    list.push(`Technique "${technique}" non encore détaillée – essaie "leurres" ou "appâts" pour l'instant.`);
   }
 
-  // Messages génériques adaptés
-  if (technique === "leurres" || technique === "finesse ultra léger") {
-    list.push("Leurres souples 7 cm = valeur sûre dans 80 % des cas");
-  } else if (technique === "appats" || technique === "carpe") {
-    list.push("Amorce copieusement avant de pêcher");
-  } else if (technique === "mouche") {
-    list.push("Observe les insectes à la surface pour choisir la bonne imitation");
+  // ────────────────────────────────────────────────
+  // PERCHE
+  // ────────────────────────────────────────────────
+  else if (species.includes('perche')) {
+    if (technique === "leurres") {
+      list.push("Cuillère Mepps / Aglià n°2-3 argentée ou rouge – vitesse moyenne");
+      list.push("Petit shad 5-8 cm ou micro-perch – tête 3-7 g");
+      if (saison.includes("printemps") || saison.includes("été")) {
+        list.push("Popper ou stickbait surface – matin / soir");
+      }
+    } 
+    else if (technique === "appats") {
+      list.push("Ver de terre, teigne ou vairon – flotteur ou posé");
+      list.push("Lombrics en grappe – amorçage léger");
+    } 
+    else if (technique === "mouche") {
+      list.push("Streamer petit (type clouser minnow) – animation lente");
+      list.push("Nymphe lestée – toc ou dérive");
+    } 
+    else if (technique === "finesse ultra léger") {
+      list.push("Ned rig ver finesse 5-7 cm – ultra lent / dandine");
+      list.push("Dropshot micro-worm ou mini-shad – 1-3 m");
+      list.push("Micro jig 2-5 g – vertical ou lent");
+    } 
+    else {
+      list.push(`Technique ${technique} peu courante pour perche – finesse ou leurres classiques plus efficaces`);
+    }
+
+    // Profondeur perche
+    if (temperature !== null) {
+      if (temperature < 10) depthAdvice.push("3-6 m – vertical / dropshot");
+      else if (temperature < 18) depthAdvice.push("1-4 m – micro-leurres");
+      else depthAdvice.push("0-2 m – surface / topwater");
+    }
   }
 
-  list.push("Enregistre ta session pour faire progresser l'IA !");
+  // ────────────────────────────────────────────────
+  // TRUITE
+  // ────────────────────────────────────────────────
+  else if (species.includes('truite')) {
+    if (technique === "leurres") {
+      list.push("Petite cuillère #0-2 ou micro-trout minnow 4-7 cm");
+      list.push("Micro-spinner ou cheveu – rivières / courant");
+    } 
+    else if (technique === "appats") {
+      list.push("Ver de terre, teigne ou asticot – toc ou flotteur léger");
+      list.push("Maïs doux ou pâte – étang calme");
+    } 
+    else if (technique === "mouche") {
+      list.push("Mouche sèche (CDC, elk hair caddis) – surface / éclosions");
+      list.push("Nymphe (perdigon, pheasant tail) – nymphe au fil / toc");
+      if (saison.includes("printemps")) {
+        list.push("Nymphe légère ou sèche – eau claire / montante");
+      }
+    } 
+    else if (technique === "finesse ultra léger") {
+      list.push("Micro jig 1-4 g ou finesse shad ultra léger");
+      list.push("Wacky rig ver finesse – eau calme / étang");
+    } 
+    else if (technique === "carpe") {
+      list.push("Pas vraiment adapté à la truite – essaie plutôt mouche ou appâts naturels");
+    } 
+    else {
+      list.push(`Technique ${technique} non optimale pour truite – mouche ou finesse marchent mieux`);
+    }
 
-  // === Profondeur selon température ===
-  const depthAdvice = [];
-  // ton code température perche/brochet ici...
+    depthAdvice.push("0-1.5 m surface (sèche) ou 0.5-2.5 m fond (nymphe / appâts)");
+  }
 
-  // === Fermeture brochet ===
-  const isClosedPeriod = new Date().getMonth() < 4;
-  const isClosedForSpecies = isClosedPeriod && species.includes('brochet');
+  // ────────────────────────────────────────────────
+  // CARPE
+  // ────────────────────────────────────────────────
+  else if (species.includes('carpe')) {
+    if (technique === "leurres") {
+      list.push("Peu efficace – carpe préfère appâts statiques");
+    } 
+    else if (technique === "appats" || technique === "carpe") {
+      list.push("Bouillettes 15-20 mm (protéinées en été/automne, digestes en hiver/printemps)");
+      list.push("Maïs doux, pellets, tiger nuts – amorçage PVA ou spod");
+      if (saison.includes("hiver") || saison.includes("froid")) {
+        list.push("Petits appâts + amorçage léger / soluble (pellets baby corn, stickmix)");
+      }
+      if (saison.includes("été") || saison.includes("chaud")) {
+        list.push("Amorçage copieux – bouillettes + pellets + graines");
+      }
+    } 
+    else if (technique === "mouche") {
+      list.push("Très rare – presque jamais efficace pour carpe");
+    } 
+    else if (technique === "finesse ultra léger") {
+      list.push("Pas adapté – carpe réagit mal aux animations finesse");
+    } 
+    else {
+      list.push(`Technique ${technique} peu utilisée pour carpe – concentre-toi sur appâts + amorçage`);
+    }
 
-  if (isClosedForSpecies && technique === "leurres") {
+    depthAdvice.push("Fond principalement – parfois mi-eau si amorçage en surface");
+  }
+
+  // ────────────────────────────────────────────────
+  // FALLBACK GÉNÉRAL SI AUCUNE ESPÈCE MATCHÉE
+  // ────────────────────────────────────────────────
+  else {
+    list.push("Espèce non reconnue – essaie brochet, perche, truite, carpe...");
+    list.push("Ou enregistre ta session pour aider l'IA à apprendre !");
+  }
+
+  // Messages génériques finaux (adaptés à la technique)
+  if (["leurres", "finesse ultra léger"].includes(technique)) {
+    list.push("Un leurre souple 7-10 cm reste une valeur sûre dans beaucoup de cas");
+  } else if (["appats", "carpe"].includes(technique)) {
+    list.push("Amorce copieusement mais intelligemment selon la saison");
+  } else if (technique === "mouche") {
+    list.push("Observe les insectes naturels pour bien imiter");
+  }
+
+  list.push("Enregistre ta sortie pour faire progresser FisherForce AI !");
+
+  // Fermeture brochet (janvier-avril ≈ mois 0-3)
+  const now = new Date();
+  if (now.getMonth() < 4 && species.includes('brochet') && technique === "leurres") {
     list.unshift(
-      "⚠️ Période de fermeture du brochet (janvier-avril) ! Toute prise = infraction.",
-      "Essaie plutôt appâts, mouche, finesse ou carpe/perche/silure."
+      "⚠️ Période de fermeture brochet active ! Toute prise = infraction.",
+      "Privilégie appâts naturels, mouche, finesse sur perche/truite/carpe/silure..."
     );
   }
 
