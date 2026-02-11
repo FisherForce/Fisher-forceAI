@@ -1497,12 +1497,13 @@ const adviceRes = await fetch('/api/advice', {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     targetSpecies: species,
-    structure: "Mixte",
-    conditions: finalConditions,
-    spotType: milieu,
+    structure: structure || "Mixte",
+    conditions: conditions,           // ← c'était déjà là
+    spotType: spotType,               // ← corrige "milieu" en "spotType"
     temperature: temp,
-    // ← LIGNE AJOUTÉE ICI
-    technique: document.getElementById('coachTechnique').value 
+    technique: document.getElementById('coachTechnique')?.value 
+               || document.getElementById('technique-classique')?.value 
+               || "leurres"   // fallback seulement si AUCUN select trouvé
   })
 });
 
@@ -1538,7 +1539,7 @@ const adviceRes = await fetch('/api/advice', {
       <label>Fond / Structure <input id="structure" placeholder="Ex: herbiers, rochers"></label>
       <label>Espèce ciblée <input id="targetSpecies" placeholder="Ex: brochet, perche"></label>
       <label>Technique</label>
-<select id="technique" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
+<select id="technique-classique" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
   <option value="leurres">Leurres (carnassiers)</option>
   <option value="appats">Appâts naturels (ver, teigne, asticot...)</option>
   <option value="mouche">Mouche (sèche, nymphe, streamer)</option>
