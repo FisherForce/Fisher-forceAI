@@ -826,6 +826,207 @@ if (species.includes('aspe')) {
   list.push("Le maïs doux, les vers de terre et la pâte à tanche restent des valeurs sûres toute l'année");
   list.push("Enregistre ta session pour affiner les conseils !");
 }
+  if (species.includes('lieu') || species.includes('pollachius')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver → appâts naturels (vers, crabes, crevettes) et leurres lents au fond sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → lieu actif, leurres souples et powerfishing excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → leurres de surface, traîne et powerfishing performants");
+  } else {
+    techniqueAdvice.push("Automne → gros lieux nourriciers, leurres lourds et appâts naturels");
+  }
+
+  // HIVER / EAU FROIDE (< 10–12 °C)
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Vers de sable ou ver américain en grappe – surfcasting ou posé profond");
+    list.push("Crabes mous ou morceaux de crabe – posé statique sur digue / bateau");
+    list.push("Crevettes ou petits poissons (lançon, sprat) – traîné lent ou posé");
+    list.push("Leurres souples 10-15 cm – animation très lente + longues pauses au fond");
+    list.push("Jig head 20-50 g + shad – grattage fond ou vertical");
+    depthAdvice.push("Fond 5-20 m – cassures, épaves, tombants rocheux");
+  }
+
+  // PRINTEMPS (montée en activité, lieu très agressif)
+  else if (saison === "printemps") {
+    list.push("Leurres souples 10-18 cm (shad, slug) – tête 20-60 g, animation lente + pauses");
+    list.push("Jigging spoon ou lame vibrante – grattage fond près structures");
+    list.push("Minnow / jerkbait 10-14 cm – twitchs + pauses longues mi-eau");
+    list.push("Vif ou ver – traîné ou posé près cassures");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Powerfishing – leurres souples lourds près tombants");
+    }
+    if (spotType.includes('bateau')) {
+      list.push("Verticale ou traîne lente avec shad ou jig");
+    }
+    depthAdvice.push("5-15 m – cassures, épaves, zones rocheuses");
+  }
+
+  // ÉTÉ (eau chaude, lieu actif en surface et mi-eau)
+  else if (saison === "été") {
+    list.push("Popper ou stickbait surface – récupération saccadée avec pauses (explosif !)");
+    list.push("Leurres souples 12-20 cm – powerfishing près roches / épaves");
+    list.push("Gros swimbait ou jig vibrant – animation vive mi-eau");
+    list.push("Vif (sprat, maquereau, lançon) – traîné rapide ou posé de nuit");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Powerfishing agressif – jig vibrant ou shad lourd");
+    }
+    if (spotType.includes('plage') || spotType.includes('digue')) {
+      list.push("Surfcasting vif ou leurre souple – lancé loin + récupération lente");
+    }
+    if (spotType.includes('bateau')) {
+      list.push("Traîne ou verticale – gros shad ou jig sur épaves");
+    }
+    depthAdvice.push("Surface à mi-eau (0-10 m) – roches, épaves, courants");
+  }
+
+  // AUTOMNE (gros lieux nourriciers, très actifs)
+  else if (saison === "automne") {
+    list.push("Leurres souples 15-25 cm tête lourde 40-80 g – grattage fond + pauses longues");
+    list.push("Jig vibrant ou lame vibrante – powerfishing sur tombants / épaves");
+    list.push("Vif gros (sprat, maquereau) – traîné lent ou posé profond");
+    list.push("Calamar ou ver – surfcasting ou digue de nuit");
+    if (conditions.includes('pluie') || conditions.includes('vent')) {
+      list.push("Leurres lourds – powerfishing près cassures / structures");
+    }
+    depthAdvice.push("Fond à mi-eau (10-30 m) – épaves, tombants, zones rocheuses");
+  }
+
+  // Message final
+  list.push("Leurres souples 12-18 cm et vif restent des valeurs sûres toute l'année pour le lieu");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('maquereau') || species.includes('maquerau') || species.includes('scomber')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver ou eau froide → appâts naturels (vers, petits poissons) et traîne lente sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → maquereau arrive en bancs, leurres rapides et traîne excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → surface explosive (petits leurres, traîne), pêche très active en bancs");
+  } else {
+    techniqueAdvice.push("Automne → gros maquereaux nourriciers, traîne et leurres rapides");
+  }
+
+  // HIVER / EAU FROIDE (< 10 °C)
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Petits vers de sable ou morceaux de ver – traîné lent ou posé depuis digue");
+    list.push("Petit lançon ou sprat vif – traîné très lent ou posé");
+    list.push("Calamar ou morceaux – traîné lent en profondeur");
+    list.push("Petits leurres souples 5-8 cm – animation lente + pauses");
+    list.push("Plumes ou sabiki avec appât – traîne légère ou vertical");
+    depthAdvice.push("Mi-fond à fond (5-20 m) – bancs profonds, zones calmes");
+  }
+
+  // PRINTEMPS (arrivée des bancs, maquereau très actif)
+  else if (saison === "printemps") {
+    list.push("Plumes ou sabiki – traîne rapide ou vertical (très productif)");
+    list.push("Petits leurres souples 5-10 cm – récupération saccadée mi-eau");
+    list.push("Cuillère ondulante ou jig micro 10-20 g – animation vive");
+    list.push("Petit lançon ou sprat – traîné ou posé près surface");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Plumes ou sabiki – traîne en surface ou mi-eau");
+    }
+    if (spotType.includes('bateau')) {
+      list.push("Traîne ou verticale plumes/sabiki – trouve les bancs");
+    }
+    depthAdvice.push("Surface à mi-eau (0-10 m) – bancs en chasse");
+  }
+
+  // ÉTÉ (eau chaude, maquereau très actif en surface et bancs)
+  else if (saison === "été") {
+    list.push("Plumes ou sabiki – traîne rapide ou vertical (explosif en bancs)");
+    list.push("Petits leurres de surface (popper, petit stickbait) – récupération saccadée");
+    list.push("Cuillère ondulante ou micro jig 10-30 g – animation rapide mi-eau");
+    list.push("Petit lançon, sprat ou sardine – traîné vif ou posé");
+    list.push("Feather lures ou turlutte – traîne en surface");
+    if (conditions.includes('vent') || conditions.includes('pluie')) {
+      list.push("Plumes ou sabiki – traîne en surface ou mi-eau (bancs actifs)");
+    }
+    if (spotType.includes('plage') || spotType.includes('digue') || spotType.includes('jetée')) {
+      list.push("Lancer plumes ou petit leurre – récupération saccadée en surface");
+    }
+    if (spotType.includes('bateau')) {
+      list.push("Traîne plumes/sabiki ou petits leurres – trouve les chasses en surface");
+    }
+    depthAdvice.push("Surface à mi-eau (0-8 m) – bancs en chasse, souvent visibles");
+  }
+
+  // AUTOMNE (gros maquereaux nourriciers, très actifs)
+  else if (saison === "automne") {
+    list.push("Plumes ou sabiki – traîne rapide ou vertical en profondeur");
+    list.push("Leurres souples 8-12 cm – powerfishing mi-eau ou fond");
+    list.push("Cuillère ondulante ou jig 20-40 g – animation saccadée");
+    list.push("Petit vif ou morceaux de poisson – traîné ou posé");
+    if (conditions.includes('pluie') || conditions.includes('vent')) {
+      list.push("Plumes ou sabiki – traîne en surface ou mi-eau");
+    }
+    depthAdvice.push("Mi-eau à fond (5-15 m) – bancs nourriciers, zones rocheuses");
+  }
+
+  // Message final
+  list.push("Plumes/sabiki et petits leurres rapides restent des valeurs sûres toute l'année pour le maquereau");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('dorade') || species.includes('daurade') || species.includes('spar') || species.includes('aurata')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 12) {
+    techniqueAdvice.push("En hiver ou eau froide → appâts naturels digestes + amorçage très léger sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → dorade se rapproche des côtes, appâts naturels + amorçage modéré");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → appâts variés (vers, crabes, mollusques), amorçage copieux, pêche active");
+  } else {
+    techniqueAdvice.push("Automne → gros sujets nourriciers, appâts riches + amorçage important");
+  }
+
+  // HIVER / EAU FROIDE (< 12 °C)
+  if (saison === "hiver" || temperature < 12) {
+    list.push("Petits vers de vase ou morceaux de ver – posé léger ou flotteur");
+    list.push("Petits crabes mous ou morceaux de crabe – amorçage très léger");
+    list.push("Crevettes décortiquées ou petits coquillages – présenté sur flotteur ou posé");
+    list.push("Petites bouillettes digestes 8-12 mm ou pâte – hair rig simple");
+    list.push("Maïs doux ou pellets solubles – très peu d’amorce");
+    depthAdvice.push("Fond 2-8 m – zones vaseuses, roches, estuaires abrités");
+  }
+
+  // PRINTEMPS (réveil progressif, dorade se rapproche des côtes)
+  else if (saison === "printemps") {
+    list.push("Vers de vase ou vers américains – flotteur ou posé près bordures");
+    list.push("Crabes mous ou morceaux – amorçage modéré PVA ou spod léger");
+    list.push("Crevettes ou petits coquillages – présenté sur flotteur ou hair rig");
+    list.push("Maïs doux + pellets solubles – amorçage modéré");
+    list.push("Petites bouillettes digestes 10-15 mm – attractants doux");
+    if (conditions.includes('marée haute') || conditions.includes('courant')) {
+      list.push("Flotteur ou leger feeder – vers/crabes dans zones courantes");
+    }
+    depthAdvice.push("Fond 1-6 m – bordures vaseuses, roches, zones qui se réchauffent");
+  }
+
+  // ÉTÉ / AUTOMNE (dorade très active, gros sujets en bancs)
+  else {
+    list.push("Vers de vase, crabes ou crevettes – flotteur ou posé en zones rocheuses");
+    list.push("Maïs doux + pellets + graines + petits coquillages – amorçage copieux spod ou PVA bag");
+    list.push("Bouillettes spécifiques dorade 12-18 mm (scopex, fruity, crab…) – hair rig");
+    list.push("Pellets + tiger nuts fermentés – amorçage lourd près obstacles");
+    list.push("Petits poissons (gobie, lançon) – posé ou traîné lent");
+    if (spotType.includes('plage') || spotType.includes('digue')) {
+      list.push("Surfcasting vers/crabes ou leger feeder – lancé loin");
+    }
+    if (spotType.includes('bateau')) {
+      list.push("Posé ou flotteur – amorçage copieux autour du poste");
+    }
+    if (conditions.includes('vent') || conditions.includes('pluie')) {
+      list.push("Amorçage copieux – mélange vers + crabes + bouillettes");
+    }
+    depthAdvice.push("Fond 2-10 m – zones vaseuses, roches, herbiers légers, bancs");
+  }
+
+  // Message final
+  list.push("Vers de vase, crabes et maïs doux restent des valeurs sûres toute l'année pour la dorade");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
   if (species.includes('bar') || species.includes('loup')) {
   // Message introductif selon saison
   if (saison === "hiver" || temperature < 10) {
