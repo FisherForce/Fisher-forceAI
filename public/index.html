@@ -1605,65 +1605,66 @@ const adviceRes = await fetch('/api/advice', {
     <section class="card output-card">
     
           <!-- Mode Coach -->
+<!-- Mode Coach -->
 <div id="mode-coach" class="mode">
   <h2 style="text-align:center;color:#00ff9d;">Mode Coach IA 🏆</h2>
   <p style="text-align:center;color:#aaa;margin:10px 0;">Sélectionne ton espèce et milieu, puis clique sur la carte pour ton spot. L'IA analyse en direct !</p>
 
-<!-- Sélecteurs -->
-<div style="max-width:600px; margin:0 auto; padding:15px; background:#001122; border-radius:12px; box-shadow:0 8px 20px rgba(0,0,0,0.5);">
-  <label style="display:block; margin-bottom:8px; color:#00ff9d;">Espèce ciblée</label>
-  <select id="coachSpecies" style="
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 10px;
-    background: #0d1b2a;
-    color: #e0e0e0;
-    border: 1px solid #00ff9d33;
-    font-size: 16px;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
-    transition: all 0.25s ease;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300ff9d' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E\");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 12px;
-  ">
-    <option value="brochet">Brochet</option>
-    <option value="perche">Perche</option>
-    <option value="sandre">Sandre</option>
-    <option value="black-bass">Black-bass</option>
-    <option value="silure">Silure</option>
-    <option value="truite">Truite</option>
-    <option value="chevesne">Chevesne</option>
-  </select>
+  <!-- Sélecteurs -->
+  <div style="max-width:600px;margin:0 auto;padding:15px;background:#001122;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.5);">
+    <label style="display:block;margin-bottom:8px;color:#00ff9d;">Espèce ciblée</label>
+    <select id="coachSpecies" style="
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: #0d1b2a;
+      color: #e0e0e0;
+      border: 1px solid #00ff9d33;
+      font-size: 16px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+      transition: all 0.25s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300ff9d' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E\");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 12px;
+    ">
+      <option value="brochet">Brochet</option>
+      <option value="perche">Perche</option>
+      <option value="sandre">Sandre</option>
+      <option value="black-bass">Black-bass</option>
+      <option value="silure">Silure</option>
+      <option value="truite">Truite</option>
+      <option value="chevesne">Chevesne</option>
+    </select>
 
-  <label style="display:block; margin:15px 0 8px; color:#00ff9d;">Milieu</label>
-  <select id="coachMilieu" style="
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 10px;
-    background: #0d1b2a;
-    color: #e0e0e0;
-    border: 1px solid #00ff9d33;
-    font-size: 16px;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
-    transition: all 0.25s ease;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300ff9d' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E\");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 12px;
-  ">
-    <option value="Étang">Étang</option>
-    <option value="Rivière">Rivière</option>
-    <option value="Canal">Canal</option>
-    <option value="Lac">Lac</option>
-  </select>
-</div>
+    <label style="display:block;margin:15px 0 8px;color:#00ff9d;">Milieu</label>
+    <select id="coachMilieu" style="
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: #0d1b2a;
+      color: #e0e0e0;
+      border: 1px solid #00ff9d33;
+      font-size: 16px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.4);
+      transition: all 0.25s ease;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300ff9d' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E\");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      background-size: 12px;
+    ">
+      <option value="Étang">Étang</option>
+      <option value="Rivière">Rivière</option>
+      <option value="Canal">Canal</option>
+      <option value="Lac">Lac</option>
+    </select>
+  </div>
 
   <!-- Carte Leaflet -->
   <div style="margin:20px auto;max-width:800px;">
@@ -1678,8 +1679,9 @@ const adviceRes = await fetch('/api/advice', {
   <!-- Statut actualisation -->
   <p id="coachStatus" style="text-align:center;color:#aaa;font-size:14px;margin-top:10px;">Actualisation toutes les 60s • Dernière mise à jour : --</p>
 </div>
+
 <script>
-// === MODE COACH - Analyse IA en direct avec Lune & Marée ===
+// === MODE COACH - Analyse IA en direct ===
 document.addEventListener('DOMContentLoaded', () => {
   let coachMap = null;
   let coachMarker = null;
@@ -1691,7 +1693,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let lastWind = null;
   let lastMoonPhase = null;
   let lastTide = null;
-  let userWeatherOverride = null; // 'soleil', 'nuages', 'pluie' ou null
+  let userWeatherOverride = null;
 
   // Init carte
   coachMap = L.map('coachMap').setView([46.8, 2.5], 6);
@@ -1702,7 +1704,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Clic sur carte → placer marker + analyser
   coachMap.on('click', e => {
     currentSpot = e.latlng;
-
     if (coachMarker) coachMap.removeLayer(coachMarker);
     coachMarker = L.marker(currentSpot, {
       icon: L.divIcon({
@@ -1711,7 +1712,6 @@ document.addEventListener('DOMContentLoaded', () => {
         iconAnchor: [50, 20]
       })
     }).addTo(coachMap);
-
     analyserCoach();
     if (coachTimer) clearInterval(coachTimer);
     coachTimer = setInterval(analyserCoach, 60000); // 60s
@@ -1730,9 +1730,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Calcul phase lunaire simple (approximation)
+  // Calcul phase lunaire simple
   function getMoonPhase(date = new Date()) {
-    const knownNewMoon = new Date(2025, 0, 13); // Date nouvelle lune connue
+    const knownNewMoon = new Date(2025, 0, 13);
     const days = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
     const phase = (days % 29.53) / 29.53;
     if (phase < 0.03 || phase > 0.97) return "Nouvelle Lune";
@@ -1750,11 +1750,27 @@ document.addEventListener('DOMContentLoaded', () => {
     resultDiv.innerHTML = '<p style="color:#00ff9d;font-size:18px;">Analyse en direct... 📡</p>';
 
     try {
+      // Récupère les valeurs À CHAQUE FOIS (pas en cache)
+      const speciesElement = document.getElementById('coachSpecies');
+      const milieuElement = document.getElementById('coachMilieu');
+
+      if (!speciesElement || !milieuElement) {
+        throw new Error("Sélecteurs non trouvés dans le DOM");
+      }
+
+      const species = speciesElement.value.trim();
+      const milieu = milieuElement.value.trim();
+
+      // Log clair pour debug
+      console.log('=== DEBUG MODE COACH ===');
+      console.log('Espèce sélectionnée :', species);
+      console.log('Milieu sélectionné :', milieu);
+      console.log('Coordonnées spot :', currentSpot);
+
       // Fetch météo
       const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,pressure_msl,cloud_cover,is_day&timezone=Europe/Paris`);
       const meteo = await meteoRes.json();
       const c = meteo.current;
-
       let temp = Math.round(c.temperature_2m);
       let precip = c.precipitation;
       let wind = Math.round(c.wind_speed_10m);
@@ -1766,9 +1782,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const moonPhase = getMoonPhase();
       const moonText = moonPhase.includes("Pleine") ? "pleine lune" : moonPhase.includes("Nouvelle") ? "nouvelle lune" : moonPhase.toLowerCase();
 
-      // Marée (exemple avec API gratuite - remplace par une meilleure si besoin)
+      // Marée (placeholder)
       let tideText = "marée inconnue";
-
 
       // Conditions auto
       let conditions = [];
@@ -1791,7 +1806,7 @@ document.addEventListener('DOMContentLoaded', () => {
         weatherDisplay = `Choisi : ${userWeatherOverride.charAt(0).toUpperCase() + userWeatherOverride.slice(1)}`;
       }
 
-      // Stabilité
+      // Stabilité (évite requêtes inutiles)
       let needNewAdvice = true;
       if (lastTemp !== null && lastPrecip !== null && lastWind !== null && lastMoonPhase && lastTide) {
         const tempDiff = Math.abs(temp - lastTemp);
@@ -1806,23 +1821,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (needNewAdvice) {
-        const species = document.getElementById('coachSpecies').value;
-        const realSpecies = document.getElementById('coachSpecies').value.trim();
-        console.log('Valeur réelle du select :', realSpecies);
-        const milieu = document.getElementById('coachMilieu').value;
-
-        console.log('Espèce envoyée au serveur :', species);
+        // On envoie la vraie valeur
         const adviceRes = await fetch('/api/advice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            targetSpecies: realSpecies,
+            targetSpecies: species,   // ← ICI LA VRAIE VALEUR
             structure: "Mixte",
             conditions: finalConditions,
             spotType: milieu,
             temperature: temp,
           })
         });
+
+        if (!adviceRes.ok) throw new Error('Erreur API : ' + adviceRes.status);
 
         const conseil = await adviceRes.json();
 
@@ -1860,14 +1872,14 @@ document.addEventListener('DOMContentLoaded', () => {
       statusDiv.textContent = `Actualisation toutes les 60s • Dernière : ${new Date().toLocaleTimeString('fr-FR')}`;
     } catch (e) {
       resultDiv.innerHTML = '<p style="color:#e74c3c;font-size:18px;">Erreur analyse – réessaie</p>';
-      console.error(e);
+      console.error('Erreur coach :', e);
     }
   }
 
   // Init carte
   setTimeout(() => coachMap.invalidateSize(), 300);
 
-  // Style boutons
+  // Style boutons météo
   const weatherStyle = document.createElement('style');
   weatherStyle.textContent = `
     .weather-btn.active {
