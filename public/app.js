@@ -416,7 +416,6 @@ const adviceRes = await fetch('/api/advice', {
     conditions: conditions,
     spotType: milieu,
     temperature: temp,
-    technique: document.getElementById('technique')?.value  // ← fallback si select absent
   })
 });
         const conseil = await serverRes.json();
