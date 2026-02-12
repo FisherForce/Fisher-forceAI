@@ -16,4 +16,28 @@ button.secondary { background: transparent; border: 1px solid rgba(255,255,255,0
 .muted { color: var(--muted); }
 .settings summary { cursor: pointer; padding: 8px 0; }
 .site-footer { padding: 18px 0; text-align: center; color: var(--muted); }
-@media (max-width: 980px) { .main-grid { grid-template-columns: 1fr; } }</div>
+@media (max-width: 980px) { .main-grid { grid-template-columns: 1fr; } }
+.ffai-next-step{
+  margin-top:12px;
+  padding:12px;
+  background:#0e1e2c;
+  border-radius:12px;
+  font-size:12px;
+  line-height:1.4;
+}
+
+.ffai-next-step button{
+  margin-top:8px;
+  padding:6px 12px;
+  border:none;
+  border-radius:8px;
+  background:#00ffd5;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.ffai-next-step button:hover{
+  opacity:.8;
+}
+</div>
