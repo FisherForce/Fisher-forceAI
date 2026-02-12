@@ -302,7 +302,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   // FALLBACK GÉNÉRAL
   // ────────────────────────────────────────────────
   else {
-    list.push("Espèce non reconnue – essaie brochet, perche, truite, carpe...");
+    list.push("Espèce non reconnue – Demande a ce que elle soit ajoutée ! ");
     list.push("Ou enregistre ta session pour aider l'IA à apprendre !");
   }
 
