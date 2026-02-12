@@ -871,7 +871,7 @@ if (species.includes('silure')) {
   // ────────────────────────────────────────────────
   // FALLBACK GÉNÉRAL
   // ────────────────────────────────────────────────
-  else {
+  else if (list.length === 0) {
     list.push("Espèce non reconnue – Demande a ce que elle soit ajoutée ! ");
     list.push("Ou enregistre ta session pour aider l'IA à apprendre !");
   }
