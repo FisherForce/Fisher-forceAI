@@ -826,6 +826,77 @@ if (species.includes('aspe')) {
   list.push("Le maïs doux, les vers de terre et la pâte à tanche restent des valeurs sûres toute l'année");
   list.push("Enregistre ta session pour affiner les conseils !");
 }
+  if (species.includes('bar') || species.includes('loup')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver ou eau froide → appâts naturels (vif, ver, calamar) et leurres très lents sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → bar agressif pré/post-repro, leurres souples et finesse excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → surface (popper, stickbait) et powerfishing très performants, surtout de nuit");
+  } else {
+    techniqueAdvice.push("Automne → gros bars nourriciers, leurres lourds et appâts naturels");
+  }
+
+  // HIVER / EAU FROIDE (< 10–12 °C)
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Petit vif (gardon, mulet, lançon, éperlan) – traîné lent ou posé profond");
+    list.push("Ver de sable / ver américain en grappe – surfcasting ou posé sur digue/estuaire");
+    list.push("Calamar frais ou morceaux – posé statique ou traîné très lent");
+    list.push("Leurres souples 7-12 cm – animation ultra lente + longues pauses");
+    list.push("Jig head finesse 5-15 g + petit shad – vertical ou lent près structures");
+    depthAdvice.push("Fond 3-8 m – estuaires profonds, tombants, zones abritées");
+  }
+
+  // PRINTEMPS (pré et post-repro, bar très agressif)
+  else if (saison === "printemps") {
+    list.push("Leurres souples 10-15 cm (shad, slug) – tête 10-30 g, animation lente + pauses longues");
+    list.push("Minnow / jerkbait 9-12 cm – twitchs + pauses longues près bordures");
+    list.push("Finesse rig (ned rig, drop shot) ver ou petit shad – ultra lent");
+    list.push("Vif ou ver de sable – traîné ou posé près structures");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Leurres souples – récupération lente près obstacles / herbiers");
+    }
+    if (spotType.includes('estuaire') || spotType.includes('rivière')) {
+      list.push("Petit vif dans courant faible ou zones calmes");
+    }
+    depthAdvice.push("1-5 m – bordures, estuaires, roches, herbiers naissants");
+  }
+
+  // ÉTÉ (eau chaude, bar actif en surface et près herbiers)
+  else if (saison === "été") {
+    list.push("Popper ou stickbait surface – récupération saccadée avec pauses (explosif de nuit !)");
+    list.push("Leurres souples 10-18 cm – powerfishing près herbiers / roches / digues");
+    list.push("Gros swimbait ou jerkbait – animation vive mi-eau");
+    list.push("Vif (mulet, lançon, sardine) – traîné rapide ou posé de nuit");
+    if (conditions.includes('nuageux') || conditions.includes('pluie') || conditions.includes('vent')) {
+      list.push("Powerfishing agressif – leurres souples lourds, chatterbait marin");
+    }
+    if (spotType.includes('plage') || spotType.includes('digue')) {
+      list.push("Surfcasting vif ou leurre souple – lancé loin + récupération lente");
+    }
+    if (spotType.includes('bateau')) {
+      list.push("Verticale ou traîne lente avec gros shad / swimbait");
+    }
+    depthAdvice.push("Surface à mi-eau (0-4 m) – herbiers, roches, estuaires la nuit");
+  }
+
+  // AUTOMNE (gros bars nourriciers, très actifs)
+  else if (saison === "automne") {
+    list.push("Leurres souples 12-18 cm tête lourde 20-40 g – grattage fond + pauses longues");
+    list.push("Jerkbait ou minnow 10-15 cm – récupération saccadée près structures");
+    list.push("Vif gros (mulet, gardon, sardine) – traîné lent ou posé profond");
+    list.push("Calamar ou ver de sable – surfcasting ou digue de nuit");
+    if (conditions.includes('pluie') || conditions.includes('vent')) {
+      list.push("Leurres lourds – powerfishing près cassures / tombants");
+    }
+    depthAdvice.push("Fond à mi-eau (3-10 m) – cassures, tombants, estuaires");
+  }
+
+  // Message final
+  list.push("Leurres souples 10-15 cm et vif restent des valeurs sûres toute l'année pour le bar");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
 if (species.includes('silure')) {
   // Conseil de base (toute l'année)
   list.push("Essaie une ondulante de 50g – ramène-la proche du fond avec de longues pauses");
