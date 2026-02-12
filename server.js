@@ -895,14 +895,14 @@ if (species.includes('silure')) {
 // ROUTE /api/advice – simple et robuste
 app.post('/api/advice', (req, res) => {
   try {
-    let { 
+    let {
       targetSpecies: species = "",
       structure = "",
       conditions = "",
       spotType = "",
       temperature,
-      failedLures = [],
-           // ← PAR DÉFAUT LEURRES COMME TU VEUX
+      failedLures = []
+      // ← PAR DÉFAUT LEURRES COMME TU VEUX   ← commentaire OK ici, après la virgule implicite
     } = req.body;
 
     // Normalisation
@@ -910,7 +910,6 @@ app.post('/api/advice', (req, res) => {
     structure  = (structure  || "").toLowerCase().trim();
     conditions = (conditions || "").toLowerCase().trim();
     spotType   = (spotType   || "").toLowerCase().trim();
-
 
     if (!structure || !conditions) {
       return res.status(400).json({ error: 'structure et conditions obligatoires' });
