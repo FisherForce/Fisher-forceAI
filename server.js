@@ -1040,7 +1040,7 @@ app.post('/api/advice', (req, res) => {
       return res.status(400).json({ error: 'structure et conditions obligatoires' });
     }
 
-    const result = suggestLures(species, structure, conditions, spotType, temperature, technique);
+    const result = suggestLures(species, structure, conditions, spotType, temperature);
 
     let filteredLures = result.lures.filter(lure => {
       const name = lure.split('—')[0]?.trim().toLowerCase() || "";
