@@ -1098,6 +1098,649 @@ if (species.includes('aspe')) {
   list.push("Leurres souples 10-15 cm et vif restent des valeurs sûres toute l'année pour le bar");
   list.push("Enregistre ta session pour affiner les conseils !");
 }
+  if (species.includes('ablette') || species.includes('alburnus')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau très froide → appâts naturels fins et toc très lent sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → ablettes en bancs actifs, flotteur et petits leurres rapides excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → surface et ultra-léger très performants, pêche en toc ou flotteur actif");
+  } else {
+    techniqueAdvice.push("Automne → ablettes nourricières, toc et petits leurres rapides");
+  }
+
+  // HIVER / EAU FROIDE (< 8 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Petits vers de vase ou teignes – toc très lent ou flotteur ultra-léger");
+    list.push("Asticots ou pâte fine – présenté sur flotteur dans courant faible");
+    list.push("Micro-nymphe ou petite mouche – dérive lente au toc");
+    list.push("Pain ou semoule – amorçage très léger + flotteur");
+    list.push("Micro-leurre finesse 2-4 cm – ultra lent près bordures");
+    depthAdvice.push("Mi-eau à surface (0-1.5 m) – courant faible, zones calmes");
+  }
+
+  // PRINTEMPS (montée en activité, bancs très agressifs)
+  else if (saison === "printemps") {
+    list.push("Flotteur ultra-léger avec asticots ou teignes – animation saccadée");
+    list.push("Toc avec ver de terre ou teigne – dérive naturelle dans courant");
+    list.push("Petite cuillère n°0-1 argentée – récupération rapide mi-eau");
+    list.push("Micro-spinner ou cuillère tournante – linéaire vif près surface");
+    list.push("Pain ou semoule – amorçage modéré + flotteur actif");
+    if (conditions.includes('montante') || conditions.includes('pluie')) {
+      list.push("Flotteur avec asticots – courant moyen, bancs actifs");
+    }
+    depthAdvice.push("Surface à mi-eau (0-1 m) – zones de courant modéré");
+  }
+
+  // ÉTÉ (eau chaude, ablettes très actives en surface)
+  else if (saison === "été") {
+    list.push("Flotteur actif avec asticots, teignes ou pain – animation saccadée");
+    list.push("Toc ultra-léger avec ver ou teigne – dérive rapide près surface");
+    list.push("Micro-cuillère n°0-1 argentée ou or – récupération très rapide");
+    list.push("Petit micro-spinner ou fly ultra-léger – linéaire vif en surface");
+    list.push("Pain ou semoule – amorçage copieux + flotteur en surface");
+    list.push("Leurres insectes (mouche sèche, hopper) – surface en soirée");
+    if (conditions.includes('soleil') || conditions.includes('clair')) {
+      list.push("Micro-cuillère ou spinner – récupération rapide pour réactions");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Toc ou flotteur – asticots/teigne dans courant moyen");
+    }
+    depthAdvice.push("Surface (0-0.8 m) – courant modéré, bordures, zones calmes");
+  }
+
+  // AUTOMNE (ablettes nourricières, gros bancs)
+  else if (saison === "automne") {
+    list.push("Flotteur avec asticots ou teigne – animation saccadée mi-eau");
+    list.push("Toc avec ver ou pain – dérive lente près bordures");
+    list.push("Micro-cuillère n°0-1 – récupération rapide en surface");
+    list.push("Pain ou semoule – amorçage copieux + flotteur actif");
+    if (conditions.includes('pluie') || conditions.includes('nuageux')) {
+      list.push("Flotteur ou toc – asticots dans courant");
+    }
+    depthAdvice.push("Surface à mi-eau (0-1.5 m) – bancs nourriciers, courant");
+  }
+
+  // Message final
+  list.push("Flotteur ultra-léger avec asticots ou micro-cuillère restent des valeurs sûres toute l'année pour l'ablette");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('alose') || species.includes('alosa')) {
+  // Message introductif selon saison (l'alose est surtout active au printemps)
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver → alose quasi absente (migration terminée), appâts naturels très rares");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → montée massive, leurres rapides et appâts naturels excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → alose redescend ou reste en mer, pêche difficile sauf estuaires");
+  } else {
+    techniqueAdvice.push("Automne → alose rare (pré-migration), privilégie les zones d'estuaires");
+  }
+
+  // PRINTEMPS (montée principale, alose très agressive)
+  if (saison === "printemps" && (temperature > 10 && temperature < 18)) {
+    list.push("Cuillère lourde n°3-5 argentée ou flashy – récupération rapide en linéaire ou lancer-ramener");
+    list.push("Jerkbait ou minnow 7-12 cm – twitching saccadé + pauses (déclenche réactions)");
+    list.push("Leurres de surface (popper ou stickbait) – récupération saccadée en surface");
+    list.push("Petit vif (éperlan, sprat) – traîné lent ou posé près barrages");
+    list.push("Devon ou cuillère tournante – traîne ou lancer en zones de courant fort");
+    if (conditions.includes('montante') || conditions.includes('pluie')) {
+      list.push("Montée active → leurres rapides en surface ou mi-eau");
+    }
+    if (spotType.includes('fleuve') || spotType.includes('estuaire') || spotType.includes('barrage')) {
+      list.push("Lancer loin + récupération saccadée près obstacles ou courant");
+    }
+    depthAdvice.push("Surface à mi-eau (0-3 m) – zones de courant fort, barrages, passes");
+  }
+
+  // HIVER / AUTOMNE (alose rare ou en mer)
+  else if (saison === "hiver" || saison === "automne" || temperature < 8 || temperature > 20) {
+    list.push("Alose quasi absente en eau douce (migration terminée ou pas commencée)");
+    list.push("Essaie en estuaire ou mer proche avec petit vif ou leurre rapide");
+    list.push("Cuillère ou micro-jig – récupération vive mi-eau (si présence rare)");
+    list.push("Petit vif ou ver – traîné lent près embouchures");
+    depthAdvice.push("Mi-eau à surface – estuaires, embouchures de fleuves");
+  }
+
+  // Message final
+  list.push("Cuillère lourde flashy et jerkbait saccadé restent les valeurs sûres en montée pour l'alose");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('amour') || species.includes('amour blanc') || species.includes('ctenopharyngodon')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau froide → amour blanc peu actif, appâts digestes + amorçage très léger");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → amour blanc se réveille, herbe fraîche et amorçage modéré excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → amour blanc très actif, herbe, maïs et amorçage copieux ultra-efficaces");
+  } else {
+    techniqueAdvice.push("Automne → amour blanc nourricier, appâts végétaux + amorçage important");
+  }
+
+  // HIVER / EAU FROIDE (< 8 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Petits pellets solubles ou maïs doux – amorçage très léger (quelques graines)");
+    list.push("Pain ou semoule – présenté sur flotteur ou posé simple");
+    list.push("Pâte à carpe digestes ou bouillettes végétales 8-12 mm – hair rig");
+    list.push("Petits morceaux d’herbe ou algues – posé lent");
+    depthAdvice.push("Fond (1-3 m) – zones calmes, vaseuses, peu de courant");
+  }
+
+  // PRINTEMPS (réveil progressif, amour blanc se rapproche des bordures)
+  else if (saison === "printemps") {
+    list.push("Herbe fraîche ou algues – présenté sur flotteur ou posé près bordures");
+    list.push("Maïs doux + pellets solubles – amorçage modéré PVA ou spod léger");
+    list.push("Pain ou semoule – flotteur ou posé");
+    list.push("Petites bouillettes végétales 10-15 mm – hair rig simple");
+    list.push("Pellets + maïs – présenté sur method feeder ou flotteur");
+    if (conditions.includes('pluie') || conditions.includes('montante')) {
+      list.push("Herbe ou maïs – flotteur dans zones vaseuses");
+    }
+    depthAdvice.push("Fond ou mi-eau (1-3 m) – bordures, zones qui se réchauffent");
+  }
+
+  // ÉTÉ / AUTOMNE (amour blanc très actif, gros sujets en bancs)
+  else {
+    list.push("Herbe fraîche, algues ou feuilles de salade – flotteur ou posé en zones végétalisées");
+    list.push("Maïs doux + pellets + graines + bouillettes végétales – amorçage copieux spod ou PVA bag");
+    list.push("Bouillettes spécifiques amour blanc 15-20 mm (maïs, scopex végétal…) – hair rig");
+    list.push("Pellets + tiger nuts fermentés – amorçage lourd près obstacles");
+    list.push("Pain ou semoule en grappe – flotteur actif ou method feeder");
+    if (spotType.includes('étang') || spotType.includes('lac')) {
+      list.push("Method feeder ou flotteur – maïs + pellets + herbe");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Flotteur ou leger feeder – maïs/herbe dans courant faible");
+    }
+    if (conditions.includes('vent') || conditions.includes('pluie')) {
+      list.push("Amorçage copieux – mélange maïs + pellets + herbe");
+    }
+    depthAdvice.push("Fond ou mi-eau (1-4 m) – zones végétalisées, herbiers, bordures");
+  }
+
+  // Message final
+  list.push("Herbe fraîche, maïs doux et pellets restent des valeurs sûres toute l'année pour l'amour blanc");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('carrassin') || species.includes('carassin') || species.includes('carassius')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau froide → carassin peu actif, appâts digestes + amorçage très léger");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → carassin se réveille, appâts naturels + amorçage modéré excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → carassin très actif, appâts variés + amorçage copieux en étang calme");
+  } else {
+    techniqueAdvice.push("Automne → carassin nourricier, appâts riches + amorçage important");
+  }
+
+  // HIVER / EAU FROIDE (< 8 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Petits vers de terre coupés ou asticots – flotteur ultra-léger ou posé");
+    list.push("Pain ou semoule – présenté sur flotteur simple ou posé");
+    list.push("Maïs doux ou pellets solubles – amorçage très léger (quelques graines)");
+    list.push("Pâte à carpe digestes ou bouillettes végétales 8-12 mm – hair rig");
+    depthAdvice.push("Fond vaseux (1-3 m) – zones calmes, peu de courant");
+  }
+
+  // PRINTEMPS (réveil progressif, carassin se rapproche des bordures)
+  else if (saison === "printemps") {
+    list.push("Vers de terre ou asticots – flotteur ou posé près bordures");
+    list.push("Maïs doux + pellets solubles – amorçage modéré PVA ou spod léger");
+    list.push("Pain ou semoule – flotteur actif ou posé");
+    list.push("Petites bouillettes digestes 10-15 mm – hair rig simple");
+    list.push("Pellets + maïs – présenté sur method feeder ou flotteur");
+    if (conditions.includes('pluie') || conditions.includes('montante')) {
+      list.push("Asticots ou ver – flotteur dans zones vaseuses");
+    }
+    depthAdvice.push("Fond ou mi-eau (1-3 m) – bordures, zones qui se réchauffent");
+  }
+
+  // ÉTÉ / AUTOMNE (carassin très actif, gros sujets en bancs)
+  else {
+    list.push("Vers de terre, asticots ou teigne – flotteur ou posé en zones vaseuses");
+    list.push("Maïs doux + pellets + graines + bouillettes – amorçage copieux spod ou PVA bag");
+    list.push("Bouillettes spécifiques carassin 12-18 mm (scopex, fruity, maïs…) – hair rig");
+    list.push("Pellets + tiger nuts fermentés – amorçage lourd près obstacles");
+    list.push("Pain ou semoule en grappe – flotteur actif ou method feeder");
+    if (spotType.includes('étang') || spotType.includes('lac')) {
+      list.push("Method feeder ou flotteur – maïs + pellets + asticots");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Flotteur ou leger feeder – ver/astico/maïs dans courant faible");
+    }
+    if (conditions.includes('vent') || conditions.includes('pluie')) {
+      list.push("Amorçage copieux – mélange maïs + pellets + vers");
+    }
+    depthAdvice.push("Fond vaseux ou mi-eau (1-4 m) – zones calmes, herbiers légers, bordures");
+  }
+
+  // Message final
+  list.push("Vers de terre, maïs doux et pellets restent des valeurs sûres toute l'année pour le carassin");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('esturgeon') || species.includes('sturgeon') || species.includes('acipenser')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau froide → esturgeon très peu actif, appâts digestes + posé statique profond");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → esturgeon se réveille lentement, gros appâts + amorçage léger");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → esturgeon actif, gros appâts naturels + posé profond ou traîne lente");
+  } else {
+    techniqueAdvice.push("Automne → esturgeon nourricier, appâts riches + amorçage copieux");
+  }
+
+  // HIVER / EAU FROIDE (< 8 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Gros ver de terre ou morceaux de poisson – posé statique profond");
+    list.push("Petits pellets digestes ou bouillettes solubles – amorçage très léger");
+    list.push("Calamar ou morceaux de seiche – présenté sur hair rig lourd");
+    list.push("Petits crabes ou crevettes – posé lent au fond");
+    list.push("Bouillettes digestes 12-18 mm – très peu d’amorce");
+    depthAdvice.push("Fond profond (4-10 m) – zones calmes, vaseuses ou sableuses");
+  }
+
+  // PRINTEMPS (réveil progressif, esturgeon se rapproche du fond)
+  else if (saison === "printemps") {
+    list.push("Gros vers de terre ou asticots en grappe – posé ou traîné lent");
+    list.push("Poisson mort ou vif (gardon, brème) – montage posé profond");
+    list.push("Bouillettes digestes 15-20 mm – amorçage modéré PVA ou spod léger");
+    list.push("Calamar frais ou crevettes – hair rig ou posé");
+    list.push("Pellets + maïs – présenté sur method feeder lourd");
+    if (temperature > 10) {
+      list.push("Augmente légèrement l’amorçage – esturgeon commence à bouger");
+    }
+    depthAdvice.push("Fond ou mi-fond (3-8 m) – zones vaseuses, cassures");
+  }
+
+  // ÉTÉ / AUTOMNE (esturgeon très actif, gros sujets nourriciers)
+  else {
+    list.push("Gros poisson mort ou vif (carpeau, gardon) – posé profond ou traîné lent");
+    list.push("Gros vers de terre ou lombrics en grappe – hair rig lourd");
+    list.push("Bouillettes protéinées 18-25 mm (poisson, liver, monster crab…) – amorçage copieux");
+    list.push("Calamar entier ou gros morceaux – posé statique au fond");
+    list.push("Pellets + tiger nuts + graines – spod massif près structures");
+    if (spotType.includes('étang') || spotType.includes('lac')) {
+      list.push("Posé lourd ou method feeder – gros appâts + amorçage important");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Traîné lent ou posé dans courant faible – gros vif ou poisson mort");
+    }
+    if (conditions.includes('vent') || conditions.includes('pluie')) {
+      list.push("Amorçage copieux – mélange poisson + bouillettes + pellets");
+    }
+    depthAdvice.push("Fond profond (4-12 m) – zones vaseuses, cassures, structures");
+  }
+
+  // Message final
+  list.push("Gros appâts naturels (poisson mort/vif, vers) et bouillettes restent des valeurs sûres pour l'esturgeon");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('gardon') || species.includes('rutilus')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 6) {
+    techniqueAdvice.push("En hiver ou eau très froide → gardon peu actif, appâts naturels fins + amorçage très léger");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → gardon en bancs actifs, flotteur et toc excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → gardon très actif en surface/mid-eau, flotteur actif + amorçage copieux");
+  } else {
+    techniqueAdvice.push("Automne → gardon nourricier, flotteur et appâts riches très performants");
+  }
+
+  // HIVER / EAU FROIDE (< 6–8 °C)
+  if (saison === "hiver" || temperature < 6) {
+    list.push("Petits asticots ou morceaux de ver – flotteur ultra-léger ou posé");
+    list.push("Pain ou semoule – présenté sur flotteur simple ou posé");
+    list.push("Maïs doux ou pellets solubles – amorçage très léger (quelques graines)");
+    list.push("Pâte fine ou bouillettes digestes 6-10 mm – hair rig ou flotteur");
+    depthAdvice.push("Fond ou mi-fond (1-3 m) – zones calmes, vaseuses, courant faible");
+  }
+
+  // PRINTEMPS (montée en activité, gardon en bancs près bordures)
+  else if (saison === "printemps") {
+    list.push("Asticots ou vers de terre – flotteur ou toc dans courant faible");
+    list.push("Maïs doux + pellets – amorçage modéré PVA ou spod léger");
+    list.push("Pain ou semoule – flotteur actif ou posé près bordures");
+    list.push("Petites bouillettes digestes 8-12 mm – hair rig simple");
+    list.push("Pellets + maïs – présenté sur method feeder ou flotteur");
+    if (conditions.includes('pluie') || conditions.includes('montante')) {
+      list.push("Asticots ou ver – flotteur dans courant modéré");
+    }
+    depthAdvice.push("Mi-eau à surface (0.5-2 m) – bordures, zones qui se réchauffent");
+  }
+
+  // ÉTÉ / AUTOMNE (gardon très actif, gros bancs nourriciers)
+  else {
+    list.push("Asticots, vers de terre ou teigne – flotteur actif ou posé");
+    list.push("Maïs doux + pellets + graines + bouillettes – amorçage copieux spod ou PVA bag");
+    list.push("Bouillettes spécifiques gardon 10-15 mm (maïs, scopex, fruity…) – hair rig");
+    list.push("Pellets + tiger nuts fermentés – amorçage lourd près obstacles");
+    list.push("Pain ou semoule en grappe – flotteur actif ou method feeder");
+    if (spotType.includes('étang') || spotType.includes('lac')) {
+      list.push("Method feeder ou flotteur – maïs + pellets + asticots");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Flotteur ou toc – asticots/ver/maïs dans courant faible à moyen");
+    }
+    if (conditions.includes('vent') || conditions.includes('pluie')) {
+      list.push("Amorçage copieux – mélange maïs + pellets + asticots");
+    }
+    depthAdvice.push("Surface à mi-eau (0-2.5 m) – bancs, zones calmes, bordures");
+  }
+
+  // Message final
+  list.push("Asticots, maïs doux et flotteur actif restent des valeurs sûres toute l'année pour le gardon");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('lote') || species.includes('lotte') || species.includes('lota')) {
+  // Message introductif selon saison (la lote est surtout active en eau froide)
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver ou eau froide → lote très active, appâts naturels (poisson mort, vers) + posé profond excellents");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → lote encore active, appâts naturels + traîné lent très performants");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → lote peu active (eau chaude), pêche difficile sauf zones profondes et de nuit");
+  } else {
+    techniqueAdvice.push("Automne → lote recommence à s’activer, privilégie appâts naturels en profondeur");
+  }
+
+  // HIVER / EAU FROIDE (< 10 °C) – meilleure période
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Poisson mort (gardon, perche, ablette) – posé statique ou mort manié au fond");
+    list.push("Gros vers de terre ou lombrics en grappe – hair rig lourd ou posé profond");
+    list.push("Crevettes ou morceaux de crabe – présenté sur flotteur subaquatique ou posé");
+    list.push("Calamar frais ou morceaux – posé statique en profondeur");
+    list.push("Petit vif (éperlan, ablette) – traîné très lent près structures");
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Posé ou traîné lent dans zones profondes ou courant faible");
+    }
+    if (!isDay) {
+      list.push("Pêche de nuit → très efficace, lote chasse activement");
+    }
+    depthAdvice.push("Fond profond (3-10 m) – cassures, tombants, zones vaseuses ou rocheuses");
+  }
+
+  // PRINTEMPS (encore bonne activité, mais eau qui se réchauffe)
+  else if (saison === "printemps") {
+    list.push("Poisson mort ou vif – traîné lent ou posé profond");
+    list.push("Gros vers de terre ou lombrics – hair rig ou posé près obstacles");
+    list.push("Crevettes ou petits crabes – présenté sur flotteur subaquatique");
+    list.push("Calamar ou morceaux – posé statique en zones profondes");
+    if (temperature < 12) {
+      list.push("Continue les appâts naturels – lote encore très active");
+    }
+    depthAdvice.push("Fond à mi-fond (2-8 m) – zones profondes, cassures");
+  }
+
+  // ÉTÉ / AUTOMNE (lote moins active, souvent en profondeur)
+  else {
+    list.push("Poisson mort ou gros ver – posé profond ou traîné très lent (de nuit)");
+    list.push("Calamar ou crevettes – présenté en profondeur près structures");
+    list.push("Petit vif – traîné lent dans zones fraîches ou profondes");
+    list.push("Bouillettes digestes ou pellets – très peu d’amorce");
+    if (!isDay) {
+      list.push("Pêche de nuit → meilleure chance, lote descend en profondeur");
+    }
+    depthAdvice.push("Fond profond (4-12 m) – zones vaseuses, tombants, eau fraîche");
+  }
+
+  // Message final
+  list.push("Poisson mort ou gros vers posés au fond restent des valeurs sûres pour la lote (surtout de nuit)");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('omble') || species.includes('salvelinus') || species.includes('omble chevalier')) {
+  // Message introductif selon saison (l'omble préfère l'eau très froide)
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau très froide → omble très actif, finesse, toc et appâts naturels excellents");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → omble agressif, mouche, toc et petits leurres performants");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → omble descend en profondeur (eau froide), verticale et finesse profonde");
+  } else {
+    techniqueAdvice.push("Automne → omble remonte, toc et mouche très efficaces");
+  }
+
+  // HIVER / EAU FROIDE (< 8 °C) – meilleure période
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Nymphe lourde (perdigon, stonefly) – toc profond ou verticale lente");
+    list.push("Petit vairon ou éperlan vif – traîné lent ou posé profond");
+    list.push("Ver de terre ou teigne – toc ou flotteur subaquatique");
+    list.push("Micro-leurre finesse 3-6 cm (shad, minnow) – animation très lente");
+    list.push("Mouche noyée ou streamer petit – dérive lente ou verticale");
+    if (!isDay) {
+      list.push("Pêche de nuit ou crépuscule → omble chasse activement près fond");
+    }
+    depthAdvice.push("Fond profond (4-15 m) – zones fraîches, cassures, tombants rocheux");
+  }
+
+  // PRINTEMPS (montée en activité, omble agressif)
+  else if (saison === "printemps") {
+    list.push("Mouche sèche ou émergente – surface pendant éclosions");
+    list.push("Nymphe (pheasant tail, perdigon) – nymphe au fil ou toc");
+    list.push("Petit minnow ou jerkbait 5-8 cm – twitching saccadé mi-eau");
+    list.push("Cuillère légère n°0-2 argentée – récupération lente");
+    list.push("Ver ou teigne – toc ou flotteur près bordures");
+    if (conditions.includes('montante') || conditions.includes('pluie')) {
+      list.push("Nymphe ou mouche – eau trouble = dérive au fil");
+    }
+    depthAdvice.push("Surface à mi-fond (0-5 m) – zones de courant modéré, bordures");
+  }
+
+  // ÉTÉ (eau chaude en surface, omble descend en profondeur)
+  else if (saison === "été") {
+    list.push("Verticale avec nymphe lourde ou petit shad – animation lente au fond");
+    list.push("Drop shot ou ned rig finesse 4-7 cm – ultra lent en profondeur");
+    list.push("Mouche noyée ou streamer – dérive lente en couches fraîches");
+    list.push("Petit vairon ou éperlan – traîné lent en profondeur");
+    list.push("Cuillère ou micro-jig 5-15 g – verticale ou traîné profond");
+    if (temperature > 15) {
+      list.push("Pêche en profondeur (8 m+) → omble fuit la chaleur de surface");
+    }
+    depthAdvice.push("Fond profond (6-20 m) – zones fraîches, thermocline, tombants");
+  }
+
+  // AUTOMNE (omble remonte, activité bonne)
+  else if (saison === "automne") {
+    list.push("Nymphe ou mouche noyée – toc ou dérive lente");
+    list.push("Petit minnow ou leurre souple 5-8 cm – twitching mi-eau");
+    list.push("Ver de terre ou teigne – toc ou flotteur");
+    list.push("Cuillère légère – récupération saccadée près bordures");
+    depthAdvice.push("Mi-eau à fond (2-8 m) – zones qui se refroidissent");
+  }
+
+  // Message final
+  list.push("Nymphe lourde au toc et finesse profonde restent des valeurs sûres pour l'omble chevalier");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('ombre') || species.includes('thymallus')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau très froide → ombre peu active, appâts naturels fins + toc très lent");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → ombre en pleine montée, mouche sèche et nymphe excellentes");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → ombre très sélective en surface, mouche sèche et micro-leurres rapides");
+  } else {
+    techniqueAdvice.push("Automne → ombre nourricière, nymphe et streamer performants");
+  }
+
+  // HIVER / EAU FROIDE (< 8 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Nymphe lourde (perdigon, stonefly) – toc profond ou lent au fil");
+    list.push("Petit ver de terre ou teigne – toc très lent près fond");
+    list.push("Asticot ou pâte fine – flotteur ultra-léger ou posé");
+    list.push("Micro-nymphe ou petite mouche noyée – dérive lente");
+    list.push("Micro-leurre finesse 3-5 cm – animation ultra lente");
+    depthAdvice.push("Fond ou mi-fond (0.5-2.5 m) – courant faible, zones calmes");
+  }
+
+  // PRINTEMPS (montée en activité, ombre très agressive)
+  else if (saison === "printemps") {
+    list.push("Mouche sèche (CDC, elk hair caddis, mayfly) – surface pendant éclosions");
+    list.push("Nymphe légère (pheasant tail, perdigon, caddis) – nymphe au fil / toc");
+    list.push("Ver de terre ou teigne – toc ou flotteur léger en rivière montante");
+    list.push("Petite cuillère n°0-2 argentée – récupération lente mi-eau");
+    list.push("Micro-spinner ou micro-cuillère – animation saccadée près bordures");
+    if (conditions.includes('montante') || conditions.includes('pluie')) {
+      list.push("Mouche sèche ou nymphe – eau trouble = surface ou nymphe");
+    }
+    depthAdvice.push("Surface à mi-eau (0-1.5 m) – courant modéré, zones d’éclosions");
+  }
+
+  // ÉTÉ (eau plus chaude, ombre sélective en surface)
+  else if (saison === "été") {
+    list.push("Mouche sèche imitative (caddis, mayfly, hopper) – surface matin/soir");
+    list.push("Nymphe (perdigon, hare’s ear) – dérive naturelle au fil dans courant");
+    list.push("Streamer petit ou mouche noyée – animation saccadée mi-eau");
+    list.push("Micro-cuillère n°0-1 argentée – récupération rapide en surface");
+    list.push("Petit micro-leurre finesse (minnow 4-6 cm) – twitching mi-eau");
+    if (conditions.includes('soleil') || conditions.includes('clair')) {
+      list.push("Mouche sèche ou nymphe – eau claire = imitations précises");
+    }
+    if (spotType.includes('rivière') || spotType.includes('courant')) {
+      list.push("Nymphe ou mouche sèche – dérive naturelle dans courant");
+    }
+    depthAdvice.push("Surface (0-0.8 m) matin/soir ou mi-eau (0.5-1.5 m) en journée");
+  }
+
+  // AUTOMNE (ombre nourricière, bonne activité)
+  else if (saison === "automne") {
+    list.push("Nymphe (pheasant tail, perdigon) – toc ou dérive lente près fond");
+    list.push("Streamer coloré (woolly bugger, zonker) – animation saccadée mi-eau");
+    list.push("Ver de terre ou teigne – toc dans zones calmes ou courant faible");
+    list.push("Petite cuillère ou micro-spinner – récupération saccadée");
+    depthAdvice.push("Mi-eau à fond (0.5-2.5 m) – zones de courant faible, obstacles");
+  }
+
+  // Message final
+  list.push("Mouche sèche et nymphe au fil restent des valeurs sûres toute l'année pour l'ombre");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('rotengle') || species.includes('scardinius')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 6) {
+    techniqueAdvice.push("En hiver ou eau très froide → rotengle peu actif, appâts naturels fins + amorçage très léger");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → rotengle en bancs actifs près surface, flotteur et toc excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → rotengle très actif en surface/mid-eau, flotteur actif + amorçage copieux");
+  } else {
+    techniqueAdvice.push("Automne → rotengle nourricier, flotteur et appâts riches très performants");
+  }
+
+  // HIVER / EAU FROIDE (< 6–8 °C)
+  if (saison === "hiver" || temperature < 6) {
+    list.push("Petits asticots ou morceaux de ver – flotteur ultra-léger ou posé");
+    list.push("Pain ou semoule – présenté sur flotteur simple ou posé");
+    list.push("Maïs doux ou pellets solubles – amorçage très léger (quelques graines)");
+    list.push("Pâte fine ou bouillettes digestes 6-10 mm – hair rig ou flotteur");
+    depthAdvice.push("Fond ou mi-fond (1-3 m) – zones calmes, vaseuses, courant faible");
+  }
+
+  // PRINTEMPS (montée en activité, rotengle en bancs près bordures)
+  else if (saison === "printemps") {
+    list.push("Asticots ou vers de terre – flotteur ou toc dans courant faible");
+    list.push("Maïs doux + pellets – amorçage modéré PVA ou spod léger");
+    list.push("Pain ou semoule – flotteur actif ou posé près bordures");
+    list.push("Petites bouillettes digestes 8-12 mm – hair rig simple");
+    list.push("Pellets + maïs – présenté sur method feeder ou flotteur");
+    if (conditions.includes('pluie') || conditions.includes('montante')) {
+      list.push("Asticots ou ver – flotteur dans courant modéré");
+    }
+    depthAdvice.push("Mi-eau à surface (0.5-2 m) – bordures, zones qui se réchauffent");
+  }
+
+  // ÉTÉ / AUTOMNE (rotengle très actif, gros bancs nourriciers)
+  else {
+    list.push("Asticots, vers de terre ou teigne – flotteur actif ou posé");
+    list.push("Maïs doux + pellets + graines + bouillettes – amorçage copieux spod ou PVA bag");
+    list.push("Bouillettes spécifiques rotengle 10-15 mm (maïs, scopex, fruity…) – hair rig");
+    list.push("Pellets + tiger nuts fermentés – amorçage lourd près obstacles");
+    list.push("Pain ou semoule en grappe – flotteur actif ou method feeder");
+    if (spotType.includes('étang') || spotType.includes('lac')) {
+      list.push("Method feeder ou flotteur – maïs + pellets + asticots");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Flotteur ou toc – asticots/ver/maïs dans courant faible à moyen");
+    }
+    if (conditions.includes('vent') || conditions.includes('pluie')) {
+      list.push("Amorçage copieux – mélange maïs + pellets + asticots");
+    }
+    depthAdvice.push("Surface à mi-eau (0-2.5 m) – bancs, zones calmes, bordures");
+  }
+
+  // Message final
+  list.push("Asticots, maïs doux et flotteur actif restent des valeurs sûres toute l'année pour le rotengle");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('arc en ciel') || species.includes('arc-en-ciel') || species.includes('rainbow') || species.includes('oncorhynchus')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau froide → arc-en-ciel active au fond, appâts naturels + toc lent excellents");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → arc-en-ciel très agressive, mouche sèche/nymphe et toc au top");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → arc-en-ciel sélective en surface (soir/matin), mouche sèche + micro-leurres");
+  } else {
+    techniqueAdvice.push("Automne → arc-en-ciel nourricière, streamer et appâts naturels performants");
+  }
+
+  // HIVER / EAU FROIDE (< 8 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Ver de terre ou teigne – toc lent ou flotteur subaquatique");
+    list.push("Nymphe lourde (perdigon, stonefly) – toc profond ou verticale lente");
+    list.push("Petit vairon ou éperlan vif – traîné lent ou posé");
+    list.push("Micro-leurre finesse 4-7 cm (shad, minnow) – animation ultra lente");
+    list.push("Mouche noyée ou petit streamer – dérive lente au fond");
+    depthAdvice.push("Fond ou mi-fond (1-4 m) – zones profondes, courant faible");
+  }
+
+  // PRINTEMPS (montée en activité, éclosions possibles)
+  else if (saison === "printemps") {
+    list.push("Mouche sèche (CDC, elk hair caddis, mayfly) – surface pendant éclosions");
+    list.push("Nymphe (pheasant tail, perdigon, caddis) – nymphe au fil / toc");
+    list.push("Petite cuillère n°0-2 argentée – récupération lente mi-eau");
+    list.push("Ver de terre ou teigne – toc ou flotteur léger en rivière montante");
+    list.push("Micro-spinner ou micro-cuillère – animation saccadée près bordures");
+    if (conditions.includes('montante') || conditions.includes('pluie')) {
+      list.push("Nymphe ou mouche – eau trouble = surface ou nymphe");
+    }
+    depthAdvice.push("Surface à mi-eau (0-2 m) – courant modéré, zones d’éclosions");
+  }
+
+  // ÉTÉ (eau plus chaude, arc-en-ciel sélective en surface)
+  else if (saison === "été") {
+    list.push("Mouche sèche imitative (caddis, mayfly, hopper) – surface matin/soir");
+    list.push("Nymphe (perdigon, hare’s ear) – dérive naturelle au fil dans courant");
+    list.push("Streamer petit ou mouche noyée – animation saccadée mi-eau");
+    list.push("Micro-cuillère n°0-2 argentée ou or – récupération rapide en surface");
+    list.push("Petit micro-leurre finesse (minnow 4-7 cm) – twitching mi-eau");
+    if (conditions.includes('soleil') || conditions.includes('clair')) {
+      list.push("Mouche sèche ou nymphe – eau claire = imitations précises");
+    }
+    if (spotType.includes('rivière') || spotType.includes('courant')) {
+      list.push("Nymphe ou mouche sèche – dérive naturelle dans courant");
+    }
+    depthAdvice.push("Surface (0-1 m) matin/soir ou mi-eau (0.5-2 m) en journée");
+  }
+
+  // AUTOMNE (ombre nourricière, bonne activité)
+  else if (saison === "automne") {
+    list.push("Nymphe (pheasant tail, perdigon) – toc ou dérive lente près fond");
+    list.push("Streamer coloré (woolly bugger, zonker) – animation saccadée mi-eau");
+    list.push("Ver de terre ou teigne – toc dans zones calmes ou courant faible");
+    list.push("Petite cuillère ou micro-spinner – récupération saccadée");
+    depthAdvice.push("Mi-eau à fond (1-3 m) – zones de courant faible, obstacles");
+  }
+
+  // Message final
+  list.push("Mouche sèche et nymphe au fil restent des valeurs sûres toute l'année pour la truite arc-en-ciel");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
 if (species.includes('silure')) {
   // Conseil de base (toute l'année)
   list.push("Essaie une ondulante de 50g – ramène-la proche du fond avec de longues pauses");
