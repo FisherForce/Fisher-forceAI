@@ -168,6 +168,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   saveSpot(spotType);
 
   const list = [];
+  const depthAdvice = [];
   const techniqueAdvice = [];
 
   const mois = new Date().getMonth() + 1;
