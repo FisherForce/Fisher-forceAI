@@ -2014,6 +2014,7 @@ app.post('/api/suggest', (req, res) => {
 
 app.post('/api/advice', (req, res) => {
   try {
+    console.log('[DEBUG API] Espèce reçue :', species);
     let { targetSpecies: species = "", structure, conditions, spotType, temperature, failedLures = [] } = req.body;
 
     species = (species || "").toLowerCase();
