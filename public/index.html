@@ -750,7 +750,7 @@ function analyserLive() {
 
 
     <!-- ====== APPRENTISSAGE UTILISATEUR ====== -->
-<div style="width:320px;margin-top:10px;padding:10px;border-radius:12px;background:#181818;color:#fff;font-family:sans-serif">
+<div align="center" style="width:320px;margin-top:10px;padding:10px;border-radius:12px;background:#181818;color:#fff;font-family:sans-serif">
   <h3 style="margin:5px 0;font-size:13px;">🧠 Apprentissage utilisateur</h3>
 
   <select id="fishSpecies" style="width:100%;margin-bottom:6px;">
@@ -815,6 +815,14 @@ document.getElementById("logCatch").onclick = () => {
     "✔️ Enregistré — Fisher-ForceAI apprend ton style";
 };
 </script>
+        <div class="ffai-next-step">
+  👉 <b>Prochaine étape :</b><br>
+  Vérifie si une <span style="color:#00ffd5">fenêtre plus forte</span> arrive aujourd’hui.<br><br>
+  <button onclick="document.getElementById('fenetre-ia').scrollIntoView({behavior:'smooth'})">
+    📈 Voir la Fenêtre IA
+  </button>
+</div>
+
 <!-- ============================
      ÉTAPE 3 — FENÊTRE DE PÊCHE IA (FIX MOBILE)
 ============================ -->
@@ -1035,6 +1043,14 @@ function scoreAspe(h,i){
   return v;
 }
 </script>
+        <div class="ffai-next-step">
+  👉 <b>Affiner l’analyse :</b><br>
+  Teste un <span style="color:#00ffd5">spot précis sur la carte</span> pour comparer.<br><br>
+  <button onclick="document.getElementById('spot-analyse').scrollIntoView({behavior:'smooth'})">
+    📍 Scanner un Spot
+  </button>
+</div>
+
 
 
  <!-- MODULE ANALYSE CARTE SPOT PÊCHE -->
@@ -1271,6 +1287,13 @@ function meilleurCreneau(ph,s){
     "⛔ À éviter (pression forte)";
 }
 </script>
+<div class="ffai-next-step">
+  🔁 <b>Optimise encore :</b><br>
+  Compare avec <span style="color:#00ffd5">un autre spot</span> ou reviens voir la probabilité LIVE.<br><br>
+  <button onclick="document.getElementById('livebite-map').scrollIntoView({behavior:'smooth'})">
+    🎣 Retour au LIVE
+  </button>
+</div>
 
 
 
