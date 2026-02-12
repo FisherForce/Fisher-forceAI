@@ -1807,6 +1807,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (needNewAdvice) {
         const species = document.getElementById('coachSpecies').value;
+        const realSpecies = document.getElementById('coachSpecies').value.trim();
+        console.log('Valeur réelle du select :', realSpecies);
         const milieu = document.getElementById('coachMilieu').value;
 
         console.log('Espèce envoyée au serveur :', species);
@@ -1814,7 +1816,7 @@ document.addEventListener('DOMContentLoaded', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            targetSpecies: species,
+            targetSpecies: realSpecies,
             structure: "Mixte",
             conditions: finalConditions,
             spotType: milieu,
