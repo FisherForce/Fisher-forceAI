@@ -1606,6 +1606,7 @@ const adviceRes = await fetch('/api/advice', {
     
           <!-- Mode Coach -->
 <!-- Mode Coach -->
+<!-- Mode Coach -->
 <div id="mode-coach" class="mode">
   <h2 style="text-align:center;color:#00ff9d;">Mode Coach IA 🏆</h2>
   <p style="text-align:center;color:#aaa;margin:10px 0;">Sélectionne ton espèce et milieu, puis clique sur la carte pour ton spot. L'IA analyse en direct !</p>
@@ -1714,10 +1715,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }).addTo(coachMap);
     analyserCoach();
     if (coachTimer) clearInterval(coachTimer);
-    coachTimer = setInterval(analyserCoach, 60000); // 60s
+    coachTimer = setInterval(analyserCoach, 60000);
   });
 
-  // Gestion override météo utilisateur
+  // Gestion override météo
   function setupWeatherButtons() {
     const buttons = document.querySelectorAll('.weather-btn');
     buttons.forEach(btn => {
@@ -1725,12 +1726,12 @@ document.addEventListener('DOMContentLoaded', () => {
         buttons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         userWeatherOverride = btn.dataset.value;
-        analyserCoach(); // Re-analyse immédiat
+        analyserCoach();
       });
     });
   }
 
-  // Calcul phase lunaire simple
+  // Phase lunaire
   function getMoonPhase(date = new Date()) {
     const knownNewMoon = new Date(2025, 0, 13);
     const days = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
@@ -1750,24 +1751,26 @@ document.addEventListener('DOMContentLoaded', () => {
     resultDiv.innerHTML = '<p style="color:#00ff9d;font-size:18px;">Analyse en direct... 📡</p>';
 
     try {
-      // Récupère les valeurs À CHAQUE FOIS (pas en cache)
-      const speciesElement = document.getElementById('coachSpecies');
-      const milieuElement = document.getElementById('coachMilieu');
+      // Récupère les valeurs À CHAQUE APPEL (pas de cache)
+      const speciesSelect = document.getElementById('coachSpecies');
+      const milieuSelect = document.getElementById('coachMilieu');
 
-      if (!speciesElement || !milieuElement) {
-        throw new Error("Sélecteurs non trouvés dans le DOM");
+      if (!speciesSelect || !milieuSelect) {
+        console.error('Erreur : les sélecteurs coachSpecies ou coachMilieu sont introuvables dans le DOM');
+        resultDiv.innerHTML = '<p style="color:#e74c3c;">Erreur : sélecteurs introuvables. Recharge la page.</p>';
+        return;
       }
 
-      const species = speciesElement.value.trim();
-      const milieu = milieuElement.value.trim();
+      const species = speciesSelect.value.trim();
+      const milieu = milieuSelect.value.trim();
 
-      // Log clair pour debug
-      console.log('=== DEBUG MODE COACH ===');
-      console.log('Espèce sélectionnée :', species);
+      // Log clair et immédiat
+      console.log('=== DEBUG MODE COACH (clic sur carte) ===');
+      console.log('Espèce sélectionnée (réelle) :', species);
       console.log('Milieu sélectionné :', milieu);
       console.log('Coordonnées spot :', currentSpot);
 
-      // Fetch météo
+      // Fetch météo (inchangé)
       const meteoRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${currentSpot.lat}&longitude=${currentSpot.lng}&current=temperature_2m,precipitation,wind_speed_10m,pressure_msl,cloud_cover,is_day&timezone=Europe/Paris`);
       const meteo = await meteoRes.json();
       const c = meteo.current;
@@ -1782,7 +1785,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const moonPhase = getMoonPhase();
       const moonText = moonPhase.includes("Pleine") ? "pleine lune" : moonPhase.includes("Nouvelle") ? "nouvelle lune" : moonPhase.toLowerCase();
 
-      // Marée (placeholder)
+      // Marée placeholder
       let tideText = "marée inconnue";
 
       // Conditions auto
@@ -1796,7 +1799,7 @@ document.addEventListener('DOMContentLoaded', () => {
       conditions.push(tideText);
       let autoConditions = conditions.join(' ');
 
-      // Override utilisateur
+      // Override météo
       let finalConditions = autoConditions;
       let weatherDisplay = 'Auto-détecté';
       if (userWeatherOverride) {
@@ -1806,7 +1809,7 @@ document.addEventListener('DOMContentLoaded', () => {
         weatherDisplay = `Choisi : ${userWeatherOverride.charAt(0).toUpperCase() + userWeatherOverride.slice(1)}`;
       }
 
-      // Stabilité (évite requêtes inutiles)
+      // Stabilité
       let needNewAdvice = true;
       if (lastTemp !== null && lastPrecip !== null && lastWind !== null && lastMoonPhase && lastTide) {
         const tempDiff = Math.abs(temp - lastTemp);
@@ -1821,12 +1824,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (needNewAdvice) {
-        // On envoie la vraie valeur
         const adviceRes = await fetch('/api/advice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            targetSpecies: species,   // ← ICI LA VRAIE VALEUR
+            targetSpecies: species,
             structure: "Mixte",
             conditions: finalConditions,
             spotType: milieu,
@@ -1891,7 +1893,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.head.appendChild(weatherStyle);
 });
 </script>
-
       </div>
       <div id="mode-expert" style="display:none">
         <!-- PRÉVISION DE TOUCHES 7 JOURS — VERSION PARFAITE (bug affichage fixé) -->
