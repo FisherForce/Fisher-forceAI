@@ -745,28 +745,12 @@ function analyserLive() {
 
       const especes = {
         "Brochet": v => v + (c.cloud_cover > 70 ? 20 : 0) + (c.wind_speed_10m > 8 && c.wind_speed_10m < 18 ? 10 : 0) - (luminosite > 70 ? 15 : 0),
-        html += `🔹 <b>${nom}</b> — ${score}%<br>
-         <span style="font-size:11px;opacity:.8">${mood}</span><br><br>`;
-
         "Sandre": v => v + (c.pressure_msl < 1012 ? 20 : 0) + (luminosite < 40 ? 15 : 0) + ((hour >= 20 || hour <= 6) ? 20 : 0),
-          html += `🔹 <b>${nom}</b> — ${score}%<br>
-         <span style="font-size:11px;opacity:.8">${mood}</span><br><br>`;
-
         "Perche": v => v + (c.temperature_2m > 12 && c.temperature_2m < 22 ? 15 : 0) + (c.cloud_cover > 40 ? 10 : 0),
-          html += `🔹 <b>${nom}</b> — ${score}%<br>
-         <span style="font-size:11px;opacity:.8">${mood}</span><br><br>`;
-
         "Black-bass": v => v + (c.temperature_2m > 18 ? 25 : 0) + (c.wind_speed_10m < 10 ? 15 : 0),
-          html += `🔹 <b>${nom}</b> — ${score}%<br>
-         <span style="font-size:11px;opacity:.8">${mood}</span><br><br>`;
-
         "Silure": v => v + ((hour < 7 || hour > 21) ? 25 : 0) + (c.pressure_msl < 1010 ? 15 : 0),
-          html += `🔹 <b>${nom}</b> — ${score}%<br>
-         <span style="font-size:11px;opacity:.8">${mood}</span><br><br>`;
-
         "Aspe": v => v + (c.wind_speed_10m > 15 ? 15 : 0) + (luminosite > 50 ? 10 : 0)
-      html += `🔹 <b>${nom}</b> — ${score}%<br>
-         <span style="font-size:11px;opacity:.8">${mood}</span><br><br>`;
+  
 
       };
 
@@ -781,17 +765,7 @@ function analyserLive() {
 
         html += `🔹 <b>${nom}</b> — ${score}%<br>`;
       });
-      let mood;
 
-if(score >= 75){
-  mood = randomItem(messages.high);
-}
-else if(score >= 45){
-  mood = randomItem(messages.medium);
-}
-else{
-  mood = randomItem(messages.low);
-}
 
 
       html += `
@@ -800,13 +774,7 @@ else{
         🌫️ Luminosité : ${luminosite}%<br>
         ⚡ Instabilité : ${Math.round(instabilite)}%
       `;
-  html += `<br><div style="margin-top:10px;
-background:#0e1e2c;
-padding:8px;
-border-radius:8px;
-font-size:12px">
-${randomItem(messages.explore)}
-</div>`;
+
 
 
       document.getElementById("livebite-result").innerHTML = html;
