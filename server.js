@@ -168,6 +168,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   saveSpot(spotType);
 
   const list = [];
+  const techniqueAdvice = [];
 
   const mois = new Date().getMonth() + 1;
   let saison = [12, 1, 2].includes(mois) ? "hiver" :
