@@ -297,7 +297,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
    if (saison === "hiver" )
      list.push('Essaie de pêcher au Foie de Volaille posé sur le fond ou en flotteur subaquatique')
    if (saison === "hiver" && spotType === "rivière" && conditions.includes('pluie') 
-       list.push('Pêche avec un très gros vif dans une zone inondée ou un silure pourrait venir s\'abriter du courant')
+     list.push('Pêche avec un très gros vif dans une zone inondée ou un silure pourrait venir s\'abriter du courant')
     }
       
       
