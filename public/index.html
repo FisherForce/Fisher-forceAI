@@ -1337,6 +1337,94 @@ function meilleurCreneau(ph,s){
 
 
 </script>
+        <!-- ============================= -->
+<!--   BLOC ACTIONS SUIVANTES     -->
+<!-- ============================= -->
+
+<div id="next-actions" style="
+display:none;
+margin-top:15px;
+background:#0e1e2c;
+padding:10px;
+border-radius:12px;
+font-size:12px">
+
+<b>🔄 Optimise ta session :</b><br><br>
+
+<button id="btn-compare" class="nav-btn">
+📍 COMPARER avec un autre spot
+</button>
+
+<button id="btn-coach" class="nav-btn">
+🎓 Adapter la stratégie (Mode Coach)
+</button>
+
+<button id="btn-live" class="nav-btn">
+⚡ Vérifier la probabilité LIVE d'un AUTRE SPOT
+</button>
+
+</div>
+
+<style>
+.nav-btn{
+  width:100%;
+  margin-bottom:6px;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.2s;
+}
+.nav-btn:hover{
+  transform:scale(1.02);
+}
+#btn-compare{background:#00ffcc;}
+#btn-coach{background:#ffaa00;}
+#btn-live{background:#4da6ff;}
+</style>
+
+<script>
+/* =============================
+   AFFICHER LES ACTIONS
+============================= */
+
+function showNextActions(){
+  document.getElementById("next-actions").style.display = "block";
+}
+
+/* =============================
+   EVENTS (UNE SEULE FOIS)
+============================= */
+
+document.addEventListener("DOMContentLoaded", function(){
+
+  document.getElementById("btn-compare")
+    .addEventListener("click", function(){
+
+      document.getElementById("spot-result").innerHTML =
+        "📍 Clique sur un nouveau point sur la carte pour comparer les zones.";
+
+      window.scrollTo({top:0,behavior:"smooth"});
+  });
+
+  document.getElementById("btn-coach")
+    .addEventListener("click", function(){
+
+      document.getElementById("coach-section")
+        .scrollIntoView({behavior:"smooth"});
+  });
+
+  document.getElementById("btn-live")
+    .addEventListener("click", function(){
+
+      document.getElementById("live-section")
+        .scrollIntoView({behavior:"smooth"});
+  });
+
+});
+</script>
+
 <div class="ffai-next-step">
   🔁 <b>Optimise encore :</b><br>
   Compare avec <span style="color:#00ffd5">un autre spot</span> ou reviens voir la probabilité LIVE.<br><br>
