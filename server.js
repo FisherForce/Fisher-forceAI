@@ -2014,14 +2014,26 @@ app.post('/api/suggest', (req, res) => {
 
 app.post('/api/advice', (req, res) => {
   try {
-    console.log('[DEBUG API] Espèce reçue :', species);
-    let { targetSpecies: species = "", structure, conditions, spotType, temperature, failedLures = [] } = req.body;
+    // Déstructure TOUT D'ABORD
+    let {
+      targetSpecies: species = "",
+      structure = "",
+      conditions = "",
+      spotType = "",
+      temperature,
+      failedLures = []
+    } = req.body || {};  // ← sécurité si req.body est undefined
 
-    species = (species || "").toLowerCase();
-    structure = (structure || "").toLowerCase();
-    conditions = (conditions || "").toLowerCase();
-    spotType = (spotType || "").toLowerCase();
+    // Normalisation APRES déstructuration
+    species    = (species    || "").toLowerCase().trim();
+    structure  = (structure  || "").toLowerCase().trim();
+    conditions = (conditions || "").toLowerCase().trim();
+    spotType   = (spotType   || "").toLowerCase().trim();
     failedLures = Array.isArray(failedLures) ? failedLures.map(l => l.trim().toLowerCase()) : [];
+
+    // Maintenant tu peux utiliser species en sécurité
+    console.log('[DEBUG] Espèce reçue et normalisée :', species);
+
 
     if (!structure || !conditions) {
       return res.status(400).json({ error: 'Champs requis manquants : structure et conditions.' });
