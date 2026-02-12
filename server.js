@@ -292,13 +292,39 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
     if (species.includes('aspe')) {
       list.push('Essaie un jerkminnow de 7cm — Ramène le très vite, puis un jig de 10G à utiliser près du fond, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
     }
-    if (species.includes('silure')) {
-      list.push('Essaie une ondulante de 50g — Ramène la proche du fond avec de longues pauses, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
-   if (saison === "hiver" )
-     list.push('Essaie de pêcher au Foie de Volaille posé sur le fond ou en flotteur subaquatique')
-   if (saison === "hiver" && spotType === "rivière" && conditions.includes('pluie') 
-     list.push('Pêche avec un très gros vif dans une zone inondée ou un silure pourrait venir s\'abriter du courant')
-    }
+if (species.includes('silure')) {
+  // Conseil de base (toute l'année)
+  list.push("Essaie une ondulante de 50g – ramène-la proche du fond avec de longues pauses");
+
+  // Hiver : priorité très forte aux appâts naturels
+  if (saison === "hiver" || temperature < 12) {
+    list.push("En hiver → appâts naturels presque exclusivement (eau froide = silure peu actif sur leurres)");
+    list.push("Foie de volaille posé sur le fond ou en flotteur subaquatique – très odorant et efficace");
+    list.push("Gros ver de farine ou boulettes de foie + farine – montage posé de nuit");
+    list.push("Poisson mort entier (gardon, brème, carpeau > 15 cm) – traîné lent ou posé profond");
+  }
+  // Hors hiver : mix leurres + appâts
+  else {
+    list.push("Gros leurre souple 20-30 cm ou swimbait – animation très lente + pauses longues");
+    list.push("Big bait shad sur tête lourde 80-150 g – zones profondes ou cassures");
+    list.push("Poisson vif (gardon, ablette) – montage traîné ou posé (très bon en été)");
+  }
+
+  // Cas particulier : rivière + pluie (abris courants)
+  if (spotType.includes('rivière') && conditions.includes('pluie')) {
+    list.push("Pêche avec un très gros vif dans une zone inondée ou un silure pourrait venir s’abriter du courant");
+    list.push("Zone de courant faible après crue = spot à fort potentiel");
+  }
+
+  // Profondeur et astuces générales
+  depthAdvice.push("Fond profond (> 5-8 m) – fosses, tombants, ponts, arbres noyés");
+  if (temperature > 20) {
+    depthAdvice.push("La nuit → monte parfois en surface / bordures herbeuses (0-3 m)");
+  }
+
+  // Message final
+  list.push("Je ne suis pas encore spécialiste du silure, enregistre ta session pour me faire progresser !");
+}
       
       
 
