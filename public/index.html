@@ -1432,14 +1432,7 @@ function detecterEau() {
     <option value="Aucun">Aucun</option>
   </select>
 
-<select id="coachTechnique" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
-  <option value="leurres">Leurres (carnassiers)</option>
-  <option value="appats">Appâts naturels</option>
-  <option value="mouche">Mouche</option>
-  <option value="carpe">Carpe</option>
-  <option value="finesse ultra léger">Finesse / ultra-léger</option>
-</select>
- 
+
   <button id="weatherAdviceBtn" style="width:85%;background:#ffd700;color:black;padding:18px;border:none;border-radius:50px;font-weight:bold;font-size:20px;margin:15px auto;display:block;">
     ANALYSER MÉTÉO + MEILLEUR LEURRE
   </button>
@@ -1539,13 +1532,6 @@ const adviceRes = await fetch('/api/advice', {
       <label>Fond / Structure <input id="structure" placeholder="Ex: herbiers, rochers"></label>
       <label>Espèce ciblée <input id="targetSpecies" placeholder="Ex: brochet, perche"></label>
       <label>Technique</label>
-<select id="technique-classique" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
-  <option value="leurres">Leurres (carnassiers)</option>
-  <option value="appats">Appâts naturels (ver, teigne, asticot...)</option>
-  <option value="mouche">Mouche (sèche, nymphe, streamer)</option>
-  <option value="carpe">Carpe (maïs, bouillettes, pellets)</option>
-  <option value="finesse">Finesse / ultra-léger (dropshot, ned rig)</option>
-</select>
       <label>Conditions <input id="conditions" placeholder="Ex: clair, pluie"></label>
       <label>Température (°C)<br><input type="number" id="temperature" placeholder="15"></label>
       <div style="margin-top:15px;">
@@ -1638,14 +1624,6 @@ const adviceRes = await fetch('/api/advice', {
       <option value="Truite">Truite</option>
       <option value="Chevesne">Chevesne</option>
     </select>
-    <label>Technique</label>
-<select id="technique" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
-  <option value="leurres">Leurres (carnassiers)</option>
-  <option value="appats">Appâts naturels (ver, teigne, asticot...)</option>
-  <option value="mouche">Mouche (sèche, nymphe, streamer)</option>
-  <option value="carpe">Carpe (maïs, bouillettes, pellets)</option>
-  <option value="finesse">Finesse / ultra-léger (dropshot, ned rig)</option>
-</select>
 
     <label style="display:block;margin:15px 0 8px;color:#00ff9d;">Milieu</label>
     <select id="coachMilieu" style="width:100%;padding:12px;border-radius:8px;background:#112233;color:white;border:none;font-size:16px;">
@@ -1810,7 +1788,6 @@ document.addEventListener('DOMContentLoaded', () => {
             conditions: finalConditions,
             spotType: milieu,
             temperature: temp,
-            technique: document.getElementById('coachTechnique').value
           })
         });
 
