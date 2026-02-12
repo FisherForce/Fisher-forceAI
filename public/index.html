@@ -1494,9 +1494,7 @@ const adviceRes = await fetch('/api/advice', {
     conditions: conditions,           // ← c'était déjà là
     spotType: spotType,               // ← corrige "milieu" en "spotType"
     temperature: temp,
-    technique: document.getElementById('coachTechnique')?.value 
-               || document.getElementById('technique-classique')?.value 
-               || "leurres"   // fallback seulement si AUCUN select trouvé
+
   })
 });
 
