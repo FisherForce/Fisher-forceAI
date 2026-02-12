@@ -1327,6 +1327,71 @@ function meilleurCreneau(ph,s){
     "🌌 Nuit":
     "⛔ À éviter (pression forte)";
 }
+  function scrollToSection(id){
+  document.getElementById(id).scrollIntoView({
+    behavior:"smooth"
+  });
+}
+
+function compareSpot(){
+  document.getElementById("spot-result").innerHTML =
+    "📍 Clique sur un nouveau point pour comparer";
+}
+
+function goToCoach(){
+  scrollToSection("coach-section");
+}
+
+function goToLive(){
+  scrollToSection("live-section");
+}
+html += `
+<div style="margin-top:15px;
+background:#0e1e2c;
+padding:10px;
+border-radius:12px;
+font-size:12px">
+
+<b>🔄 Optimise ta session :</b><br><br>
+
+<button onclick="compareSpot()" style="
+width:100%;
+margin-bottom:6px;
+padding:6px;
+border:none;
+border-radius:8px;
+background:#00ffcc;
+font-weight:bold;
+cursor:pointer">
+📍 Comparer avec un autre spot
+</button>
+
+<button onclick="goToCoach()" style="
+width:100%;
+margin-bottom:6px;
+padding:6px;
+border:none;
+border-radius:8px;
+background:#ffaa00;
+font-weight:bold;
+cursor:pointer">
+🎓 Adapter la stratégie (Mode Coach)
+</button>
+
+<button onclick="goToLive()" style="
+width:100%;
+padding:6px;
+border:none;
+border-radius:8px;
+background:#4da6ff;
+font-weight:bold;
+cursor:pointer">
+⚡ Vérifier la probabilité LIVE
+</button>
+
+</div>
+`;
+
 </script>
 <div class="ffai-next-step">
   🔁 <b>Optimise encore :</b><br>
