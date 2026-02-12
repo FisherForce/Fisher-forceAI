@@ -1809,7 +1809,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const species = document.getElementById('coachSpecies').value;
         const milieu = document.getElementById('coachMilieu').value;
 
-
+        console.log('Espèce envoyée au serveur :', species);
         const adviceRes = await fetch('/api/advice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
