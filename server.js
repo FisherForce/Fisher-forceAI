@@ -1712,7 +1712,7 @@ const randomParEspece = {
   list.push("Enregistre ta session pour faire progresser l'IA !");
 
   // Profondeur
-  const depthAdvice = [];
+
   if (temperature !== null) {
     if (species.includes('perche')) {
       if (temperature < 10) depthAdvice.push("Profondeur 3-5m, jigs verticaux et dropshot");
