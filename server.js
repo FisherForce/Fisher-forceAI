@@ -192,106 +192,644 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   // ────────────────────────────────────────────────
   // BROCHET – conseils généraux (leurres par défaut)
   // ────────────────────────────────────────────────
-    if (species.includes('perche')) {
-      list.push('Cuillère Argentée à points rouges N°2, ce leurre est un classique, à ramener à vitesse moyenne');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Dropshot — Animation lente proche des structures');
-      if (saison === "hiver" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Ned Rig — Animation lente sur le fond dans les contre-courants');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Cuillère N°2 — Récupération lente juste sous la surface');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Leurre souple 5cm Brun — Récupération lente juste sous la surface');
-      if (saison === "printemps" && spotType === "étang" && conditions.includes('clair'))
-        list.push('Cuillère N°2, coloris Or — Pêche en linéaire lent');
-      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('branch'))
-        list.push('Leurre souple de 5cm— Dandine dans les branches ');
-      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
-        list.push('Leurre souple de 5cm— Dandine dans les bois morts ');
-      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('arbre'))
-        list.push('Leurre souple de 5cm— Dandine dans les bois morts ');
-      if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Cuillère N°2 argentée puis Leurre souple de 5cm puis crank puis micro-leurre — Animation juste sous la surface');
-      if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Leurre souple de 7 à 8cm coloris gardon — Récupération rapide avec pauses');
-      if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Leurre souple de 4 à 6cm — Récupération rapide avec pauses');
-      if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
-        list.push('Leurre souple de 4 à 6cm en dropshot — Récupération lente et dandine proche des obstacles');
-      if (saison === "automne" && spotType === "étang" && conditions.includes('nuageux') && structure.includes('branch'))
-        list.push('Leurre souple pailleté de 5cm en Ned Rig— Ramène très lentement sur le fond');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Leurre souple de 4 à 6cm ou Crankbait — Récupération rapide avec des pauses proche des obstacles');
-      if (saison === "automne" && spotType === "étang" && conditions.includes('soleil'))
-        list.push('Leurre souple de 7cm en dropshot — Tente les grosses perches dans les obstacles');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
-        list.push('Leurre souple de 7cm en Ned Rig ou Lame Vibrante — Tente les grosses perches sur le fond');
-      if (saison === "automne" && spotType === "étang" && conditions.includes('pluie'))
-        list.push('Leurre souple de 7cm en Ned Rig — Tente les grosses perches dans les obstacles');
+if (species.includes('perche')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver ou eau froide → privilégie les appâts naturels et la finesse très lente");
+  } else {
+    techniqueAdvice.push("Le reste de l'année → leurres actifs, finesse et micro-leurres marchent très bien");
+  }
+
+  // CONSEILS HIVER / EAU FROIDE (< 10–12 °C)
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Ver de terre ou teigne en grappe – flotteur ou posé au fond (classique efficace)");
+    list.push("Petit vairon ou lombrics – amorçage léger + montage simple");
+    list.push("Dropshot ou ned rig ver finesse 5-7 cm – ultra lent / dandine près structures");
+    list.push("Micro jig 2-5 g – animation verticale lente");
+    depthAdvice.push("3-6 m – vertical, dropshot ou posé lent");
+  }
+
+  // PRINTEMPS (montée en activité, eau qui se réchauffe)
+  else if (saison === "printemps") {
+    list.push("Cuillère Mepps / Aglià n°2-3 argentée ou rouge – récupération lente juste sous la surface");
+    list.push("Petit shad 5-8 cm ou micro-perch – tête 3-7 g");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Cuillère n°2 coloris or ou argent – linéaire lent ou alterné avec pauses");
     }
-    if (species.includes('brochet')) {
-      list.push('Grub de 12cm tête rouge corps blanc— Récupération à vitesse moyenne avec des pauses proche des obstacles');
-      if (saison === "été" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
-      if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Leurres souples de 10cm puis Cuiller N°4 puis Spinner Bait — Power Fishing proche des obstacles');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Leurres souples de 6cm — Quand il y a du soleil les brochets visent les petites proies');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Propbait — Récupération rapide avec des pauses proche des obstacles');
-      if (saison === "printemps" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Jerk-Minnow de 12 à 15cm — Twitchs courts avec des pauses en surface, envoie des coups de jerk comme si la cnne était un fouet');
-      if (saison === "printemps" && spotType === "étang" && conditions.includes('soleil'))
-        list.push('Cuillère N°4 — Récupération lente en surface');
-      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('nénuphar'))
-        list.push('Frog — Récupération par a coups avec pauses dans les trouées, attention faut ferrer comme si tu voulait envoyer le poisson sur la lune !');
-      if (saison === "été" && spotType === "rivière" && conditions.includes('soleil') && structure.includes('nénuphar'))
-        list.push('Frog — Récupération par a coups avec pauses dans les trouées , attention faut ferrer super fort');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('soleil'))
-        list.push('Shad de 16cm — Récupération lente');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Lipless ou spintail ou lame vibrante — Récupération lente ou dandine en verticale');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Swimbait de 15cm — Récupération lente en surface');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie'))
-        list.push('Shad de 20CM — Récupération lente en surface, puis descends dans la couche d\'eau');
-      if (saison === "automne" && spotType === "étang" && conditions.includes('vent'))
-        list.push('Crankbait de 8cm — Récupération lente en surface, puis descends dans la couche d\'eau au fur et à mesure du temps');
+    if (conditions.includes('soleil') || conditions.includes('clair')) {
+      list.push("Leurre souple 5 cm brun ou naturel – récupération lente sous la surface");
     }
-    if (species.includes('bass')) {
-      list.push('Utiliser des leurres imitatifs des plus petites proies comme les vers, les insectes ou encore les écrevisses— Récupération lente avec des pauses proche ou dans des obstacles');
-      if (saison === "hiver" && spotType === "étang" && conditions.includes('nuageux'))
-        list.push('Ned Rig ou ver manié — Récupération lente ou dandine en verticale');
-      if (saison === "printemps" && spotType === "étang" && conditions.includes('vent'))
-        list.push('Spinner-bait — Récupération lente sous la surface');
-      if (saison === "été" && spotType === "étang" && conditions.includes('soleil'))
-        list.push('Worm en wacky ou Tube texan ou Frog ou finesse Rb — Récupération par à-coups ou en dandine');
-      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('herbiers'))
-        list.push('Worm marron — Dandine dans les branches et les herbiers ');
-      if (saison === "été" && spotType === "étang" && conditions.includes('soleil') && structure.includes('bois'))
-        list.push('Worm marron — Dandine dans les branches et les herbiers ');
-      if (saison === "été" && spotType === "canal" && conditions.includes('soleil') && structure.includes('bois'))
-        list.push('Worm marron — Dandine dans les branches et les herbiers, envoie un vrai ferrage sans trop d\'emballer ');
-      if (saison === "été" && spotType === "rivière" && conditions.includes('nuageux'))
-        list.push('Écrevisses en punching — Dans les herbiers');
+    depthAdvice.push("1-4 m – micro-leurres ou dropshot près bordures");
+  }
+
+  // ÉTÉ (eau chaude, perche active mais souvent en surface ou près obstacles)
+  else if (saison === "été") {
+    list.push("Popper ou stickbait surface – matin / soir (explosif par temps calme)");
+    list.push("Leurre souple 4-8 cm (coloris gardon ou naturel) – récupération rapide avec pauses");
+    if (structure.includes('branch') || structure.includes('bois') || structure.includes('arbre')) {
+      list.push("Leurre souple 5-7 cm en dropshot ou ned rig – dandine dans les obstacles");
     }
-    if (species.includes('chevesne')) {
-      list.push('Lame Vibrante — Récupération rapide avec des pauses proche des obstacles');
-      if (saison === "été" && spotType === "rivière" && conditions.includes('soleil'))
-        list.push('Cuillère ou micro-leurre — Récupération rapide pour déclencher des attaques de réaction');
-      if (saison === "été" && spotType === "rivière")
-        list.push('Leurres Insectes — Récupération par à coups pour déclencher des attaques de réaction');
+    if (spotType.includes('rivière') && conditions.includes('soleil')) {
+      list.push("Cuillère n°2 argentée puis leurre souple 5 cm puis crank – juste sous la surface");
     }
-    if (species.includes('sandre')) {
-      list.push('Leurre souple jaune — Toujours ramener au ras du fond enregistre ta session je te donnerais de meilleurs conseils !');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('pluie') && structure.includes('pont'))
-        list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
-      if (saison === "automne" && spotType === "rivière" && conditions.includes('nuageux') && structure.includes('pont'))
-        list.push('Leurre souple de 7cm blanc — Gratte le fond et fais de longues pauses ');
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Leurre souple 7-8 cm coloris gardon – récupération rapide avec pauses");
     }
-    if (species.includes('aspe')) {
-      list.push('Essaie un jerkminnow de 7cm — Ramène le très vite, puis un jig de 10G à utiliser près du fond, je ne suis pas spécialiste de ce poisson alors enregistre ta session pour me faire progresser !');
+    depthAdvice.push("0-2 m surface (topwater) ou 1-4 m (micro-leurres / dropshot)");
+  }
+
+  // AUTOMNE (gros perches, activité sur le fond et près structures)
+  else if (saison === "automne") {
+    list.push("Leurre souple 5-7 cm pailleté – ned rig ou dropshot – très lent sur le fond");
+    list.push("Lame vibrante ou micro jig – prospecter les obstacles et tombants");
+    if (conditions.includes('pluie') || conditions.includes('nuageux')) {
+      list.push("Leurre souple 7 cm ned rig – tente les grosses perches sur le fond");
     }
+    if (conditions.includes('soleil')) {
+      list.push("Leurre souple 4-6 cm ou crankbait – récupération rapide avec pauses près obstacles");
+    }
+    depthAdvice.push("Fond ou mi-eau – structures, branches, bois morts");
+  }
+
+  // Message final
+  list.push("Un micro-leurre ou finesse reste une valeur sûre toute l'année pour la perche");
+  list.push("Enregistre ta session pour m'aider à affiner les conseils !");
+}
+if (species.includes('brochet')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver ou eau très froide → privilégie appâts naturels + leurres très lents / finesse");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → brochet agressif, leurres réactifs et animations saccadées excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → surface et powerfishing très efficaces par temps nuageux ou chaud");
+  } else {
+    techniqueAdvice.push("Automne → gros poissons actifs, mélange gros leurres et finesse sur le fond");
+  }
+
+  // HIVER / EAU FROIDE (< 10–12 °C)
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Gros leurre souple 16-25 cm – animation très lente ou verticale (drop shot style)");
+    list.push("Shad lourd 16-20 cm – récupération ultra lente avec longues pauses");
+    list.push("Poisson mort ou vif (gros gardon, ablette) – montage mort manié ou posé profond");
+    list.push("Gros ver de terre ou morceaux de poisson – en eau très froide");
+    depthAdvice.push("4-8 m – fond ou mi-fond, animation minimale");
+  }
+
+  // PRINTEMPS (montée en activité, pré-reproduction puis post-repro)
+  else if (saison === "printemps") {
+    list.push("Jerkbait / minnow 12-15 cm – twitchs courts + pauses longues (très efficace)");
+    list.push("Propbait ou wakebait – récupération rapide avec pauses près bordures");
+    list.push("Cuillère lourde n°4 – récupération lente juste sous la surface");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Jerk-minnow 12-15 cm – animation saccadée en surface");
+    }
+    if (conditions.includes('soleil') || conditions.includes('clair')) {
+      list.push("Leurre souple 6-10 cm naturel – récupération lente près obstacles");
+    }
+    depthAdvice.push("1-4 m – bordures, herbiers, structures peu profondes");
+  }
+
+  // ÉTÉ (eau chaude, brochet en surface ou près herbiers)
+  else if (saison === "été") {
+    list.push("Frog ou leurre de surface – récupération saccadée avec pauses dans les herbiers / nénuphars");
+    list.push("Leurres souples 10-15 cm puis cuillère n°4 puis spinnerbait – power fishing près obstacles");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Power fishing agressif – spinnerbait, chatterbait, gros shad");
+    }
+    if (structure.includes('nénuphar') || structure.includes('herbe') || structure.includes('végétation')) {
+      list.push("Frog – récup par à-coups + pauses dans les trouées (ferrage puissant !)");
+    }
+    depthAdvice.push("0-3 m – surface, bordures, herbiers denses la nuit ou par temps couvert");
+  }
+
+  // AUTOMNE (gros poissons nourriciers, activité sur fond et surface)
+  else if (saison === "automne") {
+    list.push("Swimbait 15-25 cm – récupération lente en surface ou mi-eau");
+    list.push("Shad 20 cm – récupération lente avec pauses près structures");
+    list.push("Lipless crank ou lame vibrante – prospecter le fond");
+    if (conditions.includes('pluie') || conditions.includes('nuageux')) {
+      list.push("Shad lourd 20 cm – récupération lente en surface puis descente progressive");
+    }
+    if (conditions.includes('vent')) {
+      list.push("Crankbait 8-12 cm – récupération lente avec descente dans la couche d’eau");
+    }
+    depthAdvice.push("Fond à mi-eau – structures, cassures, herbiers en déclin");
+  }
+
+  // Message final
+  list.push("Un gros leurre souple reste une valeur sûre toute l'année pour le brochet");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+if (species.includes('bass') || species.includes('black-bass')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 12) {
+    techniqueAdvice.push("En hiver ou eau froide → finesse ultra-lente + appâts naturels sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → bass agressif avant/après frai, spinnerbait et crank excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → surface (frog), punching herbiers/bois, finesse dans obstacles");
+  } else {
+    techniqueAdvice.push("Automne → gros bass nourriciers, punching et gros leurres très performants");
+  }
+
+  // HIVER / EAU FROIDE (< 12 °C)
+  if (saison === "hiver" || temperature < 12) {
+    list.push("Ned rig ou drop shot ver finesse 5-10 cm – ultra lent / dandine près structures");
+    list.push("Tube texan ou shaky head petit ver – récupération très lente sur le fond");
+    list.push("Petit vif ou ver de terre – posé lent ou flotteur subaquatique");
+    list.push("Micro jig 3-7 g – animation verticale minimale");
+    depthAdvice.push("3-7 m – fond, tombants, structures profondes");
+  }
+
+  // PRINTEMPS (pré et post-frai)
+  else if (saison === "printemps") {
+    list.push("Spinnerbait ou chatterbait – récupération lente sous la surface près bordures");
+    list.push("Crankbait shallow ou medium diver – prospecter herbiers et rochers");
+    list.push("Jerkbait 10-12 cm – twitchs + pauses longues (post-frai)");
+    if (conditions.includes('vent')) {
+      list.push("Spinnerbait – récupération lente sous la surface (vent = bass actif)");
+    }
+    depthAdvice.push("1-4 m – bordures, herbiers, structures pré-frai");
+  }
+
+  // ÉTÉ (eau chaude, bass dans herbiers / obstacles / surface)
+  else if (saison === "été") {
+    list.push("Frog ou leurre de surface – récupération saccadée avec pauses dans herbiers / nénuphars");
+    list.push("Wacky rig ou senko – dandine lente dans les branches / bois morts");
+    list.push("Tube texan ou punching rig – dans herbiers denses ou obstacles");
+    list.push("Leurres imitatifs (vers, écrevisses, insectes) – récupération lente près structures");
+    if (structure.includes('herbe') || structure.includes('nénuphar') || structure.includes('végétation')) {
+      list.push("Frog – récup par à-coups + pauses dans les trouées (ferrage puissant !)");
+    }
+    if (structure.includes('bois') || structure.includes('branch')) {
+      list.push("Worm marron ou tube – dandine dans les bois morts / branches");
+    }
+    if (spotType.includes('canal') || spotType.includes('rivière')) {
+      list.push("Écrevisse en punching ou finesse rig – dans herbiers / structures");
+    }
+    depthAdvice.push("0-3 m surface (frog) ou 1-4 m (finesse / punching dans obstacles)");
+  }
+
+  // AUTOMNE (gros bass nourriciers)
+  else if (saison === "automne") {
+    list.push("Swimbait 10-15 cm ou gros shad – récupération lente mi-eau");
+    list.push("Jerkbait ou lipless crank – prospecter cassures et structures");
+    list.push("Punching rig lourd (1/2–1 oz) – dans herbiers / bois denses");
+    list.push("Crankbait medium diver – récupération avec pauses près obstacles");
+    depthAdvice.push("Fond à mi-eau – structures, cassures, herbiers en déclin");
+  }
+
+  // Message final
+  list.push("Un worm finesse ou ned rig reste une valeur sûre toute l'année pour le black-bass");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+if (species.includes('chevesne')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver ou eau froide → appâts naturels et finesse lente sont les plus efficaces");
+  } else {
+    techniqueAdvice.push("Le reste de l'année → leurres actifs (lames, cuillères, insectes) + appâts naturels en rivière");
+  }
+
+  // HIVER / EAU FROIDE (< 10–12 °C)
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Ver de terre ou teigne – toc ou flotteur léger (classique très efficace)");
+    list.push("Petit vairon ou ablette vive – traîné lent ou posé dans courant faible");
+    list.push("Micro-leurre finesse 3-5 cm ou ned rig – ultra lent près bordures");
+    list.push("Lombrics en grappe – amorçage léger + montage simple");
+    depthAdvice.push("Fond ou mi-eau – zones de courant faible, obstacles immergés");
+  }
+
+  // PRINTEMPS (montée en activité, chevesne très agressif)
+  else if (saison === "printemps") {
+    list.push("Lame vibrante ou micro-spinner – récupération rapide avec pauses près obstacles");
+    list.push("Cuillère légère n°0-2 – linéaire vif ou alterné avec saccades");
+    list.push("Leurres insectes (cricket, hopper) – récupération par à-coups en surface");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Lame vibrante – prospecter courant moyen et bordures");
+    }
+    depthAdvice.push("Surface à mi-eau – zones de courant, obstacles, bordures");
+  }
+
+  // ÉTÉ (eau chaude, chevesne actif en surface et courant)
+  else if (saison === "été") {
+    list.push("Lame vibrante – récupération rapide avec pauses près obstacles (déclenche réactions)");
+    list.push("Cuillère n°1-3 argentée ou colorée – récupération vive en surface ou juste dessous");
+    list.push("Leurres insectes (sauterelle, grillon, cigale) – récupération saccadée en surface");
+    list.push("Micro-leurre 3-5 cm (minnow ou shad) – animation rapide avec twitches");
+    if (conditions.includes('soleil') || conditions.includes('clair')) {
+      list.push("Cuillère ou micro-leurre – récupération rapide pour attaques de réaction");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Leurres insectes ou popper léger – récupération par à-coups en surface");
+    }
+    depthAdvice.push("Surface à 1 m – courant moyen, bordures, obstacles immergés");
+  }
+
+  // AUTOMNE (chevesne nourricier, gros sujets près fond)
+  else if (saison === "automne") {
+    list.push("Lame vibrante ou lipless – prospecter fond et cassures");
+    list.push("Leurres souples 5-7 cm naturel – récupération lente avec pauses");
+    list.push("Ver de terre ou teigne – toc ou flotteur dans courant faible");
+    if (conditions.includes('pluie') || conditions.includes('nuageux')) {
+      list.push("Lame vibrante – récupération rapide près bordures");
+    }
+    depthAdvice.push("Fond à mi-eau – obstacles, cassures, zones de courant");
+  }
+
+  // Message final
+  list.push("La lame vibrante et les leurres insectes restent des valeurs sûres pour le chevesne");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+if (species.includes('sandre')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver ou eau froide → appâts naturels et finesse lente sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → sandre actif, vertical et shad lent excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → powerfishing et vertical de nuit très performants");
+  } else {
+    techniqueAdvice.push("Automne → gros sandres nourriciers, grattage fond + longues pauses");
+  }
+
+  // HIVER / EAU FROIDE (< 10–12 °C)
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Poisson mort ou vif (gros gardon, ablette) – montage posé profond ou mort manié");
+    list.push("Gros ver de terre ou morceaux de poisson – posé lent sur fond dur");
+    list.push("Drop shot ou ned rig petit shad 7-10 cm – ultra lent / dandine");
+    list.push("Micro jig 5-10 g – animation verticale très lente");
+    depthAdvice.push("4-8 m – fond dur, cassures, tombants profonds");
+  }
+
+  // PRINTEMPS (montée en activité, pré-repro puis post-repro)
+  else if (saison === "printemps") {
+    list.push("Shad 10-15 cm tête plombée 15-30 g – animation lente + longues pauses au fond");
+    list.push("Vibro tail ou lipless crank – grattage fond avec pauses");
+    list.push("Drop shot ver finesse ou mini-shad – vertical près cassures");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Shad blanc ou chartreuse – récupération lente sur fond");
+    }
+    depthAdvice.push("3-7 m – fond dur, structures, cassures");
+  }
+
+  // ÉTÉ (eau chaude, sandre en profondeur ou actif de nuit)
+  else if (saison === "été") {
+    list.push("Gros shad 12-18 cm tête lourde 20-40 g – animation lente + pauses longues");
+    list.push("Vibro tail ou lipless crank – powerfishing sur fond dur ou cassures");
+    list.push("Drop shot ou ned rig 7-12 cm – vertical de nuit ou zones profondes");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Powerfishing agressif – vibro tail ou shad lourd");
+    }
+    if (temperature > 20) {
+      list.push("Vertical de nuit – shad 12-15 cm sur tête 20-30 g");
+    }
+    depthAdvice.push("4-10 m – fond dur, cassures, tombants, zones profondes");
+  }
+
+  // AUTOMNE (gros sandres nourriciers, très actifs sur fond)
+  else if (saison === "automne") {
+    list.push("Shad 12-18 cm blanc ou chartreuse – grattage fond + longues pauses");
+    list.push("Vibro tail ou lipless – récupération lente avec pauses près structures");
+    list.push("Gros ver de terre ou poisson mort – posé profond près cassures");
+    if (spotType.includes('rivière') && (conditions.includes('pluie') || conditions.includes('nuageux'))) {
+      list.push("Shad 7-12 cm blanc – grattage fond + longues pauses près ponts/cassures");
+    }
+    if (structure.includes('pont') || structure.includes('tombant')) {
+      list.push("Shad lourd ou vibro – prospecter les zones ombragées sous ponts");
+    }
+    depthAdvice.push("Fond à mi-eau – cassures, ponts, tombants, zones de courant faible");
+  }
+
+  // Message final
+  list.push("Un shad 10-15 cm sur tête lourde reste une valeur sûre toute l'année pour le sandre");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+if (species.includes('aspe')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver ou eau froide → appâts naturels et finesse lente sont les plus efficaces");
+  } else {
+    techniqueAdvice.push("Le reste de l'année → leurres rapides et animations vives pour déclencher les attaques de réaction");
+  }
+
+  // HIVER / EAU FROIDE (< 10–12 °C)
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Petit vairon ou ablette vive – traîné lent ou posé dans courant faible");
+    list.push("Ver de terre ou teigne – toc ou flotteur léger près bordures");
+    list.push("Micro-leurre finesse 3-5 cm ou ned rig – ultra lent dans zones calmes");
+    depthAdvice.push("Fond ou mi-eau – courant faible, bordures, obstacles immergés");
+  }
+
+  // PRINTEMPS (montée en activité, aspe très agressif)
+  else if (saison === "printemps") {
+    list.push("Jerkminnow 7-10 cm – récupération très rapide avec twitches saccadés");
+    list.push("Cuillère légère n°1-3 argentée – linéaire vif en surface ou juste dessous");
+    list.push("Leurres insectes (sauterelle, grillon) – récupération par à-coups en surface");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Jerkminnow ou micro-spinner – animation rapide près bordures");
+    }
+    depthAdvice.push("Surface à mi-eau – zones de courant, obstacles, bordures");
+  }
+
+  // ÉTÉ (eau chaude, aspe très actif en surface et courant)
+  else if (saison === "été") {
+    list.push("Jerkminnow 7-10 cm – ramène très vite avec twitches agressifs (déclenche réactions)");
+    list.push("Lame vibrante ou lipless crank – récupération rapide près obstacles");
+    list.push("Leurres insectes (cigale, grillon, sauterelle) – récupération saccadée en surface");
+    list.push("Micro-leurre 4-7 cm (minnow ou popper) – animation vive avec pauses");
+    if (conditions.includes('soleil') || conditions.includes('clair')) {
+      list.push("Cuillère ou micro-leurre – récupération rapide pour attaques de réaction");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Leurres insectes ou jerkminnow – récupération par à-coups en surface");
+    }
+    depthAdvice.push("Surface à 1 m – courant moyen à rapide, bordures, obstacles");
+  }
+
+  // AUTOMNE (aspe nourricier, gros sujets actifs en surface et courant)
+  else if (saison === "automne") {
+    list.push("Jerkminnow 7-12 cm – récupération très rapide avec twitches près bordures");
+    list.push("Lame vibrante ou micro-spinner – prospecter courant et obstacles");
+    list.push("Leurres insectes ou petit vif – récupération saccadée en surface");
+    if (conditions.includes('pluie') || conditions.includes('nuageux')) {
+      list.push("Jerkminnow ou lame vibrante – animation rapide près cassures");
+    }
+    depthAdvice.push("Surface à mi-eau – zones de courant, obstacles, bordures");
+  }
+
+  // Message final
+  list.push("Le jerkminnow rapide et les leurres insectes restent des valeurs sûres pour l'aspe");
+  list.push("Je ne suis pas encore spécialiste de l'aspe, enregistre ta session pour me faire progresser !");
+}
+  if (species.includes('truite')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau très froide → appâts naturels et nymphes lourdes au toc sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → éclosions, mouche sèche en surface + nymphes au fil");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → mouche sèche en surface (soir/matin) + nymphes / streamers en rivière");
+  } else {
+    techniqueAdvice.push("Automne → nymphes et streamers, appâts naturels si eau froide");
+  }
+
+  // HIVER / EAU FROIDE (< 8–10 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Ver de terre ou teigne – toc ou flotteur léger (classique très efficace)");
+    list.push("Nymphe lourde (perdigon, stonefly) – toc profond ou lent au fil");
+    list.push("Asticot ou pâte – posé ou flotteur dans eau calme / étang");
+    list.push("Micro-leurre finesse 3-5 cm – ultra lent près bordures (rare mais possible)");
+    depthAdvice.push("Fond (0.5-2 m) – zones calmes, courant faible");
+  }
+
+  // PRINTEMPS (éclosions massives, truite très active en surface)
+  else if (saison === "printemps") {
+    list.push("Mouche sèche (CDC, elk hair caddis, mayfly) – surface pendant éclosions");
+    list.push("Nymphe légère (perdigon, pheasant tail, caddis) – nymphe au fil / toc");
+    list.push("Ver de terre ou teigne – toc ou flotteur léger en rivière montante");
+    if (conditions.includes('montante') || conditions.includes('pluie')) {
+      list.push("Nymphe ou mouche sèche – eau trouble = surface ou nymphe");
+    }
+    if (conditions.includes('clair') || conditions.includes('soleil')) {
+      list.push("Mouche sèche imitative – éclosions en eau claire");
+    }
+    depthAdvice.push("Surface (0-0.5 m) ou fond léger (0.5-1.5 m) – zones de courant modéré");
+  }
+
+  // ÉTÉ (eau chaude, truite plus sélective, souvent en surface le soir/matin)
+  else if (saison === "été") {
+    list.push("Mouche sèche (caddis, mayfly, hopper) – surface matin/soir ou éclosions");
+    list.push("Nymphe (perdigon, hare’s ear) – dérive naturelle au fil dans courant");
+    list.push("Streamer petit (clouser minnow, woolly bugger) – animation saccadée en rivière");
+    list.push("Maïs doux ou pâte – posé ou flotteur léger en étang calme");
+    if (conditions.includes('soleil') || conditions.includes('clair')) {
+      list.push("Mouche sèche ou nymphe – eau claire = imitations précises");
+    }
+    if (spotType.includes('rivière') || spotType.includes('courant')) {
+      list.push("Nymphe ou streamer – dérive ou animation dans courant");
+    }
+    depthAdvice.push("Surface (0-0.5 m) soir/matin ou 0.5-1.5 m fond (nymphe)");
+  }
+
+  // AUTOMNE (truite nourricière, eau qui se refroidit)
+  else if (saison === "automne") {
+    list.push("Nymphe (pheasant tail, perdigon) – toc ou dérive lente près fond");
+    list.push("Streamer coloré (woolly bugger, zonker) – animation saccadée mi-eau");
+    list.push("Ver de terre ou teigne – toc dans zones calmes ou courant faible");
+    if (temperature < 12) {
+      list.push("Appâts naturels – privilégie ver/teigne en eau qui refroidit");
+    }
+    depthAdvice.push("Fond à mi-eau – zones de courant faible, obstacles");
+  }
+
+  // Message final
+  list.push("La mouche sèche et la nymphe au fil restent des valeurs sûres toute l'année pour la truite");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('carpe')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver ou eau froide → appâts digestes + amorçage très léger / soluble");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → appâts digestes, amorçage modéré, petits appâts");
+  } else {
+    techniqueAdvice.push("Été / automne → appâts protéinés, amorçage copieux, bouillettes grosses");
+  }
+
+  // HIVER / EAU FROIDE (< 10 °C)
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Petites bouillettes digestes 10-15 mm ou pellets solubles – amorçage très léger");
+    list.push("Maïs doux + pellets baby corn ou stickmix – peu d’amorce, appâts petits");
+    list.push("Tiger nuts ou maïs fermenté – posé simple ou PVA bag");
+    list.push("Vers de terre ou asticots – en eau très froide, amorçage minimal");
+    depthAdvice.push("Fond principalement – zones calmes, peu de mouvement");
+  }
+
+  // PRINTEMPS (eau qui se réchauffe, carpe se réveille lentement)
+  else if (saison === "printemps") {
+    list.push("Bouillettes digestes 12-18 mm (protéines moyennes + attractants doux)");
+    list.push("Maïs doux, pellets, tiger nuts – amorçage modéré PVA ou spod léger");
+    list.push("Pellets solubles + stickmix – amorçage progressif");
+    list.push("Petit boilie + pop-up – présentation haute sur fond vaseux");
+    depthAdvice.push("Fond ou mi-eau – zones qui se réchauffent, bordures");
+  }
+
+  // ÉTÉ / AUTOMNE (eau chaude, carpe très active, gros appétit)
+  else {
+    list.push("Grosse bouillette 18-24 mm protéinée (poisson, birdfood, monster crab…) – amorçage copieux");
+    list.push("Maïs doux + pellets + graines + bouillettes – spod ou PVA bag massif");
+    list.push("Tiger nuts ou maïs fermenté – en mélange avec pellets et bouillettes");
+    list.push("Pop-up + snowman rig – sur fond vaseux ou herbeux");
+    if (conditions.includes('chaud') || temperature > 20) {
+      list.push("Amorçage lourd – mélange bouillettes + pellets + graines");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Bouillettes + pellets solubles – amorçage en ligne ou PVA bag dans courant faible");
+    }
+    depthAdvice.push("Fond principalement – parfois mi-eau si amorçage en surface");
+  }
+
+  // Message final
+  list.push("Bouillettes + amorçage intelligent reste la clé toute l'année pour la carpe");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('barbeau')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau très froide → appâts naturels + amorçage très léger sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → barbeau actif, appâts naturels + amorçage modéré au toc ou posé");
+  } else {
+    techniqueAdvice.push("Été / automne → appâts variés, amorçage copieux, toc ou flotteur en rivière");
+  }
+
+  // HIVER / EAU FROIDE (< 8–10 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Ver de terre ou asticots – toc ou posé très lent sur fond dur");
+    list.push("Teigne ou morceaux de ver – amorçage très léger (quelques poignées)");
+    list.push("Pellets solubles ou maïs doux – présenté sur hair rig simple");
+    list.push("Nymphe lourde ou appât naturel – dérive lente dans courant faible");
+    depthAdvice.push("Fond (1-2 m) – zones de courant faible, gravier/galets");
+  }
+
+  // PRINTEMPS (montée en activité, barbeau commence à se nourrir)
+  else if (saison === "printemps") {
+    list.push("Ver de terre en grappe ou asticots – toc ou flotteur léger");
+    list.push("Maïs doux + pellets – amorçage modéré + hair rig simple");
+    list.push("Teigne ou pâte à barbeau – posé ou toc près obstacles");
+    if (conditions.includes('pluie') || conditions.includes('montante')) {
+      list.push("Ver de terre ou asticots – toc dans courant modéré");
+    }
+    depthAdvice.push("Fond à mi-eau – zones de courant, gravier, bordures");
+  }
+
+  // ÉTÉ / AUTOMNE (barbeau très actif, gros sujets nourriciers)
+  else {
+    list.push("Ver de terre, asticots ou teigne – toc ou flotteur dans courant");
+    list.push("Maïs doux + pellets + graines – amorçage copieux en spod ou PVA bag");
+    list.push("Bouillettes spécifiques barbeau (scopex, monster crab…) – hair rig");
+    list.push("Pellets + tiger nuts fermentés – amorçage lourd près obstacles");
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Toc ou flotteur – ver/astico/maïs dans courant moyen à fort");
+    }
+    if (conditions.includes('pluie') || conditions.includes('nuageux')) {
+      list.push("Amorçage copieux – maïs + pellets + bouillettes");
+    }
+    depthAdvice.push("Fond (1-2 m) – gravier, galets, zones de courant, obstacles");
+  }
+
+  // Message final
+  list.push("Le ver de terre et le maïs doux restent des valeurs sûres toute l'année pour le barbeau");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('brème') || species.includes('brême')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau froide → appâts digestes + amorçage très léger / soluble sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → appâts digestes, amorçage modéré, flotteur ou posé");
+  } else {
+    techniqueAdvice.push("Été / automne → appâts variés, amorçage copieux, flotteur ou feeder");
+  }
+
+  // HIVER / EAU FROIDE (< 8–10 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Petits pellets solubles ou maïs doux – amorçage très léger (quelques poignées)");
+    list.push("Ver de terre ou asticots – présenté sur flotteur ou posé simple");
+    list.push("Pâte à brème ou bouillettes digestes 8-12 mm – hair rig ou posé");
+    list.push("Vers de farine ou morceaux de ver – en eau très froide");
+    depthAdvice.push("Fond vaseux (1-3 m) – zones calmes, peu de courant");
+  }
+
+  // PRINTEMPS (réveil progressif, brème se rapproche des bordures)
+  else if (saison === "printemps") {
+    list.push("Maïs doux + pellets solubles – amorçage modéré PVA ou spod léger");
+    list.push("Ver de terre ou asticots – flotteur ou posé près bordures");
+    list.push("Pâte à brème ou bouillettes digestes 10-15 mm – hair rig simple");
+    list.push("Pellets + maïs – présenté sur method feeder ou flotteur");
+    if (conditions.includes('pluie') || conditions.includes('montante')) {
+      list.push("Asticots ou ver – flotteur dans courant faible");
+    }
+    depthAdvice.push("Fond ou mi-eau (1-3 m) – bordures, zones qui se réchauffent");
+  }
+
+  // ÉTÉ / AUTOMNE (brème très active, gros sujets en bancs)
+  else {
+    list.push("Maïs doux + pellets + graines + bouillettes – amorçage copieux spod ou PVA bag");
+    list.push("Ver de terre, asticots ou teigne – flotteur ou method feeder");
+    list.push("Bouillettes spécifiques brème 12-18 mm (scopex, fruity…) – hair rig");
+    list.push("Pellets + tiger nuts fermentés – amorçage lourd près obstacles");
+    if (spotType.includes('étang') || spotType.includes('lac')) {
+      list.push("Method feeder ou flotteur – maïs + pellets + asticots");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Flotteur ou leger feeder – ver/astico/maïs dans courant faible");
+    }
+    if (conditions.includes('vent') || conditions.includes('pluie')) {
+      list.push("Amorçage copieux – mélange maïs + pellets + bouillettes");
+    }
+    depthAdvice.push("Fond vaseux ou mi-fond (1-4 m) – bancs, zones calmes");
+  }
+
+  // Message final
+  list.push("Le maïs doux et les vers de terre restent des valeurs sûres toute l'année pour la brème");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('tanche')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 8) {
+    techniqueAdvice.push("En hiver ou eau froide → appâts digestes + amorçage très léger / soluble sont les plus efficaces");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → appâts digestes, amorçage modéré, petits appâts");
+  } else {
+    techniqueAdvice.push("Été / automne → appâts variés, amorçage copieux, flotteur ou posé en étang");
+  }
+
+  // HIVER / EAU FROIDE (< 8–10 °C)
+  if (saison === "hiver" || temperature < 8) {
+    list.push("Petits pellets solubles ou maïs doux – amorçage très léger (quelques graines)");
+    list.push("Ver de terre coupé ou asticots – présenté sur flotteur ou posé simple");
+    list.push("Pâte à tanche ou bouillettes digestes 8-12 mm – hair rig ou posé");
+    list.push("Vers de farine ou morceaux de ver – en eau très froide");
+    depthAdvice.push("Fond vaseux (1-3 m) – zones calmes, peu de mouvement");
+  }
+
+  // PRINTEMPS (réveil progressif, tanche se rapproche des bordures)
+  else if (saison === "printemps") {
+    list.push("Maïs doux + pellets solubles – amorçage modéré PVA ou spod léger");
+    list.push("Ver de terre ou asticots – flotteur ou posé près bordures vaseuses");
+    list.push("Pâte à tanche ou bouillettes digestes 10-15 mm – hair rig simple");
+    list.push("Pellets + maïs – présenté sur method feeder ou flotteur");
+    if (conditions.includes('pluie') || conditions.includes('montante')) {
+      list.push("Asticots ou ver – flotteur dans zones vaseuses");
+    }
+    depthAdvice.push("Fond vaseux ou mi-eau (1-3 m) – bordures, zones qui se réchauffent");
+  }
+
+  // ÉTÉ / AUTOMNE (tanche très active, gros sujets en bancs)
+  else {
+    list.push("Maïs doux + pellets + graines + bouillettes – amorçage copieux spod ou PVA bag");
+    list.push("Ver de terre, asticots ou teigne – flotteur ou method feeder");
+    list.push("Bouillettes spécifiques tanche 12-18 mm (scopex, fruity, liver…) – hair rig");
+    list.push("Pellets + tiger nuts fermentés – amorçage lourd près obstacles vaseux");
+    if (spotType.includes('étang') || spotType.includes('lac')) {
+      list.push("Method feeder ou flotteur – maïs + pellets + asticots");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Flotteur ou leger feeder – ver/astico/maïs dans courant faible");
+    }
+    if (conditions.includes('vent') || conditions.includes('pluie')) {
+      list.push("Amorçage copieux – mélange maïs + pellets + bouillettes");
+    }
+    depthAdvice.push("Fond vaseux (1-4 m) – zones calmes, herbiers légers, bordures");
+  }
+
+  // Message final
+  list.push("Le maïs doux, les vers de terre et la pâte à tanche restent des valeurs sûres toute l'année");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
 if (species.includes('silure')) {
   // Conseil de base (toute l'année)
   list.push("Essaie une ondulante de 50g – ramène-la proche du fond avec de longues pauses");
