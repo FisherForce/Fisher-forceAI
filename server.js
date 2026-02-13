@@ -3003,40 +3003,7 @@ const randomParEspece = {
 
 
 // === ROUTES ===
-app.post("/coach-analysis", async (req, res) => {
 
-  try {
-
-    const {
-      species,
-      water,
-      latitude,
-      longitude,
-      temperature,
-      cloud,
-      wind,
-      pressure
-    } = req.body;
-
-    const advice = await suggestLure({
-      species,
-      water,
-      latitude,
-      longitude,
-      temperature,
-      cloud,
-      wind,
-      pressure
-    });
-
-    res.json({ advice });
-
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ advice: "Erreur IA." });
-  }
-
-});
 
 
 app.post('/api/suggest', (req, res) => {
