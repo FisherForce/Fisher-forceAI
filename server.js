@@ -1795,6 +1795,307 @@ if (species.includes('aspe')) {
   list.push("Gros poisson mort ou calamar posés au fond de nuit restent des valeurs sûres pour le congre");
   list.push("Enregistre ta session pour affiner les conseils !");
 }
+  if (species.includes('barracuda') || species.includes('barracuda') || species.includes('sphyraena')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 14) {
+    techniqueAdvice.push("En hiver ou eau froide → barracuda peu actif, traîne lente ou appâts naturels profonds");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → barracuda commence à chasser, leurres rapides et traîne excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → barracuda ultra-agressif, surface (popper, stickbait) et powerfishing explosifs");
+  } else {
+    techniqueAdvice.push("Automne → barracuda nourricier, leurres rapides + traîne très performants");
+  }
+
+  // HIVER / EAU FROIDE (< 14 °C) – activité faible
+  if (saison === "hiver" || temperature < 14) {
+    list.push("Petit vif (maquereau, sardine) – traîné très lent ou posé profond");
+    list.push("Gros leurre souple 10-15 cm – animation ultra lente + pauses longues");
+    list.push("Calamar ou morceaux – posé statique ou traîné lent");
+    list.push("Jig head 20-40 g + shad – grattage fond ou verticale lente");
+    depthAdvice.push("Mi-fond à fond (5-15 m) – zones profondes, cassures, roches");
+  }
+
+  // PRINTEMPS (activité croissante, barracuda chasse en bancs)
+  else if (saison === "printemps") {
+    list.push("Leurres souples 10-18 cm (shad, slug) – tête 20-50 g, récupération saccadée");
+    list.push("Minnow / jerkbait 10-15 cm – twitchs rapides + pauses");
+    list.push("Cuillère lourde ou jig vibrant – powerfishing mi-eau");
+    list.push("Petit vif ou maquereau – traîné rapide ou lancé");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Powerfishing agressif – leurres rapides en surface");
+    }
+    depthAdvice.push("Surface à mi-eau (0-8 m) – bancs, zones rocheuses");
+  }
+
+  // ÉTÉ (eau chaude, barracuda hyper agressif en surface)
+  else if (saison === "été") {
+    list.push("Popper ou stickbait surface – récupération saccadée explosive (très spectaculaire !)");
+    list.push("Leurres souples 12-20 cm – powerfishing rapide près roches / herbiers");
+    list.push("Gros swimbait ou jerkbait – animation vive mi-eau");
+    list.push("Traîne rapide avec maquereau ou leurre souple – zones ouvertes");
+    list.push("Cuillère ou jig vibrant – lancer loin + récupération rapide");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Surface très efficace – popper ou stickbait en chasses");
+    }
+    if (spotType.includes('bateau')) {
+      list.push("Traîne ou verticale – gros leurres en surface/mi-eau");
+    }
+    depthAdvice.push("Surface à mi-eau (0-6 m) – chasses visibles, roches, courants");
+  }
+
+  // AUTOMNE (barracuda nourricier, très actif)
+  else if (saison === "automne") {
+    list.push("Leurres souples 15-25 cm tête lourde – powerfishing saccadé");
+    list.push("Jerkbait ou minnow 12-18 cm – twitching rapide + pauses");
+    list.push("Gros vif (maquereau, sardine) – traîné ou lancé");
+    list.push("Popper surface ou stickbait – récupération agressive");
+    depthAdvice.push("Surface à mi-eau (0-10 m) – zones rocheuses, bancs nourriciers");
+  }
+
+  // Message final
+  list.push("Popper surface et leurres souples rapides restent des valeurs sûres pour le barracuda (surtout de jour en été)");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('snook') || species.includes('centropomus')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 18) {
+    techniqueAdvice.push("En hiver ou eau froide → snook peu actif, traîne lente ou appâts naturels profonds");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → snook commence à chasser agressivement, leurres rapides et traîne excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → snook ultra-agressif, surface (popper, stickbait) et powerfishing explosifs");
+  } else {
+    techniqueAdvice.push("Automne → snook nourricier, leurres rapides + traîne très performants");
+  }
+
+  // HIVER / EAU FROIDE (< 18 °C) – activité faible
+  if (saison === "hiver" || temperature < 18) {
+    list.push("Petit vif (mulet, sardine) – traîné très lent ou posé profond");
+    list.push("Gros leurre souple 10-15 cm – animation ultra lente + pauses longues");
+    list.push("Calamar ou morceaux – posé statique ou traîné lent");
+    list.push("Jig head 20-50 g + shad – grattage fond ou verticale lente");
+    depthAdvice.push("Mi-fond à fond (4-12 m) – zones profondes, estuaires abrités");
+  }
+
+  // PRINTEMPS (activité croissante, snook chasse en estuaires)
+  else if (saison === "printemps") {
+    list.push("Leurres souples 10-18 cm (shad, slug) – tête 15-40 g, récupération saccadée");
+    list.push("Minnow / jerkbait 9-14 cm – twitchs rapides + pauses longues");
+    list.push("Cuillère lourde ou jig vibrant – powerfishing mi-eau");
+    list.push("Petit vif ou mulet – traîné rapide ou lancé près mangroves");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Powerfishing agressif – leurres rapides en surface");
+    }
+    depthAdvice.push("Surface à mi-eau (0-6 m) – estuaires, mangroves, herbiers");
+  }
+
+  // ÉTÉ (eau chaude, snook hyper agressif en surface)
+  else if (saison === "été") {
+    list.push("Popper ou stickbait surface – récupération saccadée explosive (très spectaculaire !)");
+    list.push("Leurres souples 12-20 cm – powerfishing rapide près mangroves / herbiers");
+    list.push("Gros swimbait ou jerkbait – animation vive mi-eau");
+    list.push("Traîne rapide avec vif ou leurre souple – zones ouvertes");
+    list.push("Cuillère ou jig vibrant – lancer loin + récupération rapide");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Surface très efficace – popper ou stickbait en chasses");
+    }
+    if (spotType.includes('bateau')) {
+      list.push("Traîne ou verticale – gros leurres en surface/mi-eau");
+    }
+    if (spotType.includes('plage') || spotType.includes('digue')) {
+      list.push("Lancer popper ou leurre souple – récupération saccadée");
+    }
+    depthAdvice.push("Surface à mi-eau (0-5 m) – chasses visibles, mangroves, herbiers");
+  }
+
+  // AUTOMNE (snook nourricier, très actif)
+  else if (saison === "automne") {
+    list.push("Leurres souples 15-25 cm tête lourde – powerfishing saccadé");
+    list.push("Jerkbait ou minnow 12-18 cm – twitching rapide + pauses");
+    list.push("Gros vif (mulet, sardine) – traîné ou lancé");
+    list.push("Popper surface ou stickbait – récupération agressive");
+    depthAdvice.push("Surface à mi-eau (0-8 m) – zones rocheuses, bancs nourriciers");
+  }
+
+  // Message final
+  list.push("Popper surface et leurres souples rapides restent des valeurs sûres pour le snook (surtout de jour en été)");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('tarpon') || species.includes('megalops')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 20) {
+    techniqueAdvice.push("En hiver ou eau froide → tarpon peu actif ou migré, traîne lente ou appâts naturels profonds");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → tarpon commence à chasser, leurres rapides et traîne excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → tarpon ultra-agressif, surface (popper, stickbait) et powerfishing explosifs");
+  } else {
+    techniqueAdvice.push("Automne → tarpon nourricier, leurres rapides + traîne très performants");
+  }
+
+  // HIVER / EAU FROIDE (< 20 °C) – activité faible
+  if (saison === "hiver" || temperature < 20) {
+    list.push("Petit vif (mulet, sardine, crab) – traîné très lent ou posé profond");
+    list.push("Gros leurre souple 15-25 cm – animation ultra lente + pauses longues");
+    list.push("Calamar ou morceaux – posé statique ou traîné lent");
+    list.push("Jig head 30-80 g + shad – grattage fond ou verticale lente");
+    depthAdvice.push("Mi-fond à fond (5-15 m) – zones profondes, estuaires abrités");
+  }
+
+  // PRINTEMPS (activité croissante, tarpon arrive en estuaires)
+  else if (saison === "printemps") {
+    list.push("Leurres souples 15-25 cm (shad, slug) – tête 30-70 g, récupération saccadée");
+    list.push("Minnow / jerkbait 12-20 cm – twitchs rapides + pauses explosives");
+    list.push("Cuillère lourde ou jig vibrant – powerfishing mi-eau");
+    list.push("Petit vif ou mulet – traîné rapide ou lancé près mangroves");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Powerfishing agressif – leurres rapides en surface");
+    }
+    depthAdvice.push("Surface à mi-eau (0-8 m) – estuaires, mangroves, herbiers");
+  }
+
+  // ÉTÉ (eau chaude, tarpon hyper agressif en surface)
+  else if (saison === "été") {
+    list.push("Popper ou stickbait surface – récupération saccadée explosive (sauts spectaculaires !)");
+    list.push("Leurres souples 18-30 cm – powerfishing rapide près mangroves / herbiers");
+    list.push("Gros swimbait ou jerkbait – animation vive mi-eau");
+    list.push("Traîne rapide avec vif ou leurre souple – zones ouvertes");
+    list.push("Cuillère ou jig vibrant – lancer loin + récupération rapide");
+    if (conditions.includes('nuageux') || conditions.includes('pluie')) {
+      list.push("Surface très efficace – popper ou stickbait en chasses");
+    }
+    if (spotType.includes('bateau')) {
+      list.push("Traîne ou verticale – gros leurres en surface/mi-eau");
+    }
+    if (spotType.includes('plage') || spotType.includes('digue')) {
+      list.push("Lancer popper ou leurre souple – récupération saccadée");
+    }
+    depthAdvice.push("Surface à mi-eau (0-6 m) – chasses visibles, mangroves, estuaires");
+  }
+
+  // AUTOMNE (tarpon nourricier, très actif)
+  else if (saison === "automne") {
+    list.push("Leurres souples 20-30 cm tête lourde – powerfishing saccadé");
+    list.push("Jerkbait ou minnow 15-25 cm – twitching rapide + pauses");
+    list.push("Gros vif (mulet, sardine) – traîné ou lancé");
+    list.push("Popper surface ou stickbait – récupération agressive");
+    depthAdvice.push("Surface à mi-eau (0-10 m) – zones rocheuses, bancs nourriciers");
+  }
+
+  // Message final
+  list.push("Popper surface et gros leurres souples rapides restent des valeurs sûres pour le tarpon (surtout de jour en été)");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('arapaima') || species.includes('pirarucu') || species.includes('gigas')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 20) {
+    techniqueAdvice.push("En hiver ou eau froide → arapaima peu actif, gros appâts naturels posés au fond");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → arapaima commence à s’activer, gros appâts + traîné lent");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → arapaima très actif, surface explosive (popper géant) + gros leurres");
+  } else {
+    techniqueAdvice.push("Automne → arapaima nourricier, gros appâts posés ou traîne");
+  }
+
+  // HIVER / EAU FROIDE (< 20 °C) – activité faible
+  if (saison === "hiver" || temperature < 20) {
+    list.push("Gros poisson mort entier (tilapia, carpeau, gardon) – posé statique profond");
+    list.push("Gros vif (tilapia, carassin) – traîné très lent ou posé");
+    list.push("Gros calamar ou morceaux de poisson – hair rig lourd ou posé");
+    list.push("Gros ver de terre ou lombrics en grappe – présenté au fond");
+    list.push("Gros appât végétal (fruits, manioc) – posé lent (technique amazonienne)");
+    depthAdvice.push("Fond profond (3-8 m) – zones calmes, vaseuses ou herbeuses");
+  }
+
+  // PRINTEMPS (activité croissante, arapaima remonte respirer)
+  else if (saison === "printemps") {
+    list.push("Gros poisson mort ou vif – traîné lent ou posé profond");
+    list.push("Gros leurre souple 20-30 cm – animation lente + pauses longues");
+    list.push("Gros swimbait ou jerkbait géant – récupération saccadée mi-eau");
+    list.push("Gros appât naturel (tilapia, carpeau) – hair rig ou traîné");
+    if (temperature > 22) {
+      list.push("Commence à prospecter en surface – arapaima remonte respirer");
+    }
+    depthAdvice.push("Fond à mi-eau (2-6 m) – zones herbeuses, cassures");
+  }
+
+  // ÉTÉ / AUTOMNE (arapaima très actif, gros sujets nourriciers)
+  else {
+    list.push("Popper géant ou stickbait surface – récupération saccadée explosive (sauts incroyables !)");
+    list.push("Gros leurres souples 25-40 cm – powerfishing rapide près herbiers");
+    list.push("Gros swimbait ou jerkbait – animation vive mi-eau");
+    list.push("Gros vif (tilapia, poisson-chat) – traîné ou posé près surface");
+    list.push("Gros appât naturel (poisson entier, fruits) – traîné lent ou posé");
+    if (spotType.includes('étang') || spotType.includes('lac')) {
+      list.push("Posé lourd ou traîne – gros appâts près herbiers / zones respirantes");
+    }
+    if (!isDay) {
+      list.push("Pêche de nuit ou crépuscule → arapaima chasse activement en surface");
+    }
+    depthAdvice.push("Surface à mi-eau (0-5 m) – zones herbeuses, zones où il remonte respirer");
+  }
+
+  // Message final
+  list.push("Gros popper surface ou poisson mort entier posés restent des valeurs sûres pour l'arapaima (surtout en eau chaude)");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
+  if (species.includes('snakehead') || species.includes('channa')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 15) {
+    techniqueAdvice.push("En hiver ou eau froide → snakehead peu actif, gros appâts naturels posés au fond");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → snakehead commence à chasser, leurres de surface et powerfishing excellents");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → snakehead ultra-agressif, surface (frog, popper) et gros leurres explosifs");
+  } else {
+    techniqueAdvice.push("Automne → snakehead nourricier, surface + powerfishing très performants");
+  }
+
+  // HIVER / EAU FROIDE (< 15 °C) – activité faible
+  if (saison === "hiver" || temperature < 15) {
+    list.push("Gros poisson mort ou vif (tilapia, gardon) – posé statique profond");
+    list.push("Gros ver de terre ou lombrics en grappe – hair rig lourd ou posé");
+    list.push("Calamar ou morceaux de poisson – présenté au fond");
+    list.push("Gros appât naturel (grenouille, écrevisse) – posé lent près herbiers");
+    list.push("Gros leurre souple 15-25 cm – animation ultra lente + pauses");
+    depthAdvice.push("Fond profond (2-6 m) – zones vaseuses, herbiers denses");
+  }
+
+  // PRINTEMPS (activité croissante, snakehead sort de ses trous)
+  else if (saison === "printemps") {
+    list.push("Frog ou leurre de surface – récupération saccadée avec pauses dans herbiers");
+    list.push("Gros leurre souple 15-25 cm – tête 20-50 g, animation saccadée");
+    list.push("Gros swimbait ou jerkbait – récupération vive mi-eau");
+    list.push("Gros vif ou poisson mort – traîné lent ou posé près structures");
+    list.push("Jig vibrant ou chatterbait – powerfishing près obstacles");
+    depthAdvice.push("Surface à mi-eau (0-4 m) – herbiers, zones végétalisées");
+  }
+
+  // ÉTÉ / AUTOMNE (snakehead très actif, gros sujets nourriciers)
+  else {
+    list.push("Frog ou leurre de surface – récupération saccadée explosive dans herbiers (ferrage puissant !)");
+    list.push("Gros leurres souples 20-35 cm – powerfishing rapide près végétation");
+    list.push("Gros popper ou stickbait – animation agressive en surface");
+    list.push("Gros vif (tilapia, poisson-chat) – traîné ou lancé près herbiers");
+    list.push("Gros swimbait ou jerkbait géant – récupération saccadée mi-eau");
+    if (spotType.includes('étang') || spotType.includes('lac')) {
+      list.push("Surface + powerfishing – gros appâts dans herbiers denses");
+    }
+    if (spotType.includes('rivière') || spotType.includes('canal')) {
+      list.push("Traîné lent ou posé – gros appâts dans courant faible");
+    }
+    if (!isDay) {
+      list.push("Pêche de nuit ou crépuscule → snakehead chasse activement en surface");
+    }
+    depthAdvice.push("Surface à mi-eau (0-5 m) – zones herbeuses, végétation dense");
+  }
+
+  // Message final
+  list.push("Frog surface et gros leurres souples restent des valeurs sûres pour le snakehead (surtout en eau chaude)");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
 if (species.includes('silure')) {
   // Conseil de base (toute l'année)
   list.push("Essaie une ondulante de 50g – ramène-la proche du fond avec de longues pauses");
