@@ -204,6 +204,21 @@
   <div id="menuDropdown" style="display:none;position:absolute;top:60px;right:0;background:#001122;border:2px solid #00d4aa;border-radius:18px;padding:15px;box-shadow:0 15px 40px rgba(0,212,170,0.5);z-index:9999;white-space:nowrap;">
 
     
+   <button onclick="showStatsPopup()" style="
+  width: 100%;
+  padding: 18px;
+  margin-top: 15px;
+  background: #00ff9d;
+  color: #000;
+  border: none;
+  border-radius: 50px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,255,157,0.4);
+">
+  📊 Voir mes stats & progression
+</button>
     <button id="openAlbumBtn" style="display:block;width:100%;background:#ff6b00;color:white;padding:15px 20px;border:none;border-radius:15px;font-weight:bold;font-size:18px;cursor:pointer;box-shadow:0 8px 20px rgba(255,107,0,0.4);">
       📸 Voir mon Album photos
     </button>
@@ -249,7 +264,145 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+<!-- POPUP STATS & PROGRESSION -->
+<div id="statsPopup" style="
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+">
+  <div style="
+    background: #001122;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 15px 60px rgba(0,255,157,0.3);
+    border: 2px solid #00ff9d44;
+    position: relative;
+  ">
+    <button onclick="document.getElementById('statsPopup').style.display='none'" style="
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(231,76,60,0.4);
+    ">×</button>
 
+    <h2 style="color:#00ff9d; text-align:center; margin:0 0 25px; font-size:28px;">
+      Mes stats & progression 🎣
+    </h2>
+
+    <div id="statsContent" style="color:#ddd; font-size:16px; line-height:1.6;">
+      <!-- Les stats seront injectées ici par JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+// === POPUP STATS ===
+function showStatsPopup() {
+  const popup = document.getElementById('statsPopup');
+  const content = document.getElementById('statsContent');
+
+  // Récupère les sessions depuis localStorage
+  const sessions = JSON.parse(localStorage.getItem('fisherforce_sessions') || '[]');
+
+  if (sessions.length === 0) {
+    content.innerHTML = `
+      <p style="text-align:center; color:#aaa; font-size:18px;">
+        Aucune session enregistrée pour l'instant...<br>
+        Enregistre ta première sortie pour voir tes stats ! 🚀
+      </p>
+    `;
+    popup.style.display = 'flex';
+    return;
+  }
+
+  // Calculs
+  const totalSessions = sessions.length;
+  const prises = sessions.filter(s => s.success).length;
+  const tauxNonBredouille = totalSessions > 0 ? Math.round((prises / totalSessions) * 100) : 0;
+
+  // Record taille
+  const prisesAvecPoids = sessions.filter(s => s.success && s.poids > 0);
+  const recordTaille = prisesAvecPoids.length > 0 
+    ? Math.max(...prisesAvecPoids.map(s => s.poids)) 
+    : 0;
+
+  // Leurre le plus performant
+  const lureCounts = {};
+  sessions.forEach(s => {
+    if (s.success && s.lure && s.lure !== "Inconnu") {
+      lureCounts[s.lure] = (lureCounts[s.lure] || 0) + 1;
+    }
+  });
+  let bestLure = "Aucun leurre dominant";
+  let maxCount = 0;
+  for (const lure in lureCounts) {
+    if (lureCounts[lure] > maxCount) {
+      maxCount = lureCounts[lure];
+      bestLure = `${lure} (${lureCounts[lure]} prises)`;
+    }
+  }
+
+  // Photos (miniatures)
+  let photosHtml = '<p style="color:#aaa; margin:15px 0 10px;">Photos de tes prises :</p>';
+  const photos = sessions.filter(s => s.success && s.photo);
+  if (photos.length === 0) {
+    photosHtml += '<p style="color:#666; font-style:italic;">Aucune photo enregistrée</p>';
+  } else {
+    photosHtml += '<div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center;">';
+    photos.forEach(s => {
+      photosHtml += `
+        <img src="${s.photo}" style="
+          width: 100px;
+          height: 100px;
+          object-fit: cover;
+          border-radius: 12px;
+          border: 2px solid #00ff9d44;
+          cursor: pointer;
+          transition: transform 0.2s;
+        " onclick="this.style.transform='scale(1.8)'" onmouseout="this.style.transform='scale(1)'">
+      `;
+    });
+    photosHtml += '</div>';
+  }
+
+  // Contenu final
+  content.innerHTML = `
+    <div style="text-align:center; margin-bottom:25px;">
+      <p style="font-size:22px; color:#00ff9d; margin:0;">
+        ${tauxNonBredouille}% de non-bredouille
+      </p>
+      <small style="color:#aaa;">(${prises} prises sur ${totalSessions} sessions)</small>
+    </div>
+
+    <p><strong>Record de taille :</strong> ${recordTaille > 0 ? recordTaille + ' cm' : 'Aucun record'}</p>
+    <p><strong>Leurre le plus performant :</strong> ${bestLure}</p>
+
+    ${photosHtml}
+
+    <p style="text-align:center; color:#aaa; margin-top:30px; font-size:14px;">
+      Continue à enregistrer tes sessions pour améliorer tes stats !
+    </p>
+  `;
+
+  popup.style.display = 'flex';
+}
+</script>
 
 <!-- MODAL ALBUM PHOTOS AVEC PARTAGE NATIF -->
 <div id="albumModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:99999;justify-content:center;align-items:flex-start;overflow-y:auto;">
