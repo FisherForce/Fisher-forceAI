@@ -1744,6 +1744,126 @@ const adviceRes = await fetch('/api/advice', {
         Enregistrer un résultat
       </button>
 
+        <!-- Section "Apprendre un leurre" -->
+<div id="lure-guide-mode" class="mode" style="padding: 25px; background: #001122; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.7); max-width: 900px; margin: 40px auto;">
+  <h2 style="text-align:center; color:#00ff9d; margin-bottom: 20px; font-size: 28px;">
+    Apprendre à utiliser ton leurre 🎣
+  </h2>
+  <p style="text-align:center; color:#aaa; margin-bottom: 30px; font-size: 16px;">
+    Choisis un leurre et découvre comment l’animer, la vitesse, les pauses, etc.
+  </p>
+
+  <!-- Sélecteur de leurre -->
+  <div style="max-width: 500px; margin: 0 auto 30px;">
+    <label style="display:block; margin-bottom: 12px; color:#00ff9d; font-size: 18px;">Choisis ton leurre :</label>
+    <select id="lureSelect" style="
+      width: 100%;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: #0d1b2a;
+      color: #e0e0e0;
+      border: 1px solid #00ff9d44;
+      font-size: 17px;
+      font-family: 'Segoe UI', sans-serif;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+      appearance: none;
+      background-image: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%2300ff9d' d='M2 4l5 5 5-5z'/%3E%3C/svg%3E\");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      background-size: 14px;
+    ">
+      <option value="">-- Sélectionne un leurre --</option>
+      <option value="popper">Popper</option>
+      <option value="propbait">Propbait</option>
+      <option value="stickbait">Stickbait</option>
+      <option value="slider">Slider</option>
+      <option value="frog">Frog</option>
+      <option value="buzzbait">Buzzbait</option>
+      <option value="jerk">Jerk</option>
+      <option value="jerkminnow">Jerkminnow</option>
+      <option value="crankbait">Crankbait</option>
+      <option value="lipless">Lipless</option>
+      <option value="swimbait">Swimbait</option>
+      <option value="glidebait">Glide bait</option>
+      <option value="cuillertournante">Cuillère tournante</option>
+      <option value="ondulante">Ondulante</option>
+      <option value="lamevibrante">Lame vibrante</option>
+      <option value="jig">Jig</option>
+      <option value="spinnerbait">Spinnerbait</option>
+      <option value="chatterbait">Chatterbait</option>
+      <option value="shad">Shad</option>
+      <option value="grub">Grub</option>
+      <option value="finesse">Finesse (ned rig, drop shot...)</option>
+      <option value="worm">Worm</option>
+      <option value="dropshot">Drop shot</option>
+      <option value="nedrig">Ned rig</option>
+      <option value="texasrig">Texas rig</option>
+      <option value="carolinarig">Carolina rig</option>
+      <option value="wackyrig">Wacky rig</option>
+      <option value="spoon">Spoon</option>
+      <option value="tailspin">Tailspin</option>
+      <!-- Tu peux en ajouter ici -->
+    </select>
+  </div>
+
+  <!-- Zone des conseils -->
+  <div id="lureAdvice" style="
+    background: #0a1f33;
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid #00ff9d22;
+    min-height: 200px;
+    display: none;
+  ">
+    <h3 id="lureTitle" style="color:#00ff9d; margin:0 0 20px; font-size:24px;"></h3>
+    <ul id="lureTips" style="list-style:none; padding:0; margin:0; font-size:16px; color:#ddd; line-height:1.7;"></ul>
+  </div>
+
+  <!-- Message par défaut -->
+  <div id="lureDefault" style="text-align:center; color:#aaa; font-size:16px; margin-top:20px;">
+    Sélectionne un leurre pour voir les conseils d’animation !
+  </div>
+</div>
+
+<script>
+// === APPRENDRE UN LEURRE ===
+document.addEventListener('DOMContentLoaded', () => {
+  const select = document.getElementById('lureSelect');
+  const adviceDiv = document.getElementById('lureAdvice');
+  const defaultDiv = document.getElementById('lureDefault');
+  const titleEl = document.getElementById('lureTitle');
+  const tipsEl = document.getElementById('lureTips');
+
+  select.addEventListener('change', () => {
+    const lure = select.value.trim().toLowerCase();
+    if (!lure) {
+      adviceDiv.style.display = 'none';
+      defaultDiv.style.display = 'block';
+      return;
+    }
+
+    // Appel à l'API (ou directement au guide si tu préfères local)
+    fetch('/api/lure-guide', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lure })
+    })
+    .then(res => res.json())
+    .then(tips => {
+      titleEl.textContent = `Comment utiliser le ${lure.toUpperCase()}`;
+      tipsEl.innerHTML = tips.map(tip => `<li style="margin-bottom:12px;">${tip}</li>`).join('');
+      adviceDiv.style.display = 'block';
+      defaultDiv.style.display = 'none';
+    })
+    .catch(err => {
+      tipsEl.innerHTML = '<li style="color:#ff6b6b;">Erreur – réessaie plus tard</li>';
+      adviceDiv.style.display = 'block';
+      defaultDiv.style.display = 'none';
+    });
+  });
+});
+</script>
+
 
 
     </section>
