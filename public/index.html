@@ -1751,186 +1751,128 @@ const adviceRes = await fetch('/api/advice', {
 
     <section class="card output-card">
 <!-- Mode Répartition des espèces -->
-<!-- Carte Répartition Espèces – Version Propre 2026 -->
-<div id="repartition-mode" class="mode" style="padding: 20px; background: #001122; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.7);">
-  <h2 style="text-align:center; color:#00ff9d; margin-bottom: 10px; font-size: 28px;">
-    Répartition mondiale des espèces 🗺️
-  </h2>
-  <p style="text-align:center; color:#aaa; margin-bottom: 25px; font-size: 16px;">
-    Clique n’importe où sur la planète (terre ou mer) pour voir les espèces plausibles
+<!-- Carte Répartition Espèces (version sans restriction mer) -->
+<div id="repartition-mode" class="mode">
+  <h2 style="text-align:center; color:#00ff9d;">Répartition des espèces 🗺️</h2>
+  <p style="text-align:center; color:#aaa; margin:10px 0;">
+    Clique n’importe où (terre ou mer) → voir les espèces plausibles à cet endroit
   </p>
 
   <!-- Carte -->
-  <div style="margin: 0 auto; max-width: 1000px; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 40px rgba(0,255,157,0.15);">
-    <div id="repartitionMap" style="height: 550px;"></div>
+  <div style="margin:20px auto; max-width:900px;">
+    <div id="repartitionMap" style="height:500px; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.6);"></div>
   </div>
 
   <!-- Résultat -->
-  <div id="repartitionResult" style="
-    margin: 25px auto;
-    padding: 25px;
-    background: #0a1f33;
-    border-radius: 16px;
-    max-width: 1000px;
-    min-height: 140px;
-    text-align: center;
-    border: 1px solid #00ff9d22;
-  ">
-    <p style="color:#00ff9d; font-size: 20px; margin: 0;">
-      Clique sur la carte pour découvrir les espèces présentes ici…
-    </p>
+  <div id="repartitionResult" style="margin:20px auto; padding:20px; background:#001122; border-radius:12px; max-width:900px; min-height:120px; text-align:center;">
+    <p style="color:#00ff9d; font-size:18px;">Clique sur la carte (terre ou mer) pour voir les espèces plausibles…</p>
   </div>
 </div>
 
 <script>
-// === CARTE RÉPARTITION MONDIALE – Version propre ===
+// === CARTE RÉPARTITION ESPÈCES (clic partout autorisé) ===
 document.addEventListener('DOMContentLoaded', () => {
-  // Carte mondiale
-  const repMap = L.map('repartitionMap', {
-    zoomControl: true,
-    zoomSnap: 0.5,
-    zoomDelta: 0.5
-  }).setView([10, 0], 2); // Centre équateur, zoom global
-
+  const repMap = L.map('repartitionMap').setView([46.6, 2.0], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 18
+    attribution: '© OpenStreetMap'
   }).addTo(repMap);
 
-  // === RÉPARTITION MONDIALE ===
-  const speciesData = {
-    // Eau douce (principalement hémisphère nord + introductions mondiales)
-    brochet:         { name: "Brochet",          category: "eau_douce", regions: ["Europe", "Asie du Nord", "Amérique du Nord"] },
-    perche:          { name: "Perche",           category: "eau_douce", regions: ["Europe", "Asie", "Amérique du Nord"] },
-    sandre:          { name: "Sandre",           category: "eau_douce", regions: ["Europe", "Asie", "introduit Amérique"] },
-    blackbass:       { name: "Black-bass",       category: "eau_douce", regions: ["Amérique du Nord", "introduit Europe, Asie, Afrique"] },
-    silure:          { name: "Silure",           category: "eau_douce", regions: ["Europe", "Asie", "introduit Amérique"] },
-    carpe:           { name: "Carpe",            category: "eau_douce", regions: ["Mondial (introduite partout)"] },
-    amourblanc:      { name: "Amour blanc",      category: "eau_douce", regions: ["Asie", "introduit Europe, Amérique, Afrique"] },
-    esturgeon:       { name: "Esturgeon",        category: "eau_douce", regions: ["Amérique du Nord", "Europe", "Asie"] },
-    gardon:          { name: "Gardon",           category: "eau_douce", regions: ["Europe", "Asie de l'Ouest"] },
-    rotengle:        { name: "Rotengle",         category: "eau_douce", regions: ["Europe", "Asie de l'Ouest"] },
-    tanche:          { name: "Tanche",           category: "eau_douce", regions: ["Europe", "Asie"] },
-    barbeau:         { name: "Barbeau",          category: "eau_douce", regions: ["Europe", "Asie de l'Ouest"] },
-    breme:           { name: "Brème",            category: "eau_douce", regions: ["Europe", "Asie de l'Ouest"] },
-    carassin:        { name: "Carassin",         category: "eau_douce", regions: ["Europe", "Asie"] },
-    chevesne:        { name: "Chevesne",         category: "eau_douce", regions: ["Europe", "Asie de l'Ouest"] },
-    aspe:            { name: "Aspe",             category: "eau_douce", regions: ["Europe Est", "Asie Centrale"] },
-    ombre:           { name: "Ombre",            category: "eau_douce", regions: ["Europe", "Asie du Nord"] },
-    omblechevalier:  { name: "Omble chevalier",  category: "eau_douce", regions: ["Arctique", "Amérique du Nord", "Europe Nord", "Asie Nord"] },
-    truitearcenciel: { name: "Truite arc-en-ciel", category: "eau_douce", regions: ["Mondial (introduite partout)"] },
-    lote:            { name: "Lote",             category: "eau_douce", regions: ["Amérique du Nord", "Europe Nord", "Asie"] },
+  // === DONNÉES DE RÉPARTITION (France + mer 2026) ===
+  const repartition = {
+    // Eau douce – hémisphère nord uniquement (pas en pleine mer)
+    brochet:         { name: "Brochet",          category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    perche:          { name: "Perche",           category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    sandre:          { name: "Sandre",           category: "eau_douce", present: (lat, lng) => lat > 42 && lat < 51 && lng > -2 && lng < 9 },
+    blackbass:       { name: "Black-bass",       category: "eau_douce", present: (lat, lng) => lat > 42 && lat < 50 && lng > -2 && lng < 8 },
+    silure:          { name: "Silure",           category: "eau_douce", present: (lat, lng) => lat > 42 && lat < 50 && lng > -1 && lng < 9 },
+    carpe:           { name: "Carpe",            category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    amourblanc:      { name: "Amour blanc",      category: "eau_douce", present: (lat, lng) => lat > 43 && lat < 50 && lng > -2 && lng < 8 },
+    esturgeon:       { name: "Esturgeon",        category: "eau_douce", present: (lat, lng) => lat > 42 && lat < 50 && lng > -2 && lng < 9 },
+    gardon:          { name: "Gardon",           category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    rotengle:        { name: "Rotengle",         category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    tanche:          { name: "Tanche",           category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    barbeau:         { name: "Barbeau",          category: "eau_douce", present: (lat, lng) => lat > 42 && lat < 51 && lng > -2 && lng < 9 },
+    breme:           { name: "Brème",            category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    carassin:        { name: "Carassin",         category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    chevesne:        { name: "Chevesne",         category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    aspe:            { name: "Aspe",             category: "eau_douce", present: (lat, lng) => lat > 42 && lat < 48 && lng > -2 && lng < 4 },
+    ombre:           { name: "Ombre",            category: "eau_douce", present: (lat, lng) => lat > 44 && lat < 49 && lng > 4 && lng < 8 },
+    omblechevalier:  { name: "Omble chevalier",  category: "eau_douce", present: (lat, lng) => lat > 44 && lat < 48 && lng > 5.5 && lng < 8 },
+    truitearcenciel: { name: "Truite arc-en-ciel", category: "eau_douce", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    lote:            { name: "Lote",             category: "eau_douce", present: (lat, lng) => lat > 46 && lat < 50 && lng > 2 && lng < 8 },
 
-    // Eau salée / côtière
-    barracuda:       { name: "Barracuda",        category: "eau_salee", regions: ["Tropiques mondiaux (Atlantique, Pacifique, Indien)"] },
-    tarpon:          { name: "Tarpon",           category: "eau_salee", regions: ["Atlantique tropical, Caraïbes, Afrique de l'Ouest"] },
-    bar:             { name: "Bar / Loup",       category: "eau_salee", regions: ["Atlantique Nord-Est", Méditerranée"] },
-    lieujaune:       { name: "Lieu jaune",       category: "eau_salee", regions: ["Atlantique Nord"] },
-    maquereau:       { name: "Maquereau",        category: "eau_salee", regions: ["Atlantique Nord, Méditerranée"] },
-    doraderoyale:    { name: "Dorade royale",    category: "eau_salee", regions: ["Méditerranée", Atlantique Est"] },
-    congre:          { name: "Congre",           category: "eau_salee", regions: ["Atlantique Est", Méditerranée"] },
+    // Espèces marines / côtières
+    barracuda:       { name: "Barracuda",        category: "eau_salee", present: (lat, lng) => lat > 41 && lat < 44 && lng > 3 && lng < 9 },
+    tarpon:          { name: "Tarpon",           category: "eau_salee", present: (lat, lng) => lat > 41 && lat < 44 && lng > 3 && lng < 9 },
+    bar:             { name: "Bar / Loup",       category: "eau_salee", present: (lat, lng) => lat > 41 && lat < 51 && (lng < 0 || lng > 5 || lat < 47) },
+    lieujaune:       { name: "Lieu jaune",       category: "eau_salee", present: (lat, lng) => lat > 47 && lat < 51 && lng > -5 && lng < 2 },
+    maquereau:       { name: "Maquereau",        category: "eau_salee", present: (lat, lng) => lat > 43 && lat < 51 && lng > -5 && lng < 9 },
+    doraderoyale:    { name: "Dorade royale",    category: "eau_salee", present: (lat, lng) => lat > 41 && lat < 46 && lng > -2 && lng < 9 },
+    congre:          { name: "Congre",           category: "eau_salee", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
   };
 
-  // === CLIC SUR CARTE ===
-  repMap.on('click', (e) => {
-    const { lat, lng } = e.latlng;
+  // === CLIC SUR CARTE (partout autorisé) ===
+  repMap.on('click', function(e) {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
 
-    // Supprime l'ancien marker
     if (window.currentMarker) repMap.removeLayer(window.currentMarker);
 
-    // Nouveau marker stylé
     window.currentMarker = L.marker([lat, lng], {
       icon: L.divIcon({
-        html: '<div style="background:#00ff9d; color:#000; padding:10px 16px; border-radius:50px; font-weight:bold; box-shadow:0 0 20px #00ff9d; border:2px solid #fff;">📍</div>',
-        iconSize: [80, 50],
-        iconAnchor: [40, 25],
-        className: 'custom-marker'
+        html: '<div style="background:#ff3366;color:white;padding:8px 14px;border-radius:50px;font-weight:bold;box-shadow:0 0 15px #ff3366;">?</div>',
+        iconSize: [60, 40],
+        iconAnchor: [30, 20]
       })
     }).addTo(repMap);
 
-    // Analyse
     const eauDouce = [];
     const eauSalee = [];
 
-    Object.values(repartition).forEach(sp => {
-      if (sp.present(lat, lng)) {
-        if (sp.category === "eau_douce") eauDouce.push(sp.name);
-        else eauSalee.push(sp.name);
+    for (const key in repartition) {
+      if (repartition[key].present(lat, lng)) {
+        if (repartition[key].category === "eau_douce") {
+          eauDouce.push(repartition[key].name);
+        } else {
+          eauSalee.push(repartition[key].name);
+        }
       }
-    });
+    }
 
     const resultDiv = document.getElementById('repartitionResult');
 
-    let html = `
-      <h3 style="color:#00ff9d; margin:0 0 20px; font-size:24px;">
-        Espèces plausibles à cet endroit
-      </h3>
-    `;
+    let html = `<h3 style="color:#00ff9d; margin-bottom:15px;">Espèces plausibles ici</h3>`;
 
     if (eauDouce.length > 0) {
-      html += `
-        <p style="color:#aaa; margin-bottom:12px; font-size:16px;">Eau douce :</p>
-        <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center; margin-bottom:25px;">
-          ${eauDouce.map(name => `
-            <span title="Eau douce" style="
-              background:#003366;
-              color:#00ff9d;
-              padding:10px 18px;
-              border-radius:999px;
-              font-size:15px;
-              border:1px solid #00ff9d44;
-              cursor:default;
-              transition: all 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-              ${name}
-            </span>
-          `).join('')}
-        </div>
-      `;
+      html += `<p style="color:#aaa;">Eau douce :</p><div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:15px;">`;
+      eauDouce.forEach(sp => {
+        html += `<span style="background:#003366; color:#00ff9d; padding:8px 16px; border-radius:30px; font-size:16px; border:1px solid #00ff9d33;">${sp}</span>`;
+      });
+      html += `</div>`;
     }
 
     if (eauSalee.length > 0) {
-      html += `
-        <p style="color:#aaa; margin-bottom:12px; font-size:16px;">Eau salée / côtière :</p>
-        <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center;">
-          ${eauSalee.map(name => `
-            <span title="Eau salée" style="
-              background:#004466;
-              color:#00ccff;
-              padding:10px 18px;
-              border-radius:999px;
-              font-size:15px;
-              border:1px solid #00ccff44;
-              cursor:default;
-              transition: all 0.2s;
-            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-              ${name}
-            </span>
-          `).join('')}
-        </div>
-      `;
+      html += `<p style="color:#aaa;">Eau salée / côtière :</p><div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">`;
+      eauSalee.forEach(sp => {
+        html += `<span style="background:#004466; color:#00ccff; padding:8px 16px; border-radius:30px; font-size:16px; border:1px solid #00ccff33;">${sp}</span>`;
+      });
+      html += `</div>`;
     }
 
     if (eauDouce.length === 0 && eauSalee.length === 0) {
-      html += `
-        <p style="color:#ff6b6b; font-size:20px; margin-top:30px;">
-          Aucune espèce typique détectée ici…
-          <br><small style="color:#aaa;">(zone très atypique, océan profond, désert, haute altitude ?)</small>
-        </p>
-      `;
+      html += `<p style="color:#ff3366; font-size:18px; margin-top:20px;">
+        Aucune espèce typique détectée ici… (zone très atypique ?)
+      </p>`;
     }
 
-    html += `
-      <p style="color:#666; margin-top:25px; font-size:13px;">
-        Coordonnées : ${lat.toFixed(5)}° , ${lng.toFixed(5)}°
-      </p>
-    `;
+    html += `<p style="color:#aaa; margin-top:15px; font-size:14px;">
+      Coordonnées : ${lat.toFixed(5)}, ${lng.toFixed(5)}
+    </p>`;
 
     resultDiv.innerHTML = html;
   });
 });
 </script>
-
 <style>
   .custom-marker {
     filter: drop-shadow(0 0 8px #ff3366);
