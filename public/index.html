@@ -1768,70 +1768,45 @@ const adviceRes = await fetch('/api/advice', {
 </div>
 
 <script>
-// === CARTE RÉPARTITION ESPÈCES ===
+// === CARTE RÉPARTITION ESPÈCES (version corrigée 2026) ===
 document.addEventListener('DOMContentLoaded', () => {
   const repMap = L.map('repartitionMap').setView([46.6, 2.0], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(repMap);
 
-  // === FONCTION : est-ce près de la mer ? (< 100 m de la côte) ===
-  // Approximation réaliste pour la France métropolitaine (côtes ~ 5500 km)
-  function isNearSea(lat, lng, thresholdMeters = 100) {
-    // Zones côtières grossières (on teste si on est très proche du 0 m d'altitude côtière)
-    // 1. Bordure Atlantique / Manche (ouest et nord)
-    if (lng < 1.5 && lat > 43 && lat < 51) return true; // Bretagne, Normandie, côte atlantique
-    if (lng < -1.5 && lat > 46 && lat < 51) return true; // Finistère, Manche
-
-    // 2. Méditerranée (sud-est)
-    if (lat < 44 && lng > 3 && lng < 9) return true; // Côte d'Azur, Languedoc
-
-    // 3. Côte basque / Landes
-    if (lat > 43 && lat < 44.5 && lng > -2 && lng < 0) return true;
-
-    // 4. Distance brute à la côte (approximation simple par longitude/latitude côtière)
-    // On considère "mer" si on est à moins de ~0.001° (~100 m) d'une côte connue
-    const nearWestCoast   = lng < -4.5 && Math.abs(lat - 48.5) < 0.001;
-    const nearMedCoast    = lng > 6.5 && Math.abs(lat - 43.3) < 0.001;
-    const nearNorthCoast  = lat > 50.5 && Math.abs(lng - 2.5) < 0.001;
-
-    return nearWestCoast || nearMedCoast || nearNorthCoast;
-  }
-
-  // === DONNÉES DE RÉPARTITION ===
+  // === DONNÉES DE RÉPARTITION (approximation réaliste France 2026) ===
   const repartition = {
-    // Eau douce (presque partout sauf haute montagne)
-    brochet:         { name: "Brochet",          isMarine: false, present: () => true },
-    perche:          { name: "Perche",           isMarine: false, present: () => true },
-    sandre:          { name: "Sandre",           isMarine: false, present: () => true },
-    blackbass:       { name: "Black-bass",       isMarine: false, present: () => true },
-    silure:          { name: "Silure",           isMarine: false, present: () => true },
-    carpe:           { name: "Carpe",            isMarine: false, present: () => true },
-    amourblanc:      { name: "Amour blanc",      isMarine: false, present: () => true },
-    esturgeon:       { name: "Esturgeon",        isMarine: false, present: () => true }, // captivité ou rares
-    gardon:          { name: "Gardon",           isMarine: false, present: () => true },
-    rotengle:        { name: "Rotengle",         isMarine: false, present: () => true },
-    tanche:          { name: "Tanche",           isMarine: false, present: () => true },
-    barbeau:         { name: "Barbeau",          isMarine: false, present: () => true },
-    brème:           { name: "Brème",            isMarine: false, present: () => true },
-    carassin:        { name: "Carassin",         isMarine: false, present: () => true },
-    chevesne:        { name: "Chevesne",         isMarine: false, present: () => true },
-    aspe:            { name: "Aspe",             isMarine: false, present: () => true },
-    ombre:           { name: "Ombre",            isMarine: false, present: () => true },
-    omblechevalier:  { name: "Omble chevalier",  isMarine: false, present: () => true },
-    truitearcenciel: { name: "Truite arc-en-ciel", isMarine: false, present: () => true },
-    lote:            { name: "Lote",             isMarine: false, present: () => true },
+    // Espèces eau douce – uniquement hémisphère nord (France entière ou presque)
+    brochet:         { name: "Brochet",          present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    perche:          { name: "Perche",           present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    sandre:          { name: "Sandre",           present: (lat, lng) => lat > 42 && lat < 51 && lng > -2 && lng < 9 },
+    blackbass:       { name: "Black-bass",       present: (lat, lng) => lat > 42 && lat < 50 && lng > -2 && lng < 8 },
+    silure:          { name: "Silure",           present: (lat, lng) => lat > 42 && lat < 50 && lng > -1 && lng < 9 },
+    carpe:           { name: "Carpe",            present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    amourblanc:      { name: "Amour blanc",      present: (lat, lng) => lat > 43 && lat < 50 && lng > -2 && lng < 8 },
+    esturgeon:       { name: "Esturgeon",        present: (lat, lng) => lat > 42 && lat < 50 && lng > -2 && lng < 9 },
+    gardon:          { name: "Gardon",           present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    rotengle:        { name: "Rotengle",         present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    tanche:          { name: "Tanche",           present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    barbeau:         { name: "Barbeau",          present: (lat, lng) => lat > 42 && lat < 51 && lng > -2 && lng < 9 },
+    breme:           { name: "Brème",            present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    carassin:        { name: "Carassin",         present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    chevesne:        { name: "Chevesne",         present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 },
+    aspe:            { name: "Aspe",             present: (lat, lng) => lat > 42 && lat < 48 && lng > -2 && lng < 4   }, // sud-ouest + grands fleuves
+    ombre:           { name: "Ombre",            present: (lat, lng) => lat > 44 && lat < 49 && lng > 4 && lng < 8    }, // est, Jura, Vosges
+    omblechevalier:  { name: "Omble chevalier",  present: (lat, lng) => lat > 44 && lat < 48 && lng > 5.5 && lng < 8  }, // Alpes, lacs d'altitude
+    truitearcenciel: { name: "Truite arc-en-ciel", present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 }, // très répandue
+    lote:            { name: "Lote",             present: (lat, lng) => lat > 46 && lat < 50 && lng > 2 && lng < 8    }, // nord-est, grands fleuves
 
-    // Espèces marines → seulement si isNearSea() retourne true
-    bar:             { name: "Bar / Loup",       isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
-    lieujaune:       { name: "Lieu jaune",       isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
-    maquereau:       { name: "Maquereau",        isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
-    doraderoyale:    { name: "Dorade royale",    isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
-    congre:          { name: "Congre",           isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
-    barracuda:       { name: "Barracuda",        isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
-    snook:           { name: "Snook",            isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
-    tarpon:          { name: "Tarpon",           isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
-    // ... ajoute d'autres marines ici
+    // Espèces marines – barracuda et tarpon limités
+    barracuda:       { name: "Barracuda",        present: (lat, lng) => lat > 41 && lat < 44 && lng > 3 && lng < 9     }, // Méditerranée sud + Corse
+    tarpon:          { name: "Tarpon",           present: (lat, lng) => lat > 41 && lat < 44 && lng > 3 && lng < 9     }, // Méditerranée sud uniquement (très rare)
+    bar:             { name: "Bar / Loup",       present: (lat, lng) => lat > 41 && lat < 51 && (lng < 0 || lng > 5 || lat < 47) },
+    lieujaune:       { name: "Lieu jaune",       present: (lat, lng) => lat > 47 && lat < 51 && lng > -5 && lng < 2    },
+    maquereau:       { name: "Maquereau",        present: (lat, lng) => lat > 43 && lat < 51 && lng > -5 && lng < 9    },
+    doraderoyale:    { name: "Dorade royale",    present: (lat, lng) => lat > 41 && lat < 46 && lng > -2 && lng < 9    },
+    congre:          { name: "Congre",           present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9    },
   };
 
   // === CLIC SUR CARTE ===
@@ -1839,53 +1814,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const lat = e.latlng.lat;
     const lng = e.latlng.lng;
 
-    // Supprime ancien marker
-    if (window.currentRepMarker) repMap.removeLayer(window.currentRepMarker);
+    if (window.currentMarker) repMap.removeLayer(window.currentMarker);
 
-    // Place marker
-    window.currentRepMarker = L.marker([lat, lng], {
+    window.currentMarker = L.marker([lat, lng], {
       icon: L.divIcon({
-        html: '<div style="background:#00ff9d;color:black;padding:8px 16px;border-radius:50px;font-weight:bold;box-shadow:0 0 15px #00ff9d;">SPOT</div>',
-        iconSize: [100, 40],
-        iconAnchor: [50, 20]
+        html: '<div style="background:#ff3366;color:white;padding:8px 14px;border-radius:50px;font-weight:bold;box-shadow:0 0 15px #ff3366;">?</div>',
+        iconSize: [60, 40],
+        iconAnchor: [30, 20]
       })
     }).addTo(repMap);
 
-    // Analyse
     const possible = [];
     for (const key in repartition) {
-      const sp = repartition[key];
-      // Si marine → doit être près de la mer
-      if (sp.isMarine && !sp.present(lat, lng)) continue;
-      // Sinon (eau douce) → toujours OK
-      possible.push(sp.name);
+      if (repartition[key].present(lat, lng)) {
+        possible.push(repartition[key].name);
+      }
     }
 
     const resultDiv = document.getElementById('repartitionResult');
 
     if (possible.length === 0) {
       resultDiv.innerHTML = `
-        <p style="color:#ff3366;font-size:20px;">
-          Aucune espèce typique ici... (zone atypique ou trop loin de la mer pour les marines ?)
+        <p style="color:#ff3366; font-size:20px;">
+          Aucune espèce typique détectée ici… (zone atypique, haute altitude ou pleine mer ?)
         </p>`;
     } else {
-      resultDiv.innerHTML = `
-        <h3 style="color:#00ff9d;margin-bottom:15px;">Espèces plausibles ici</h3>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;">
-          ${possible.map(sp => `
-            <span style="background:#003366;color:#00ff9d;padding:8px 16px;border-radius:30px;font-size:16px;border:1px solid #00ff9d33;">
-              ${sp}
-            </span>
-          `).join('')}
-        </div>
-        <p style="color:#aaa;margin-top:15px;font-size:14px;">
-          Coordonnées : ${lat.toFixed(5)}, ${lng.toFixed(5)}
-        </p>`;
+      const eauDouce = possible.filter(s => !['Barracuda', 'Tarpon', 'Bar', 'Lieu jaune', 'Maquereau', 'Dorade royale', 'Congre'].includes(s));
+      const eauSalee = possible.filter(s => ['Barracuda', 'Tarpon', 'Bar', 'Lieu jaune', 'Maquereau', 'Dorade royale', 'Congre'].includes(s));
+
+      let html = `<h3 style="color:#00ff9d; margin-bottom:15px;">Espèces plausibles ici</h3>`;
+
+      if (eauDouce.length > 0) {
+        html += `<p style="color:#aaa;">Eau douce :</p><div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:15px;">`;
+        eauDouce.forEach(sp => {
+          html += `<span style="background:#003366; color:#00ff9d; padding:8px 16px; border-radius:30px; font-size:16px; border:1px solid #00ff9d33;">${sp}</span>`;
+        });
+        html += `</div>`;
+      }
+
+      if (eauSalee.length > 0) {
+        html += `<p style="color:#aaa;">Eau salée / côtière :</p><div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">`;
+        eauSalee.forEach(sp => {
+          html += `<span style="background:#004466; color:#00ccff; padding:8px 16px; border-radius:30px; font-size:16px; border:1px solid #00ccff33;">${sp}</span>`;
+        });
+        html += `</div>`;
+      }
+
+      html += `<p style="color:#aaa; margin-top:15px; font-size:14px;">Coordonnées : ${lat.toFixed(5)}, ${lng.toFixed(5)}</p>`;
+
+      resultDiv.innerHTML = html;
     }
   });
 });
 </script>
-      <!-- ============================= -->
 <!--        MODE COACH IA         -->
 <!-- ============================= -->
 
