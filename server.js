@@ -2978,8 +2978,9 @@ const randomParEspece = {
     list.push(random2);
   }
 
-  list.push("Essaie un leurre souple de 7cm c'est une valeur sure !");
-  list.push("Enregistre ta session pour faire progresser l'IA !");
+  list.push("🎣Essaie un leurre souple de 7cm c'est une valeur sure !");
+  list.push("💶 Va en bas pour trouver les leurres les moins cher ! ")
+  list.push("💪Enregistre ta session pour faire progresser l'IA !");
 
   // Profondeur
 
