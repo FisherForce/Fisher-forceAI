@@ -1750,6 +1750,115 @@ const adviceRes = await fetch('/api/advice', {
 
 
     <section class="card output-card">
+      <div id="repartition-mode" class="mode">
+  <h2 style="text-align:center; color:#00ff9d;">Répartition des espèces 🗺️</h2>
+  <p style="text-align:center; color:#aaa; margin:10px 0;">
+    Clique n’importe où sur la carte → voir quelles espèces sont plausibles à cet endroit
+  </p>
+
+  <!-- Carte -->
+  <div style="margin:20px auto; max-width:900px;">
+    <div id="repartitionMap" style="height:500px; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.6);"></div>
+  </div>
+
+  <!-- Résultat -->
+  <div id="repartitionResult" style="margin:20px auto; padding:20px; background:#001122; border-radius:12px; max-width:900px; min-height:120px; text-align:center;">
+    <p style="color:#00ff9d; font-size:18px;">Clique sur la carte pour voir les espèces plausibles…</p>
+  </div>
+</div>
+
+<script>
+// === CARTE RÉPARTITION ESPÈCES ===
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialisation Leaflet
+  const repMap = L.map('repartitionMap').setView([46.6, 2.0], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+  }).addTo(repMap);
+
+  // === DONNÉES DE RÉPARTITION (approximation France 2025-2026) ===
+  // On utilise des zones très simplifiées (polygones ou conditions lat/lng)
+  const repartition = {
+    brochet:         { name: "Brochet",          present: (lat, lng) => lat > 42 && lat < 51 && lng > -5 && lng < 8   }, // presque toute la France
+    perche:          { name: "Perche",           present: (lat, lng) => true }, // partout
+    sandre:          { name: "Sandre",           present: (lat, lng) => lat > 43 && lat < 50 && lng > -1 && lng < 7   }, // surtout grands fleuves & lacs
+    blackbass:       { name: "Black-bass",       present: (lat, lng) => lat > 42 && lat < 49 && lng > -2 && lng < 7   }, // sud + centre + ouest
+    silure:          { name: "Silure",           present: (lat, lng) => lat > 42 && lat < 50 && lng > -1 && lng < 8   }, // grands fleuves (Garonne, Rhône, Loire…)
+    silure_sud:      { name: "Silure (sud)",     present: (lat, lng) => lat > 42 && lat < 45 && lng > -2 && lng < 5   },
+    carpe:           { name: "Carpe",            present: (lat, lng) => true },
+    amourblanc:      { name: "Amour blanc",      present: (lat, lng) => lat > 43 && lat < 50 && lng > -2 && lng < 7   }, // étangs chauffés
+    esturgeon:       { name: "Esturgeon",        present: (lat, lng) => false }, // très rare / captivité
+    gardon:          { name: "Gardon",           present: (lat, lng) => true },
+    rotengle:        { name: "Rotengle",         present: (lat, lng) => true },
+    tanche:          { name: "Tanche",           present: (lat, lng) => true },
+    barbeau:         { name: "Barbeau",          present: (lat, lng) => lat > 43 && lat < 50 && lng > -2 && lng < 8   }, // rivières courantes
+    brème:           { name: "Brème",            present: (lat, lng) => true },
+    carassin:        { name: "Carassin",         present: (lat, lng) => true },
+    chevesne:        { name: "Chevesne",         present: (lat, lng) => true },
+    aspe:            { name: "Aspe",             present: (lat, lng) => lat > 43 && lat < 47 && lng > -1 && lng < 3   }, // sud-ouest surtout
+    ombre:           { name: "Ombre",            present: (lat, lng) => lat > 44 && lat < 48 && lng > 5 && lng < 8    }, // Jura, Vosges, Alpes
+    omblechevalier:  { name: "Omble chevalier",  present: (lat, lng) => lat > 44 && lat < 47 && lng > 5.5 && lng < 8  }, // lacs alpins
+    truitearcenciel: { name: "Truite arc-en-ciel", present: (lat, lng) => true }, // très répandue en pêche récréative
+    lotte:           { name: "Lote",             present: (lat, lng) => lat > 47 && lat < 50 && lng > 2 && lng < 8    }, // nord-est surtout
+    // Mer (approximation côtière)
+    bar:             { name: "Bar / Loup",       present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 && lat < 48 || lng < 0 || lng > 7 },
+    lieujaune:       { name: "Lieu jaune",       present: (lat, lng) => lat > 47 && lat < 51 && lng > -5 && lng < 2    }, // Manche / Atlantique nord
+    maquereau:       { name: "Maquereau",        present: (lat, lng) => lat > 43 && lat < 51 && lng > -5 && lng < 9    },
+    doraderoyale:    { name: "Dorade royale",    present: (lat, lng) => lat > 41 && lat < 45 && lng > -2 && lng < 7    }, // Méditerranée + sud Atlantique
+    congre:          { name: "Congre",           present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9    },
+    barracuda:       { name: "Barracuda",        present: (lat, lng) => lat > 41 && lat < 44 && lng > 3 && lng < 8     }, // Méditerranée sud
+    // ... ajoute d'autres si besoin
+  };
+
+  // === CLIC SUR CARTE ===
+  repMap.on('click', function(e) {
+    const lat = e.latlng.lat;
+    const lng = e.latlng.lng;
+
+    // Supprime ancien marker s'il existe
+    if (window.currentMarker) repMap.removeLayer(window.currentMarker);
+
+    // Place un joli marker
+    window.currentMarker = L.marker([lat, lng], {
+      icon: L.divIcon({
+        html: '<div style="background:#ff3366;color:white;padding:8px 14px;border-radius:50px;font-weight:bold;box-shadow:0 0 15px #ff3366;">?</div>',
+        iconSize: [60, 40],
+        iconAnchor: [30, 20]
+      })
+    }).addTo(repMap);
+
+    // Analyse les espèces plausibles
+    const possible = [];
+    for (const key in repartition) {
+      if (repartition[key].present(lat, lng)) {
+        possible.push(repartition[key].name);
+      }
+    }
+
+    const resultDiv = document.getElementById('repartitionResult');
+
+    if (possible.length === 0) {
+      resultDiv.innerHTML = `
+        <p style="color:#ff3366; font-size:20px;">
+          Aucune espèce typique détectée ici... (zone atypique ou haute altitude ?)
+        </p>`;
+    } else {
+      resultDiv.innerHTML = `
+        <h3 style="color:#00ff9d; margin-bottom:15px;">Espèces plausibles à cet endroit</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+          ${possible.map(sp => `
+            <span style="background:#003366; color:#00ff9d; padding:8px 16px; border-radius:30px; font-size:16px; border:1px solid #00ff9d33;">
+              ${sp}
+            </span>
+          `).join('')}
+        </div>
+        <p style="color:#aaa; margin-top:15px; font-size:14px;">
+          Coordonnées : ${lat.toFixed(5)}, ${lng.toFixed(5)}
+        </p>`;
+    }
+  });
+});
+</script>
       <!-- ============================= -->
 <!--        MODE COACH IA         -->
 <!-- ============================= -->
