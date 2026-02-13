@@ -1750,64 +1750,88 @@ const adviceRes = await fetch('/api/advice', {
 
 
     <section class="card output-card">
-      <div id="repartition-mode" class="mode">
-  <h2 style="text-align:center; color:#00ff9d;">Répartition des espèces 🗺️</h2>
-  <p style="text-align:center; color:#aaa; margin:10px 0;">
-    Clique n’importe où sur la carte → voir quelles espèces sont plausibles à cet endroit
+<!-- Mode Répartition des espèces -->
+<div id="repartition-mode" class="mode">
+  <h2 style="text-align:center;color:#00ff9d;">Répartition des espèces 🗺️</h2>
+  <p style="text-align:center;color:#aaa;margin:10px 0;">
+    Clique sur la carte → voir les espèces plausibles à cet endroit<br>
+    (espèces marines → seulement sur la côte ou < 100 m)
   </p>
 
-  <!-- Carte -->
-  <div style="margin:20px auto; max-width:900px;">
-    <div id="repartitionMap" style="height:500px; border-radius:12px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,0.6);"></div>
+  <div style="margin:20px auto;max-width:900px;">
+    <div id="repartitionMap" style="height:500px;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.6);"></div>
   </div>
 
-  <!-- Résultat -->
-  <div id="repartitionResult" style="margin:20px auto; padding:20px; background:#001122; border-radius:12px; max-width:900px; min-height:120px; text-align:center;">
-    <p style="color:#00ff9d; font-size:18px;">Clique sur la carte pour voir les espèces plausibles…</p>
+  <div id="repartitionResult" style="margin:20px auto;padding:20px;background:#001122;border-radius:12px;max-width:900px;min-height:120px;text-align:center;">
+    <p style="color:#00ff9d;font-size:18px;">Clique sur la carte pour voir les espèces plausibles…</p>
   </div>
 </div>
 
 <script>
 // === CARTE RÉPARTITION ESPÈCES ===
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialisation Leaflet
   const repMap = L.map('repartitionMap').setView([46.6, 2.0], 6);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
   }).addTo(repMap);
 
-  // === DONNÉES DE RÉPARTITION (approximation France 2025-2026) ===
-  // On utilise des zones très simplifiées (polygones ou conditions lat/lng)
+  // === FONCTION : est-ce près de la mer ? (< 100 m de la côte) ===
+  // Approximation réaliste pour la France métropolitaine (côtes ~ 5500 km)
+  function isNearSea(lat, lng, thresholdMeters = 100) {
+    // Zones côtières grossières (on teste si on est très proche du 0 m d'altitude côtière)
+    // 1. Bordure Atlantique / Manche (ouest et nord)
+    if (lng < 1.5 && lat > 43 && lat < 51) return true; // Bretagne, Normandie, côte atlantique
+    if (lng < -1.5 && lat > 46 && lat < 51) return true; // Finistère, Manche
+
+    // 2. Méditerranée (sud-est)
+    if (lat < 44 && lng > 3 && lng < 9) return true; // Côte d'Azur, Languedoc
+
+    // 3. Côte basque / Landes
+    if (lat > 43 && lat < 44.5 && lng > -2 && lng < 0) return true;
+
+    // 4. Distance brute à la côte (approximation simple par longitude/latitude côtière)
+    // On considère "mer" si on est à moins de ~0.001° (~100 m) d'une côte connue
+    const nearWestCoast   = lng < -4.5 && Math.abs(lat - 48.5) < 0.001;
+    const nearMedCoast    = lng > 6.5 && Math.abs(lat - 43.3) < 0.001;
+    const nearNorthCoast  = lat > 50.5 && Math.abs(lng - 2.5) < 0.001;
+
+    return nearWestCoast || nearMedCoast || nearNorthCoast;
+  }
+
+  // === DONNÉES DE RÉPARTITION ===
   const repartition = {
-    brochet:         { name: "Brochet",          present: (lat, lng) => lat > 42 && lat < 51 && lng > -5 && lng < 8   }, // presque toute la France
-    perche:          { name: "Perche",           present: (lat, lng) => true }, // partout
-    sandre:          { name: "Sandre",           present: (lat, lng) => lat > 43 && lat < 50 && lng > -1 && lng < 7   }, // surtout grands fleuves & lacs
-    blackbass:       { name: "Black-bass",       present: (lat, lng) => lat > 42 && lat < 49 && lng > -2 && lng < 7   }, // sud + centre + ouest
-    silure:          { name: "Silure",           present: (lat, lng) => lat > 42 && lat < 50 && lng > -1 && lng < 8   }, // grands fleuves (Garonne, Rhône, Loire…)
-    silure_sud:      { name: "Silure (sud)",     present: (lat, lng) => lat > 42 && lat < 45 && lng > -2 && lng < 5   },
-    carpe:           { name: "Carpe",            present: (lat, lng) => true },
-    amourblanc:      { name: "Amour blanc",      present: (lat, lng) => lat > 43 && lat < 50 && lng > -2 && lng < 7   }, // étangs chauffés
-    esturgeon:       { name: "Esturgeon",        present: (lat, lng) => false }, // très rare / captivité
-    gardon:          { name: "Gardon",           present: (lat, lng) => true },
-    rotengle:        { name: "Rotengle",         present: (lat, lng) => true },
-    tanche:          { name: "Tanche",           present: (lat, lng) => true },
-    barbeau:         { name: "Barbeau",          present: (lat, lng) => lat > 43 && lat < 50 && lng > -2 && lng < 8   }, // rivières courantes
-    brème:           { name: "Brème",            present: (lat, lng) => true },
-    carassin:        { name: "Carassin",         present: (lat, lng) => true },
-    chevesne:        { name: "Chevesne",         present: (lat, lng) => true },
-    aspe:            { name: "Aspe",             present: (lat, lng) => lat > 43 && lat < 47 && lng > -1 && lng < 3   }, // sud-ouest surtout
-    ombre:           { name: "Ombre",            present: (lat, lng) => lat > 44 && lat < 48 && lng > 5 && lng < 8    }, // Jura, Vosges, Alpes
-    omblechevalier:  { name: "Omble chevalier",  present: (lat, lng) => lat > 44 && lat < 47 && lng > 5.5 && lng < 8  }, // lacs alpins
-    truitearcenciel: { name: "Truite arc-en-ciel", present: (lat, lng) => true }, // très répandue en pêche récréative
-    lotte:           { name: "Lote",             present: (lat, lng) => lat > 47 && lat < 50 && lng > 2 && lng < 8    }, // nord-est surtout
-    // Mer (approximation côtière)
-    bar:             { name: "Bar / Loup",       present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9 && lat < 48 || lng < 0 || lng > 7 },
-    lieujaune:       { name: "Lieu jaune",       present: (lat, lng) => lat > 47 && lat < 51 && lng > -5 && lng < 2    }, // Manche / Atlantique nord
-    maquereau:       { name: "Maquereau",        present: (lat, lng) => lat > 43 && lat < 51 && lng > -5 && lng < 9    },
-    doraderoyale:    { name: "Dorade royale",    present: (lat, lng) => lat > 41 && lat < 45 && lng > -2 && lng < 7    }, // Méditerranée + sud Atlantique
-    congre:          { name: "Congre",           present: (lat, lng) => lat > 41 && lat < 51 && lng > -5 && lng < 9    },
-    barracuda:       { name: "Barracuda",        present: (lat, lng) => lat > 41 && lat < 44 && lng > 3 && lng < 8     }, // Méditerranée sud
-    // ... ajoute d'autres si besoin
+    // Eau douce (presque partout sauf haute montagne)
+    brochet:         { name: "Brochet",          isMarine: false, present: () => true },
+    perche:          { name: "Perche",           isMarine: false, present: () => true },
+    sandre:          { name: "Sandre",           isMarine: false, present: () => true },
+    blackbass:       { name: "Black-bass",       isMarine: false, present: () => true },
+    silure:          { name: "Silure",           isMarine: false, present: () => true },
+    carpe:           { name: "Carpe",            isMarine: false, present: () => true },
+    amourblanc:      { name: "Amour blanc",      isMarine: false, present: () => true },
+    esturgeon:       { name: "Esturgeon",        isMarine: false, present: () => true }, // captivité ou rares
+    gardon:          { name: "Gardon",           isMarine: false, present: () => true },
+    rotengle:        { name: "Rotengle",         isMarine: false, present: () => true },
+    tanche:          { name: "Tanche",           isMarine: false, present: () => true },
+    barbeau:         { name: "Barbeau",          isMarine: false, present: () => true },
+    brème:           { name: "Brème",            isMarine: false, present: () => true },
+    carassin:        { name: "Carassin",         isMarine: false, present: () => true },
+    chevesne:        { name: "Chevesne",         isMarine: false, present: () => true },
+    aspe:            { name: "Aspe",             isMarine: false, present: () => true },
+    ombre:           { name: "Ombre",            isMarine: false, present: () => true },
+    omblechevalier:  { name: "Omble chevalier",  isMarine: false, present: () => true },
+    truitearcenciel: { name: "Truite arc-en-ciel", isMarine: false, present: () => true },
+    lote:            { name: "Lote",             isMarine: false, present: () => true },
+
+    // Espèces marines → seulement si isNearSea() retourne true
+    bar:             { name: "Bar / Loup",       isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
+    lieujaune:       { name: "Lieu jaune",       isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
+    maquereau:       { name: "Maquereau",        isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
+    doraderoyale:    { name: "Dorade royale",    isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
+    congre:          { name: "Congre",           isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
+    barracuda:       { name: "Barracuda",        isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
+    snook:           { name: "Snook",            isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
+    tarpon:          { name: "Tarpon",           isMarine: true,  present: (lat, lng) => isNearSea(lat, lng) },
+    // ... ajoute d'autres marines ici
   };
 
   // === CLIC SUR CARTE ===
@@ -1815,44 +1839,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const lat = e.latlng.lat;
     const lng = e.latlng.lng;
 
-    // Supprime ancien marker s'il existe
-    if (window.currentMarker) repMap.removeLayer(window.currentMarker);
+    // Supprime ancien marker
+    if (window.currentRepMarker) repMap.removeLayer(window.currentRepMarker);
 
-    // Place un joli marker
-    window.currentMarker = L.marker([lat, lng], {
+    // Place marker
+    window.currentRepMarker = L.marker([lat, lng], {
       icon: L.divIcon({
-        html: '<div style="background:#ff3366;color:white;padding:8px 14px;border-radius:50px;font-weight:bold;box-shadow:0 0 15px #ff3366;">?</div>',
-        iconSize: [60, 40],
-        iconAnchor: [30, 20]
+        html: '<div style="background:#00ff9d;color:black;padding:8px 16px;border-radius:50px;font-weight:bold;box-shadow:0 0 15px #00ff9d;">SPOT</div>',
+        iconSize: [100, 40],
+        iconAnchor: [50, 20]
       })
     }).addTo(repMap);
 
-    // Analyse les espèces plausibles
+    // Analyse
     const possible = [];
     for (const key in repartition) {
-      if (repartition[key].present(lat, lng)) {
-        possible.push(repartition[key].name);
-      }
+      const sp = repartition[key];
+      // Si marine → doit être près de la mer
+      if (sp.isMarine && !sp.present(lat, lng)) continue;
+      // Sinon (eau douce) → toujours OK
+      possible.push(sp.name);
     }
 
     const resultDiv = document.getElementById('repartitionResult');
 
     if (possible.length === 0) {
       resultDiv.innerHTML = `
-        <p style="color:#ff3366; font-size:20px;">
-          Aucune espèce typique détectée ici... (zone atypique ou haute altitude ?)
+        <p style="color:#ff3366;font-size:20px;">
+          Aucune espèce typique ici... (zone atypique ou trop loin de la mer pour les marines ?)
         </p>`;
     } else {
       resultDiv.innerHTML = `
-        <h3 style="color:#00ff9d; margin-bottom:15px;">Espèces plausibles à cet endroit</h3>
-        <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+        <h3 style="color:#00ff9d;margin-bottom:15px;">Espèces plausibles ici</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;">
           ${possible.map(sp => `
-            <span style="background:#003366; color:#00ff9d; padding:8px 16px; border-radius:30px; font-size:16px; border:1px solid #00ff9d33;">
+            <span style="background:#003366;color:#00ff9d;padding:8px 16px;border-radius:30px;font-size:16px;border:1px solid #00ff9d33;">
               ${sp}
             </span>
           `).join('')}
         </div>
-        <p style="color:#aaa; margin-top:15px; font-size:14px;">
+        <p style="color:#aaa;margin-top:15px;font-size:14px;">
           Coordonnées : ${lat.toFixed(5)}, ${lng.toFixed(5)}
         </p>`;
     }
