@@ -188,6 +188,7 @@ function suggestLures(species, structure, conditions, spotType, temperature = nu
   }
 
   // Cas ultra-ciblés (tes conditions originales)
+  list.push("🦞 Va plus bas pour voir comment te servir des leurres ! ")
 if (species.includes('perche')) {
   // Message introductif selon saison
   if (saison === "hiver" || temperature < 10) {
@@ -2979,7 +2980,7 @@ const randomParEspece = {
   }
 
   list.push("🎣Essaie un leurre souple de 7cm c'est une valeur sure !");
-  list.push("💶 Va en bas pour trouver les leurres les moins cher ! ")
+  list.push("💶 Va en bas pour trouver les leurres les moins cher ! ");
   list.push("💪Enregistre ta session pour faire progresser l'IA !");
 
   // Profondeur
