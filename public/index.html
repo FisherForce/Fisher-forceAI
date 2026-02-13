@@ -203,7 +203,25 @@
   <!-- BOUTONS CACHÉS (apparaissent au clic) -->
   <div id="menuDropdown" style="display:none;position:absolute;top:60px;right:0;background:#001122;border:2px solid #00d4aa;border-radius:18px;padding:15px;box-shadow:0 15px 40px rgba(0,212,170,0.5);z-index:9999;white-space:nowrap;">
 
-    
+
+    <button id="toggleMaterielBtn" style="
+  width: 100%;
+  max-width: 400px;
+  margin: 30px auto;
+  padding: 18px 30px;
+  background: linear-gradient(135deg, #00ff9d, #00d4aa);
+  color: #000;
+  border: none;
+  border-radius: 50px;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,255,157,0.4);
+  transition: all 0.3s ease;
+  display: block;
+">
+  🎣 Mon matériel & setup
+</button>
    <button onclick="showStatsPopup()" style="
   width: 100%;
   padding: 18px;
@@ -263,8 +281,281 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+      <!-- Section Mon matériel (cachée par défaut) -->
+<div id="materielSection" style="
+  display: none;
+  padding: 30px;
+  background: #001122;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+  max-width: 900px;
+  margin: 0 auto 40px;
+  border: 1px solid #00ff9d22;
+">
+
+  <h2 style="text-align:center; color:#00ff9d; margin-bottom: 25px; font-size: 32px;">
+    Mon matériel 🎣
+  </h2>
+  <p style="text-align:center; color:#aaa; margin-bottom: 30px; font-size: 16px;">
+    Renseigne ton setup et vois si c’est adapté à tes espèces prioritaires
+  </p>
+
+  <!-- Espèces prioritaires -->
+  <div style="margin-bottom: 30px;">
+    <label style="display:block; margin-bottom: 12px; color:#00ff9d; font-size: 18px;">
+      Espèces que tu cibles en priorité (multi-sélection)
+    </label>
+    <select id="especesCibles" multiple style="
+      width: 100%;
+      height: 140px;
+      padding: 12px;
+      border-radius: 12px;
+      background: #0d1b2a;
+      color: #e0e0e0;
+      border: 1px solid #00ff9d44;
+      font-size: 16px;
+    ">
+      <option value="brochet">Brochet</option>
+      <option value="perche">Perche</option>
+      <option value="sandre">Sandre</option>
+      <option value="blackbass">Black-bass</option>
+      <option value="silure">Silure</option>
+      <option value="carpe">Carpe</option>
+      <option value="amourblanc">Amour blanc</option>
+      <option value="truite">Truite (fario, arc-en-ciel...)</option>
+      <option value="bar">Bar / Loup</option>
+      <option value="lote">Lote</option>
+      <option value="esturgeon">Esturgeon</option>
+      <option value="aspe">Aspe</option>
+      <option value="chevesne">Chevesne</option>
+      <option value="ombre">Ombre</option>
+      <option value="omble">Omble chevalier</option>
+      <!-- Ajoute les autres si besoin -->
+    </select>
+    <small style="color:#aaa; display:block; margin-top: 8px;">
+      Maintiens Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs
+    </small>
+  </div>
+
+  <!-- Canne -->
+  <div style="margin-bottom: 25px;">
+    <label style="display:block; margin-bottom: 12px; color:#00ff9d; font-size: 18px;">Puissance de ta canne</label>
+    <select id="cannePuissance" style="width:100%; padding:14px; border-radius:12px; background:#0d1b2a; color:#e0e0e0; border:1px solid #00ff9d44; font-size:16px;">
+      <option value="">Choisis...</option>
+      <option value="0.5-5g">Ultra-light (0,5-5 g)</option>
+      <option value="2-10g">Light (2-10 g)</option>
+      <option value="5-15g">Medium-light (5-15 g)</option>
+      <option value="7-21g">Medium (7-21 g)</option>
+      <option value="10-40g">Medium-heavy (10-40 g)</option>
+      <option value="14-70g">Heavy (14-70 g)</option>
+      <option value="+100g">Very Heavy (+100 g)</option>
+      <option value="+300g">XXL / Big game (+300 g)</option>
+    </select>
+  </div>
+
+  <div style="margin-bottom: 25px;">
+    <label style="display:block; margin-bottom: 12px; color:#00ff9d; font-size: 18px;">Taille de ta canne</label>
+    <input type="text" id="canneTaille" placeholder="Ex: 2,10 m" style="width:100%; padding:14px; border-radius:12px; background:#0d1b2a; color:#e0e0e0; border:1px solid #00ff9d44; font-size:16px;">
+  </div>
+
+  <!-- Moulinet -->
+  <div style="margin-bottom: 25px;">
+    <label style="display:block; margin-bottom: 12px; color:#00ff9d; font-size: 18px;">Type de moulinet</label>
+    <select id="moulinetType" style="width:100%; padding:14px; border-radius:12px; background:#0d1b2a; color:#e0e0e0; border:1px solid #00ff9d44; font-size:16px;">
+      <option value="">Choisis...</option>
+      <option value="spinning">Spinning</option>
+      <option value="casting">Casting (baitcasting)</option>
+    </select>
+  </div>
+
+  <div style="margin-bottom: 25px;">
+    <label style="display:block; margin-bottom: 12px; color:#00ff9d; font-size: 18px;">Taille du moulinet</label>
+    <select id="moulinetTaille" style="width:100%; padding:14px; border-radius:12px; background:#0d1b2a; color:#e0e0e0; border:1px solid #00ff9d44; font-size:16px;">
+      <option value="">Choisis...</option>
+      <option value="1000">1000</option>
+      <option value="2000">2000</option>
+      <option value="2500">2500</option>
+      <option value="3000">3000</option>
+      <option value="4000">4000</option>
+      <option value="+5000">+5000</option>
+    </select>
+  </div>
+
+  <!-- Fil -->
+  <div style="margin-bottom: 30px;">
+    <label style="display:block; margin-bottom: 12px; color:#00ff9d; font-size: 18px;">Type de fil</label>
+    <select id="filType" style="width:100%; padding:14px; border-radius:12px; background:#0d1b2a; color:#e0e0e0; border:1px solid #00ff9d44; font-size:16px;">
+      <option value="">Choisis...</option>
+      <option value="tresse">Tresse</option>
+      <option value="fluoro">Fluorocarbone</option>
+      <option value="nylon">Nylon (monofilament)</option>
+    </select>
+  </div>
+
+  <div style="margin-bottom: 30px;">
+    <label style="display:block; margin-bottom: 12px; color:#00ff9d; font-size: 18px;">Diamètre du fil (en /100)</label>
+    <input type="text" id="filDiametre" placeholder="Ex: 12/100, 18/100, 25/100" style="width:100%; padding:14px; border-radius:12px; background:#0d1b2a; color:#e0e0e0; border:1px solid #00ff9d44; font-size:16px;">
+  </div>
+
+  <!-- Bouton Enregistrer -->
+  <button onclick="enregistrerMateriel()" style="
+    width: 100%;
+    padding: 20px;
+    background: #00ff9d;
+    color: #000;
+    border: none;
+    border-radius: 50px;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,255,157,0.4);
+    transition: all 0.2s;
+  ">
+    💾 Enregistrer mon setup
+  </button>
+
+  <!-- Résultat analyse -->
+  <div id="analyseMateriel" style="
+    margin-top: 30px;
+    padding: 25px;
+    background: #0a1f33;
+    border-radius: 16px;
+    border: 1px solid #00ff9d22;
+    display: none;
+  ">
+    <h3 style="color:#00ff9d; margin:0 0 20px; font-size:24px; text-align:center;">
+      Analyse de ton matériel
+    </h3>
+    <div id="analyseContent" style="color:#ddd; font-size:16px; line-height:1.7;"></div>
+  </div>
+</div>
+
+<script>
+// === Toggle bouton ===
+document.getElementById('toggleMaterielBtn').addEventListener('click', () => {
+  const section = document.getElementById('materielSection');
+  section.style.display = section.style.display === 'block' ? 'none' : 'block';
+});
+
+// === Enregistrer et analyser ===
+function enregistrerMateriel() {
+  const especes = Array.from(document.getElementById('especesCibles').selectedOptions).map(opt => opt.value);
+  const cannePuissance = document.getElementById('cannePuissance').value;
+  const canneTaille = document.getElementById('canneTaille').value.trim();
+  const moulinetType = document.getElementById('moulinetType').value;
+  const moulinetTaille = document.getElementById('moulinetTaille').value;
+  const filType = document.getElementById('filType').value;
+  const filDiametre = document.getElementById('filDiametre').value.trim();
+
+  if (especes.length === 0) {
+    alert("Sélectionne au moins une espèce prioritaire !");
+    return;
+  }
+
+  const materiel = {
+    especesCibles: especes,
+    canne: { puissance: cannePuissance, taille: canneTaille || "non renseignée" },
+    moulinet: { type: moulinetType, taille: moulinetTaille || "non renseignée" },
+    fil: { type: filType, diametre: filDiametre || "non renseigné" },
+    date: new Date().toISOString()
+  };
+
+  localStorage.setItem('fisherforce_materiel', JSON.stringify(materiel));
+  analyserMateriel(materiel);
+}
+
+function analyserMateriel(materiel) {
+  const div = document.getElementById('analyseMateriel');
+  const content = document.getElementById('analyseContent');
+  div.style.display = 'block';
+
+  let html = `<p><strong>Espèces prioritaires :</strong> ${materiel.especesCibles.join(', ') || 'aucune'}</p>`;
+
+  const analyses = [];
+
+  materiel.especesCibles.forEach(espece => {
+    let verdict = "";
+    switch (espece.toLowerCase()) {
+      case 'brochet':
+        if (materiel.canne.puissance.includes('10-40g') || materiel.canne.puissance.includes('14-70g') || materiel.canne.puissance.includes('+100g')) {
+          verdict = "Très bien adapté (puissance suffisante pour gros brochets et leurres lourds).";
+        } else if (materiel.canne.puissance.includes('5-15g') || materiel.canne.puissance.includes('7-21g')) {
+          verdict = "Correct pour petits/moyens brochets, mais limite pour gros leurres ou silure.";
+        } else {
+          verdict = "Sous-dimensionné pour le brochet (risque de casse sur gros poissons ou leurres lourds).";
+        }
+        break;
+
+      case 'perche':
+        if (materiel.canne.puissance.includes('0.5-5g') || materiel.canne.puissance.includes('2-10g') || materiel.canne.puissance.includes('5-15g')) {
+          verdict = "Parfait pour la perche (finesse, micro-leurres).";
+        } else {
+          verdict = "Trop puissant → perte de sensibilité sur petits leurres.";
+        }
+        break;
+
+      // ... ajoute d'autres espèces ici comme dans l'exemple précédent ...
+      default:
+        verdict = "Pas d'analyse spécifique pour cette espèce pour l'instant.";
+    }
+    analyses.push(`<strong>${espece} :</strong> ${verdict}`);
+  });
+
+  // Moulinet et fil (général)
+  let moulinetVerdict = "";
+  if (materiel.moulinet.type === 'spinning' && (materiel.moulinet.taille === '2500' || materiel.moulinet.taille === '3000' || materiel.moulinet.taille === '4000')) {
+    moulinetVerdict = "Taille de moulinet polyvalente et adaptée à la plupart des espèces ciblées.";
+  } else if (materiel.moulinet.type === 'casting') {
+    moulinetVerdict = "Casting → très bien pour gros leurres / puissance, mais moins pour finesse.";
+  } else {
+    moulinetVerdict = "Taille de moulinet un peu légère ou lourde selon tes espèces.";
+  }
+
+  let filVerdict = "";
+  if (materiel.fil.type === 'tresse' && (materiel.fil.diametre.includes('12') || materiel.fil.diametre.includes('14') || materiel.fil.diametre.includes('18'))) {
+    filVerdict = "Tresse fine → excellent pour sensibilité et distance.";
+  } else if (materiel.fil.type === 'tresse') {
+    filVerdict = "Tresse → bien, mais diamètre un peu épais → moins discret.";
+  }
+
+  html += `
+    <p style="margin-top:20px;"><strong>Moulinet :</strong> ${moulinetVerdict}</p>
+    <p><strong>Fil :</strong> ${filVerdict || "Non analysé pour l'instant"}</p>
+    <ul style="margin-top:20px; padding-left:20px; line-height:1.8;">
+      ${analyses.map(a => `<li>${a}</li>`).join('')}
+    </ul>
+    <p style="margin-top:30px; text-align:center; color:#00ff9d88; font-style:italic;">
+      Ce setup est enregistré localement. Quand tu auras un compte, il sera lié à ton profil !
+    </p>
+  `;
+
+  document.getElementById('analyseContent').innerHTML = html;
+}
+
+// Charge le setup précédent s'il existe
+const savedMateriel = localStorage.getItem('fisherforce_materiel');
+if (savedMateriel) {
+  const m = JSON.parse(savedMateriel);
+  // Sélection multiple : on boucle sur les options
+  const select = document.getElementById('especesCibles');
+  for (let option of select.options) {
+    if (m.especesCibles.includes(option.value)) {
+      option.selected = true;
+    }
+  }
+  document.getElementById('cannePuissance').value = m.canne.puissance;
+  document.getElementById('canneTaille').value = m.canne.taille;
+  document.getElementById('moulinetType').value = m.moulinet.type;
+  document.getElementById('moulinetTaille').value = m.moulinet.taille;
+  document.getElementById('filType').value = m.fil.type;
+  document.getElementById('filDiametre').value = m.fil.diametre;
+
+  analyserMateriel(m);
+}
+</script>
 
 <!-- POPUP STATS & PROGRESSION -->
+    
 <div id="statsPopup" style="
   display: none;
   position: fixed;
