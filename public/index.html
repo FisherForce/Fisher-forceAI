@@ -281,9 +281,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-      <!-- Section Mon matériel (cachée par défaut) -->
+<!-- Section Mon matériel (cachée par défaut) -->
 <div id="materielSection" style="
   display: none;
+  position: relative;
   padding: 30px;
   background: #001122;
   border-radius: 16px;
@@ -292,6 +293,24 @@ document.addEventListener('DOMContentLoaded', () => {
   margin: 0 auto 40px;
   border: 1px solid #00ff9d22;
 ">
+
+  <!-- Bouton fermer (petite croix) -->
+  <button onclick="toggleMateriel()" style="
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    font-size: 24px;
+    line-height: 36px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(231,76,60,0.4);
+    transition: all 0.2s;
+  ">×</button>
 
   <h2 style="text-align:center; color:#00ff9d; margin-bottom: 25px; font-size: 32px;">
     Mon matériel 🎣
@@ -330,7 +349,6 @@ document.addEventListener('DOMContentLoaded', () => {
       <option value="chevesne">Chevesne</option>
       <option value="ombre">Ombre</option>
       <option value="omble">Omble chevalier</option>
-      <!-- Ajoute les autres si besoin -->
     </select>
     <small style="color:#aaa; display:block; margin-top: 8px;">
       Maintiens Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs
@@ -431,13 +449,16 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
-// === Toggle bouton ===
-document.getElementById('toggleMaterielBtn').addEventListener('click', () => {
+// === Toggle section Mon matériel ===
+function toggleMateriel() {
   const section = document.getElementById('materielSection');
   section.style.display = section.style.display === 'block' ? 'none' : 'block';
-});
+}
 
-// === Enregistrer et analyser ===
+// Attache le toggle au bouton principal
+document.getElementById('toggleMaterielBtn').addEventListener('click', toggleMateriel);
+
+// === Enregistrer et analyser (inchangé) ===
 function enregistrerMateriel() {
   const especes = Array.from(document.getElementById('especesCibles').selectedOptions).map(opt => opt.value);
   const cannePuissance = document.getElementById('cannePuissance').value;
@@ -464,6 +485,7 @@ function enregistrerMateriel() {
   analyserMateriel(materiel);
 }
 
+// Fonction analyserMateriel (exemple simplifié, tu peux l'étendre)
 function analyserMateriel(materiel) {
   const div = document.getElementById('analyseMateriel');
   const content = document.getElementById('analyseContent');
@@ -494,7 +516,7 @@ function analyserMateriel(materiel) {
         }
         break;
 
-      // ... ajoute d'autres espèces ici comme dans l'exemple précédent ...
+      // Ajoute d'autres espèces ici si besoin
       default:
         verdict = "Pas d'analyse spécifique pour cette espèce pour l'instant.";
     }
@@ -536,7 +558,6 @@ function analyserMateriel(materiel) {
 const savedMateriel = localStorage.getItem('fisherforce_materiel');
 if (savedMateriel) {
   const m = JSON.parse(savedMateriel);
-  // Sélection multiple : on boucle sur les options
   const select = document.getElementById('especesCibles');
   for (let option of select.options) {
     if (m.especesCibles.includes(option.value)) {
