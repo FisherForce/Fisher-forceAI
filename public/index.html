@@ -285,20 +285,43 @@ document.addEventListener('DOMContentLoaded', () => {
 <div id="materielSection" style="
   display: none;
   position: relative;
-  padding: 30px;
+  padding: 30px 20px;
   background: #001122;
   border-radius: 16px;
   box-shadow: 0 10px 40px rgba(0,0,0,0.7);
   max-width: 900px;
   margin: 0 auto 40px;
   border: 1px solid #00ff9d22;
+  max-height: 80vh;           /* Limite la hauteur max pour activer le scroll */
+  overflow-y: auto;           /* Scroll vertical si le contenu dépasse */
+  scrollbar-width: thin;      /* Barre fine (Firefox) */
+  scrollbar-color: #00ff9d #003366; /* Couleur scrollbar Firefox */
 ">
+
+  /* Style scrollbar Chrome/Safari/Edge */
+  <style>
+    #materielSection::-webkit-scrollbar {
+      width: 8px;
+    }
+    #materielSection::-webkit-scrollbar-track {
+      background: #003366;
+      border-radius: 10px;
+    }
+    #materielSection::-webkit-scrollbar-thumb {
+      background: #00ff9d;
+      border-radius: 10px;
+    }
+    #materielSection::-webkit-scrollbar-thumb:hover {
+      background: #00d4aa;
+    }
+  </style>
 
   <!-- Bouton fermer (petite croix) -->
   <button onclick="toggleMateriel()" style="
-    position: absolute;
+    position: sticky;
     top: 15px;
     right: 20px;
+    z-index: 10;
     background: #e74c3c;
     color: white;
     border: none;
@@ -310,9 +333,10 @@ document.addEventListener('DOMContentLoaded', () => {
     cursor: pointer;
     box-shadow: 0 5px 15px rgba(231,76,60,0.4);
     transition: all 0.2s;
+    float: right;
   ">×</button>
 
-  <h2 style="text-align:center; color:#00ff9d; margin-bottom: 25px; font-size: 32px;">
+  <h2 style="text-align:center; color:#00ff9d; margin:0 0 25px; font-size: 32px;">
     Mon matériel 🎣
   </h2>
   <p style="text-align:center; color:#aaa; margin-bottom: 30px; font-size: 16px;">
@@ -449,7 +473,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <script>
-// === Toggle section Mon matériel ===
+// Toggle section Mon matériel
 function toggleMateriel() {
   const section = document.getElementById('materielSection');
   section.style.display = section.style.display === 'block' ? 'none' : 'block';
@@ -458,7 +482,7 @@ function toggleMateriel() {
 // Attache le toggle au bouton principal
 document.getElementById('toggleMaterielBtn').addEventListener('click', toggleMateriel);
 
-// === Enregistrer et analyser (inchangé) ===
+// Enregistrer et analyser (inchangé)
 function enregistrerMateriel() {
   const especes = Array.from(document.getElementById('especesCibles').selectedOptions).map(opt => opt.value);
   const cannePuissance = document.getElementById('cannePuissance').value;
@@ -485,7 +509,7 @@ function enregistrerMateriel() {
   analyserMateriel(materiel);
 }
 
-// Fonction analyserMateriel (exemple simplifié, tu peux l'étendre)
+// Fonction analyserMateriel (exemple simplifié – tu peux étendre)
 function analyserMateriel(materiel) {
   const div = document.getElementById('analyseMateriel');
   const content = document.getElementById('analyseContent');
@@ -523,7 +547,6 @@ function analyserMateriel(materiel) {
     analyses.push(`<strong>${espece} :</strong> ${verdict}`);
   });
 
-  // Moulinet et fil (général)
   let moulinetVerdict = "";
   if (materiel.moulinet.type === 'spinning' && (materiel.moulinet.taille === '2500' || materiel.moulinet.taille === '3000' || materiel.moulinet.taille === '4000')) {
     moulinetVerdict = "Taille de moulinet polyvalente et adaptée à la plupart des espèces ciblées.";
