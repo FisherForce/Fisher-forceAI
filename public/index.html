@@ -2657,6 +2657,92 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
       </div>
+      <!-- ================= POLICE ACTION ================= -->
+
+<div id="police-action" style="
+margin-top:20px;
+padding:15px;
+border-radius:12px;
+background:#14202b;
+border:1px solid #2b4c66;
+display:none;
+font-size:14px">
+
+<h3>🚔 Déclaration officielle recommandée</h3>
+
+<p>
+Pour que le vol soit reconnu légalement,
+vous devez effectuer une déclaration officielle.
+</p>
+
+<button onclick="openPoliceSite()" style="
+padding:8px 12px;
+border:none;
+border-radius:8px;
+background:#1f6feb;
+color:white;
+cursor:pointer;">
+🔗 Faire une pré-plainte
+</button>
+
+<button onclick="generateReport()" style="
+padding:8px 12px;
+border:none;
+border-radius:8px;
+background:#2ea043;
+color:white;
+cursor:pointer;
+margin-left:10px;">
+📄 Générer un résumé
+</button>
+
+<div id="report-output" style="
+margin-top:15px;
+background:#0e1e2c;
+padding:10px;
+border-radius:8px;
+display:none;
+white-space:pre-line"></div>
+
+</div>
+
+<script>
+
+function showPoliceBlock(){
+  document.getElementById("police-action").style.display = "block";
+}
+
+function openPoliceSite(){
+  window.open("https://www.pre-plainte-en-ligne.gouv.fr", "_blank");
+}
+
+function generateReport(){
+
+  const dept = document.getElementById("theft-dept")?.value || "";
+  const date = document.getElementById("theft-date")?.value || "";
+  const gear = document.getElementById("theft-gear")?.value || "";
+  const desc = document.getElementById("theft-desc")?.value || "";
+
+  const text = `
+Déclaration de vol de matériel de pêche
+
+Département : ${dept}
+Date du vol : ${date}
+Matériel volé : ${gear}
+
+Description :
+${desc}
+
+Je certifie que ces informations sont exactes.
+`;
+
+  const output = document.getElementById("report-output");
+  output.style.display = "block";
+  output.textContent = text;
+}
+
+</script>
+
 
     
 
