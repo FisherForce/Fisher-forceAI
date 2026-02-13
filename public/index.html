@@ -1341,97 +1341,69 @@ function meilleurCreneau(ph,s){
 <!--   BLOC ACTIONS SUIVANTES     -->
 <!-- ============================= -->
 
-<div id="next-actions" style="
-display:none;
+
+
+<div class="ffai-next-step" id="ffai-next-step" style="
 margin-top:15px;
 background:#0e1e2c;
-padding:10px;
+padding:12px;
 border-radius:12px;
-font-size:12px">
+font-size:13px">
 
-<b>🔄 Optimise ta session :</b><br><br>
+  🚀 <b>Améliore encore ta session :</b><br><br>
 
-<button id="btn-compare" class="nav-btn">
-📍 COMPARER avec un autre spot
-</button>
+  Ce spot donne des indications intéressantes.<br>
+  Veux-tu optimiser la stratégie globale ou vérifier l’activité en direct ?<br><br>
 
-<button id="btn-coach" class="nav-btn">
-🎓 Adapter la stratégie (Mode Coach)
-</button>
+  <button id="btn-return-live" class="ffai-action-btn">
+    ⚡ Vérifier la probabilité LIVE
+  </button>
 
-<button id="btn-live" class="nav-btn">
-⚡ Vérifier la probabilité LIVE d'un AUTRE SPOT
-</button>
+  <button id="btn-go-coach" class="ffai-action-btn" style="background:#ffaa00">
+    🎓 Adapter ma stratégie (Mode Coach)
+  </button>
 
 </div>
 
 <style>
-.nav-btn{
+.ffai-action-btn{
   width:100%;
-  margin-bottom:6px;
+  margin-bottom:8px;
   padding:8px;
   border:none;
   border-radius:8px;
+  background:#00ffd5;
   font-weight:bold;
   cursor:pointer;
   transition:0.2s;
 }
-.nav-btn:hover{
-  transform:scale(1.02);
+.ffai-action-btn:hover{
+  transform:scale(1.03);
 }
-#btn-compare{background:#00ffcc;}
-#btn-coach{background:#ffaa00;}
-#btn-live{background:#4da6ff;}
 </style>
-
 <script>
-/* =============================
-   AFFICHER LES ACTIONS
-============================= */
+  document.addEventListener("DOMContentLoaded", function(){
 
-function showNextActions(){
-  document.getElementById("next-actions").style.display = "block";
-}
+  const liveBtn = document.getElementById("btn-return-live");
+  const coachBtn = document.getElementById("btn-go-coach");
 
-/* =============================
-   EVENTS (UNE SEULE FOIS)
-============================= */
-
-document.addEventListener("DOMContentLoaded", function(){
-
-  document.getElementById("btn-compare")
-    .addEventListener("click", function(){
-
-      document.getElementById("spot-result").innerHTML =
-        "📍 Clique sur un nouveau point sur la carte pour comparer les zones.";
-
-      window.scrollTo({top:0,behavior:"smooth"});
-  });
-
-  document.getElementById("btn-coach")
-    .addEventListener("click", function(){
-
-      document.getElementById("mode-coach")
-        .scrollIntoView({behavior:"smooth"});
-  });
-
-  document.getElementById("livebite-map")
-    .addEventListener("click", function(){
-
+  if(liveBtn){
+    liveBtn.addEventListener("click", function(){
       document.getElementById("livebite-map")
         .scrollIntoView({behavior:"smooth"});
-  });
+    });
+  }
+
+  if(coachBtn){
+    coachBtn.addEventListener("click", function(){
+      document.getElementById("mode-coach")
+        .scrollIntoView({behavior:"smooth"});
+    });
+  }
 
 });
-</script>
 
-<div class="ffai-next-step">
-  🔁 <b>Optimise encore :</b><br>
-  Compare avec <span style="color:#00ffd5">un autre spot</span> ou reviens voir la probabilité LIVE.<br><br>
-  <button onclick="document.getElementById('livebite-map').scrollIntoView({behavior:'smooth'})">
-    🎣 Retour au LIVE
-  </button>
-</div>
+</script>
 
 
 
