@@ -3003,24 +3003,41 @@ const randomParEspece = {
 
 
 // === ROUTES ===
+app.post("/coach-analysis", async (req, res) => {
 
-app.post("/coach-analysis", async (req,res)=>{
+  try {
 
-  const {species, water, temperature, cloud, wind, pressure} = req.body;
+    const {
+      species,
+      water,
+      latitude,
+      longitude,
+      temperature,
+      cloud,
+      wind,
+      pressure
+    } = req.body;
 
-  // Exemple simple (à remplacer par ton IA OpenAI)
+    const advice = await suggestLure({
+      species,
+      water,
+      latitude,
+      longitude,
+      temperature,
+      cloud,
+      wind,
+      pressure
+    });
 
-  let advice = `
-  🎯 Espèce : ${species}<br>
-  🌊 Spot : ${water}<br><br>
-  Température : ${temperature}°C<br>
-  Vent : ${wind} km/h<br>
-  Pression : ${pressure} hPa<br><br>
-  👉 Ajuste profondeur et animation selon conditions.
-  `;
+    res.json({ advice });
 
-  res.json({advice});
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ advice: "Erreur IA." });
+  }
+
 });
+
 
 app.post('/api/suggest', (req, res) => {
   let { targetSpecies: species = "", structure, conditions, spotType, temperature } = req.body;
