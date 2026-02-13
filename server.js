@@ -2999,6 +2999,307 @@ const randomParEspece = {
 
   return { lures: list, depthAdvice };
 }
+// === GUIDE UTILISATION LEURRES ===
+const lureGuides = {
+  popper: [
+    "Animation : Récupération saccadée avec coups de canne courts et secs (pop-pop-pop).",
+    "Coup de canne : Oui, pour créer des éclaboussures et attirer l'attention.",
+    "Vitesse : Lente à moyenne, avec pauses entre les pops.",
+    "Pause : Oui, longues pauses (5-10s) après chaque série de pops pour laisser le poisson attaquer.",
+    "Laisser couler : Non, garder en surface (topwater).",
+    "Profondeur : Surface (0 m), idéal pour eaux calmes ou herbiers.",
+    "Conseils extras : Parfait pour bass, brochet ou bar en été. Utilise un leader fluoro pour discrétion."
+  ],
+  propbait: [
+    "Animation : Récupération linéaire constante ou saccadée pour faire tourner l'hélice.",
+    "Coup de canne : Oui, coups légers pour éclaboussures et bruit.",
+    "Vitesse : Moyenne à rapide, pour maximiser le bruit de l'hélice.",
+    "Pause : Oui, courtes pauses (2-5s) pour varier.",
+    "Laisser couler : Non, rester en surface.",
+    "Profondeur : Surface (0 m), pour zones ouvertes ou bordures.",
+    "Conseils extras : Idéal pour brochet ou bass par temps couvert. Choisis modèles avec hélice arrière pour plus de bruit."
+  ],
+  stickbait: [
+    "Animation : Walking-the-dog (zigzag) avec coups de canne latéraux rythmés.",
+    "Coup de canne : Oui, coups courts et alternés pour le zigzag.",
+    "Vitesse : Moyenne, pour un mouvement fluide.",
+    "Pause : Oui, pauses longues (5-10s) après zigzag pour déclencher l'attaque.",
+    "Laisser couler : Non, garder en surface.",
+    "Profondeur : Surface (0 m), pour eaux calmes ou chasses visibles.",
+    "Conseils extras : Super pour bar, snook ou tarpon en mer. Utilise un trebles de qualité pour ferrage."
+  ],
+  slider: [
+    "Animation : Récupération linéaire lente avec twitches occasionnels.",
+    "Coup de canne : Oui, légers twitches pour un mouvement erratique.",
+    "Vitesse : Lente à moyenne.",
+    "Pause : Oui, pauses courtes (2-5s) pour laisser planer.",
+    "Laisser couler : Oui, légèrement (slow sinking).",
+    "Profondeur : Surface à mi-eau (0-2 m).",
+    "Conseils extras : Bon pour bass ou brochet en eau claire. Variante de stickbait pour eaux agitées."
+  ],
+  frog: [
+    "Animation : Récupération saccadée par à-coups (hop-hop) dans herbiers.",
+    "Coup de canne : Oui, coups secs pour faire sauter comme une grenouille.",
+    "Vitesse : Lente, pour imitation naturelle.",
+    "Pause : Oui, longues pauses (5-15s) dans les trouées.",
+    "Laisser couler : Non, garder en surface (weedless).",
+    "Profondeur : Surface (0 m), sur herbiers denses.",
+    "Conseils extras : Idéal pour bass ou snakehead en végétation. Ferre fort après 2-3s pour avaler."
+  ],
+  buzzbait: [
+    "Animation : Récupération linéaire constante pour faire tourner l'hélice en surface.",
+    "Coup de canne : Non, récupération régulière.",
+    "Vitesse : Moyenne à rapide, pour bruit et éclaboussures.",
+    "Pause : Non, garder en mouvement constant.",
+    "Laisser couler : Non, rester en surface.",
+    "Profondeur : Surface (0 m), pour bordures ou herbiers.",
+    "Conseils extras : Bon pour bass par temps nuageux. Ajoute trailer pour plus d'attrait."
+  ],
+  jerk: [
+    "Animation : Twitching saccadé avec pauses (jerk-jerk-pause).",
+    "Coup de canne : Oui, coups secs et courts.",
+    "Vitesse : Variable, rapide pendant jerks.",
+    "Pause : Oui, longues pauses (5-10s) pour déclencher.",
+    "Laisser couler : Oui, suspending ou sinking.",
+    "Profondeur : Mi-eau à fond (1-5 m).",
+    "Conseils extras : Pour brochet, sandre ou bar. Utilise suspending en eau froide."
+  ],
+  jerkminnow: [
+    "Animation : Twitching saccadé avec pauses (minnow style).",
+    "Coup de canne : Oui, coups latéraux courts.",
+    "Vitesse : Moyenne pendant twitches.",
+    "Pause : Oui, pauses longues (5-15s).",
+    "Laisser couler : Oui, suspending.",
+    "Profondeur : Surface à mi-eau (0-3 m).",
+    "Conseils extras : Idéal pour aspe, chevesne ou truite. Parfait en rivière."
+  ],
+  crankbait: [
+    "Animation : Récupération linéaire constante ou stop-and-go.",
+    "Coup de canne : Non, sauf pour stop-and-go.",
+    "Vitesse : Moyenne à rapide, pour vibration.",
+    "Pause : Oui, courtes pour lipless, longues pour diving.",
+    "Laisser couler : Non, garder en nage.",
+    "Profondeur : Selon modèle (shallow 0-2 m, medium 2-4 m, deep 4+ m).",
+    "Conseils extras : Pour bass, brochet, sandre. Choisis lipless pour herbiers."
+  ],
+  lipless: [
+    "Animation : Récupération linéaire avec vibrations, stop-and-go.",
+    "Coup de canne : Oui, pour yo-yo ou grattage.",
+    "Vitesse : Moyenne à rapide.",
+    "Pause : Oui, laisser couler pendant pauses.",
+    "Laisser couler : Oui, sinking rapide.",
+    "Profondeur : Mi-eau à fond (2-6 m).",
+    "Conseils extras : Pour sandre, perche, brochet en hiver. Vibrant pour eau froide."
+  ],
+  swimbait: [
+    "Animation : Récupération linéaire constante ou saccadée.",
+    "Coup de canne : Oui, légers twitches pour mouvement nageoire.",
+    "Vitesse : Lente à moyenne.",
+    "Pause : Oui, courtes pauses pour planer.",
+    "Laisser couler : Oui, selon modèle (slow sinking).",
+    "Profondeur : Mi-eau à fond (1-6 m).",
+    "Conseils extras : Pour gros brochet, silure ou bass. Choisis jointed pour plus de nage."
+  ],
+  glidebait: [
+    "Animation : Glissade latérale avec coups de canne longs.",
+    "Coup de canne : Oui, coups lents et larges pour glide.",
+    "Vitesse : Lente.",
+    "Pause : Oui, longues pauses (5-10s).",
+    "Laisser couler : Oui, slow sinking.",
+    "Profondeur : Mi-eau (1-4 m).",
+    "Conseils extras : Pour gros bass ou brochet. Parfait en eau claire."
+  ],
+  cuillertournante: [
+    "Animation : Récupération linéaire constante pour tourner.",
+    "Coup de canne : Non, sauf pour stop-and-go.",
+    "Vitesse : Moyenne.",
+    "Pause : Oui, courtes pour couler.",
+    "Laisser couler : Oui, sinking.",
+    "Profondeur : Surface à mi-eau (0-2 m).",
+    "Conseils extras : Pour truite, perche, chevesne. Argentée en soleil."
+  ],
+  ondulante: [
+    "Animation : Récupération linéaire avec ondulations, ou yo-yo.",
+    "Coup de canne : Oui, pour yo-yo.",
+    "Vitesse : Lente à moyenne.",
+    "Pause : Oui, laisser planer pendant pauses.",
+    "Laisser couler : Oui, sinking rapide.",
+    "Profondeur : Mi-eau à fond (2-6 m).",
+    "Conseils extras : Pour sandre, brochet, silure. Parfait en profondeur."
+  ],
+  lamevibrante: [
+    "Animation : Récupération linéaire avec vibrations, stop-and-go.",
+    "Coup de canne : Oui, pour yo-yo ou grattage.",
+    "Vitesse : Moyenne à rapide.",
+    "Pause : Oui, laisser couler pendant pauses.",
+    "Laisser couler : Oui, sinking.",
+    "Profondeur : Mi-eau à fond (1-5 m).",
+    "Conseils extras : Pour perche, chevesne, aspe. Vibrant pour eau trouble."
+  ],
+  jig: [
+    "Animation : Grattage fond avec sauts (hop-hop-pause).",
+    "Coup de canne : Oui, coups secs pour sauter.",
+    "Vitesse : Lente.",
+    "Pause : Oui, longues pauses au fond.",
+    "Laisser couler : Oui, rapide au fond.",
+    "Profondeur : Fond (2-10 m).",
+    "Conseils extras : Pour sandre, black-bass, silure. Ajoute trailer pour nage."
+  ],
+  spinnerbait: [
+    "Animation : Récupération linéaire constante ou slow-roll.",
+    "Coup de canne : Non, sauf pour stop-and-go.",
+    "Vitesse : Moyenne.",
+    "Pause : Oui, courtes pour couler.",
+    "Laisser couler : Oui, sinking.",
+    "Profondeur : Mi-eau (1-4 m).",
+    "Conseils extras : Pour black-bass, brochet. Bon en herbiers."
+  ],
+  chatterbait: [
+    "Animation : Récupération linéaire avec vibrations.",
+    "Coup de canne : Oui, twitches pour plus de vibration.",
+    "Vitesse : Moyenne à rapide.",
+    "Pause : Oui, courtes pauses.",
+    "Laisser couler : Oui, sinking.",
+    "Profondeur : Mi-eau (1-4 m).",
+    "Conseils extras : Pour black-bass, brochet. Ajoute trailer shad."
+  ],
+  shad: [
+    "Animation : Récupération linéaire ou saccadée avec pauses.",
+    "Coup de canne : Oui, twitches pour nage tail.",
+    "Vitesse : Lente à moyenne.",
+    "Pause : Oui, longues pour descente.",
+    "Laisser couler : Oui, avec tête plombée.",
+    "Profondeur : Mi-eau à fond (1-6 m).",
+    "Conseils extras : Pour sandre, brochet, perche. Tête 10-30g selon profondeur."
+  ],
+  grub: [
+    "Animation : Récupération linéaire avec tail curl.",
+    "Coup de canne : Oui, légers twitches.",
+    "Vitesse : Moyenne.",
+    "Pause : Oui, courtes.",
+    "Laisser couler : Oui, avec jig head.",
+    "Profondeur : Mi-eau (1-4 m).",
+    "Conseils extras : Pour perche, sandre. Bon en finesse."
+  ],
+  finesse: [
+    "Animation : Dandine lente ou grattage fond.",
+    "Coup de canne : Oui, petits twitches.",
+    "Vitesse : Ultra lente.",
+    "Pause : Oui, longues pauses.",
+    "Laisser couler : Oui, slow sinking.",
+    "Profondeur : Fond (2-6 m).",
+    "Conseils extras : Pour black-bass, perche en eau froide. Ned rig ou drop shot."
+  ],
+  worm: [
+    "Animation : Grattage fond ou dandine.",
+    "Coup de canne : Oui, coups lents pour wiggle.",
+    "Vitesse : Lente.",
+    "Pause : Oui, longues au fond.",
+    "Laisser couler : Oui, sinking.",
+    "Profondeur : Fond (1-5 m).",
+    "Conseils extras : Pour black-bass, truite. Texas rig ou wacky."
+  ],
+  dropshot: [
+    "Animation : Dandine verticale ou grattage léger.",
+    "Coup de canne : Oui, petits shakes.",
+    "Vitesse : Ultra lente.",
+    "Pause : Oui, longues pauses.",
+    "Laisser couler : Oui, au fond.",
+    "Profondeur : Fond (2-8 m).",
+    "Conseils extras : Pour perche, sandre, finesse en eau froide."
+  ],
+  nedrig: [
+    "Animation : Grattage lent au fond avec shakes.",
+    "Coup de canne : Oui, légers twitches.",
+    "Vitesse : Ultra lente.",
+    "Pause : Oui, longues au fond.",
+    "Laisser couler : Oui, slow sinking.",
+    "Profondeur : Fond (1-5 m).",
+    "Conseils extras : Pour black-bass, perche. Très efficace en eau claire."
+  ],
+  // Additions utiles
+  buzztoad: [
+    "Animation : Récupération linéaire constante pour bruit.",
+    "Coup de canne : Non.",
+    "Vitesse : Moyenne à rapide.",
+    "Pause : Non.",
+    "Laisser couler : Non, surface.",
+    "Profondeur : Surface (0 m).",
+    "Conseils extras : Pour bass en herbiers. Variante buzzbait avec toad."
+  ],
+  rubberjig: [
+    "Animation : Grattage fond avec sauts.",
+    "Coup de canne : Oui, coups secs.",
+    "Vitesse : Lente.",
+    "Pause : Oui, longues.",
+    "Laisser couler : Oui, rapide.",
+    "Profondeur : Fond (2-8 m).",
+    "Conseils extras : Pour black-bass, silure. Ajoute trailer craw."
+  ],
+  texasrig: [
+    "Animation : Grattage fond ou punching herbiers.",
+    "Coup de canne : Oui, coups lents.",
+    "Vitesse : Lente.",
+    "Pause : Oui, longues.",
+    "Laisser couler : Oui, sinking.",
+    "Profondeur : Fond (1-5 m).",
+    "Conseils extras : Pour bass en végétation. Bullet weight pour weedless."
+  ],
+  carolinarig: [
+    "Animation : Traîné lent au fond.",
+    "Coup de canne : Oui, légers twitches.",
+    "Vitesse : Lente.",
+    "Pause : Oui, longues.",
+    "Laisser couler : Oui, sinking.",
+    "Profondeur : Fond (2-6 m).",
+    "Conseils extras : Pour bass, sandre. Long leader pour finesse."
+  ],
+  wackyrig: [
+    "Animation : Dandine ou grattage avec wiggle.",
+    "Coup de canne : Oui, shakes légers.",
+    "Vitesse : Ultra lente.",
+    "Pause : Oui, longues.",
+    "Laisser couler : Oui, slow sinking.",
+    "Profondeur : Fond (1-4 m).",
+    "Conseils extras : Pour black-bass. Hook au milieu du worm."
+  ],
+  spoon: [
+    "Animation : Récupération linéaire ou yo-yo.",
+    "Coup de canne : Oui, pour yo-yo.",
+    "Vitesse : Moyenne.",
+    "Pause : Oui, laisser planer.",
+    "Laisser couler : Oui, sinking.",
+    "Profondeur : Mi-eau à fond (2-8 m).",
+    "Conseils extras : Pour silure, sandre. Bon en verticale."
+  ],
+  tailspin: [
+    "Animation : Récupération linéaire avec tail spin.",
+    "Coup de canne : Oui, twitches pour vibration.",
+    "Vitesse : Moyenne.",
+    "Pause : Oui, courtes.",
+    "Laisser couler : Oui, sinking.",
+    "Profondeur : Mi-eau (1-4 m).",
+    "Conseils extras : Pour perche, chevesne. Petite version pour finesse."
+  ]
+};
+
+// Fonction pour récupérer les conseils (normalise le nom)
+function getLureGuide(lureName) {
+  const normalized = lureName.toLowerCase().trim().replace(/ /g, '');
+  const guide = lureGuides[normalized] || lureGuides['finesse']; // fallback si inconnu
+
+  if (guide) {
+    return guide.map((tip, index) => `${index + 1}. ${tip}`);
+  } else {
+    return [
+      "Leurre inconnu – essaie un leurre souple en récupération lente avec pauses.",
+      "Conseils généraux : Coup de canne léger, vitesse moyenne, pause 5s, laisser couler non, profondeur mi-eau."
+    ];
+  }
+}
+
+// Exemple d'utilisation
+console.log(getLureGuide('popper'));
 
 
 
@@ -3068,6 +3369,11 @@ app.post('/api/advice', (req, res) => {
 });
 const fetch = require('node-fetch'); // Assure-toi d'avoir installé node-fetch si pas déjà fait : npm install node-fetch
 
+app.post('/api/lure-guide', (req, res) => {
+  const { lure } = req.body;
+  const guide = getLureGuide(lure.toLowerCase().trim());
+  res.json(guide);
+});
 app.post('/api/compare-lure', async (req, res) => {
   const { lure } = req.body;
   if (!lure) return res.status(400).json({ error: 'Nom du leurre requis' });
