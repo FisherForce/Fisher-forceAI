@@ -1741,6 +1741,60 @@ if (species.includes('aspe')) {
   list.push("Mouche sèche et nymphe au fil restent des valeurs sûres toute l'année pour la truite arc-en-ciel");
   list.push("Enregistre ta session pour affiner les conseils !");
 }
+  if (species.includes('congre') || species.includes('conger')) {
+  // Message introductif selon saison
+  if (saison === "hiver" || temperature < 10) {
+    techniqueAdvice.push("En hiver → congre très actif de nuit, gros appâts naturels posés au fond excellents");
+  } else if (saison === "printemps") {
+    techniqueAdvice.push("Printemps → congre commence à chasser, appâts naturels + traîné lent performants");
+  } else if (saison === "été") {
+    techniqueAdvice.push("Été → congre très actif de nuit, gros appâts + posé profond ou traîne");
+  } else {
+    techniqueAdvice.push("Automne → congre nourricier, appâts riches + posé profond de nuit");
+  }
+
+  // HIVER / EAU FROIDE (< 10 °C) – bonne période
+  if (saison === "hiver" || temperature < 10) {
+    list.push("Gros poisson mort (gardon, maquereau, tacaud) – posé statique profond");
+    list.push("Calamar frais entier ou en morceaux – hair rig lourd ou posé");
+    list.push("Gros vers de sable / américain en grappe – présenté sur flotteur subaquatique ou posé");
+    list.push("Petit vif (gardon, lançon) – traîné lent ou posé près structures");
+    list.push("Crevettes ou crabes en grappe – posé de nuit");
+    if (!isDay) {
+      list.push("Pêche de nuit → très efficace, congre chasse activement");
+    }
+    depthAdvice.push("Fond profond (5-20 m) – cassures, épaves, roches, zones vaseuses");
+  }
+
+  // PRINTEMPS (activité croissante, congre sort de ses trous)
+  else if (saison === "printemps") {
+    list.push("Gros poisson mort ou vif – traîné lent ou posé profond");
+    list.push("Calamar frais ou morceaux – hair rig ou posé près obstacles");
+    list.push("Gros vers ou lombrics – présenté sur flotteur subaquatique");
+    list.push("Petit crabe ou crevettes – posé statique de nuit");
+    depthAdvice.push("Fond à mi-fond (4-15 m) – zones rocheuses, épaves, tombants");
+  }
+
+  // ÉTÉ / AUTOMNE (congre très actif, gros sujets nourriciers)
+  else {
+    list.push("Gros poisson mort entier (maquereau, gardon, tacaud) – posé profond de nuit");
+    list.push("Calamar frais ou poulpe – hair rig lourd ou posé");
+    list.push("Gros vif (gardon, lançon) – traîné lent près structures");
+    list.push("Gros vers de sable ou lombrics – présenté en profondeur");
+    list.push("Crevettes ou crabes en grappe – posé statique");
+    if (!isDay) {
+      list.push("Pêche de nuit → combo explosif, congre chasse agressivement");
+    }
+    if (spotType.includes('digue') || spotType.includes('plage') || spotType.includes('bateau')) {
+      list.push("Posé lourd ou traîné – gros appâts + amorçage odorant");
+    }
+    depthAdvice.push("Fond profond (6-25 m) – épaves, roches, cassures, zones vaseuses");
+  }
+
+  // Message final
+  list.push("Gros poisson mort ou calamar posés au fond de nuit restent des valeurs sûres pour le congre");
+  list.push("Enregistre ta session pour affiner les conseils !");
+}
 if (species.includes('silure')) {
   // Conseil de base (toute l'année)
   list.push("Essaie une ondulante de 50g – ramène-la proche du fond avec de longues pauses");
